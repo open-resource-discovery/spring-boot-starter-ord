@@ -1,0 +1,24 @@
+name: CI - Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci-check:
+    name: ci-check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.19.0
+        with:
+          java-version: 17
+          maven-version: 3.9.14
+
+      - name: Build project
+        run: mvn clean install -B -Dgpg.skip=true

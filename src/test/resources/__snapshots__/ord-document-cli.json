@@ -1,0 +1,16 @@
+{
+  "$schema": "https://open-resource-discovery.github.io/specification/spec-v1/interfaces/Document.schema.json",
+  "openResourceDiscovery": "1.10",
+  "description": "Generated ORD metadata for snapshotapp",
+  "policyLevels": ["sap:core:v1"],
+  "entityTypes": [
+    { "ordId": "bookstore:entityType:Book:v1", "visibility": "public" },
+    { "ordId": "customer:entityType:BusinessPartner:v1", "visibility": "internal" }
+  ],
+  "packages": [
+    { "ordId": "bookstore:package:entities:v1" }
+  ],
+  "consumptionBundles": [
+    { "ordId": "foo.ord.namespace:consumptionBundle:noAuth:v1", "visibility": "public" }
+  ]
+}

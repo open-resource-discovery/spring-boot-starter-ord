@@ -1,0 +1,85 @@
+{
+  "groups": [
+    {
+      "name": "ord",
+      "type": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties"
+    },
+    {
+      "name": "ord.documents",
+      "type": "org.openresourcediscovery.core.configurations.properties.OrdProperties$Document",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
+      "sourceMethod": "getDocuments()"
+    }
+  ],
+  "properties": [
+    {
+      "name": "ord.autoconfigure",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
+      "description": "Whether to enable ORD auto-configuration. Set to false to disable all ORD endpoints and beans.",
+      "defaultValue": true
+    },
+    {
+      "name": "ord.application",
+      "type": "java.lang.String",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
+      "description": "Application identifier used in the generated ORD document.",
+      "defaultValue": ""
+    },
+    {
+      "name": "ord.namespace",
+      "type": "java.lang.String",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
+      "description": "Namespace used in the generated ORD document.",
+      "defaultValue": "customer"
+    },
+    {
+      "name": "ord.packages",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
+      "description": "Java packages to scan for ORD annotations (e.g. @OrdPackage, @OrdApiResource). Enables annotation-based document generation when non-empty."
+    },
+    {
+      "name": "ord.documents",
+      "type": "java.util.List<org.openresourcediscovery.core.configurations.properties.OrdProperties$Document>",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
+      "description": "List of pre-built static ORD documents to load and serve. Enables static file mode when non-empty."
+    },
+    {
+      "name": "ord.documents[].id",
+      "type": "java.lang.String",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties$Document",
+      "description": "Unique identifier for this ORD document. Used as the path segment in /ord/v1/documents/{id}."
+    },
+    {
+      "name": "ord.documents[].path",
+      "type": "java.lang.String",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties$Document",
+      "description": "Resource path to the static ORD document JSON file (e.g. classpath:ord/my-document.json)."
+    },
+    {
+      "name": "ord.documents[].access-strategies",
+      "type": "java.util.Set<java.lang.String>",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties$Document",
+      "description": "Access strategies for this document. Use 'open' to allow unauthenticated access. Omit or leave empty to require Basic Auth."
+    },
+    {
+      "name": "ord.credentials",
+      "type": "java.util.Map<java.lang.String,java.lang.String>",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
+      "description": "HTTP Basic Auth credentials for the ORD document endpoints. Key is username, value is bcrypt-encoded password (e.g. {bcrypt}<hash>). Required when any document uses Basic Auth access strategy."
+    }
+  ],
+  "hints": [
+    {
+      "name": "ord.documents[].access-strategies",
+      "values": [
+        {
+          "value": "open",
+          "description": "Document is publicly accessible without authentication."
+        }
+      ]
+    }
+  ]
+}
