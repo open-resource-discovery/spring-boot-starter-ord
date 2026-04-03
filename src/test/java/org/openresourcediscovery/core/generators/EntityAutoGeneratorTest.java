@@ -8,6 +8,8 @@ import static org.mockito.Mockito.doReturn;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +30,7 @@ import org.openresourcediscovery.model.Link;
 import org.openresourcediscovery.model.Package;
 import org.openresourcediscovery.model.PackageLink;
 import org.openresourcediscovery.model.Vendor;
+import org.openresourcediscovery.testutils.Annotations;
 
 @ExtendWith(MockitoExtension.class)
 class EntityAutoGeneratorTest {
@@ -250,7 +253,6 @@ class EntityAutoGeneratorTest {
   // ── processAnnotationArrays — annotation[] mapped via sub-generator ───────
 
   @Test
-  @SuppressWarnings("unchecked")
   void givenAnnotationWithAnnotationArray_whenGenerateIsCalled_thenListOfSubEntitiesIsSet() {
     EntityAutoGenerator<Ord.Package, Package> packageGenerator = new EntityAutoGenerator<>(Package::new);
     packageGenerator.setOrdProperties(ordProperties);
@@ -265,8 +267,8 @@ class EntityAutoGeneratorTest {
     linkGenerator.setOrdProperties(ordProperties);
     linkGenerator.setEntityGeneratorFactory(entityGeneratorFactory);
 
-    doReturn(packageLinkGenerator).when(entityGeneratorFactory).create(Ord.PackageLink.class);
     doReturn(linkGenerator).when(entityGeneratorFactory).create(Ord.Link.class);
+    doReturn(packageLinkGenerator).when(entityGeneratorFactory).create(Ord.PackageLink.class);
 
     Ord.Package annotation = WithPackageLinks.class.getAnnotation(Ord.Package.class);
 
@@ -283,7 +285,6 @@ class EntityAutoGeneratorTest {
   // ── processAnnotationArrays — empty annotation[] → null ──────────────────
 
   @Test
-  @SuppressWarnings("unchecked")
   void givenAnnotationWithEmptyAnnotationArray_whenGenerateIsCalled_thenListFieldIsNull() {
     EntityAutoGenerator<Ord.Package, Package> packageGenerator = new EntityAutoGenerator<>(Package::new);
     packageGenerator.setOrdProperties(ordProperties);
@@ -298,24 +299,22 @@ class EntityAutoGeneratorTest {
     linkGenerator.setOrdProperties(ordProperties);
     linkGenerator.setEntityGeneratorFactory(entityGeneratorFactory);
 
-    doReturn(packageLinkGenerator).when(entityGeneratorFactory).create(Ord.PackageLink.class);
     doReturn(linkGenerator).when(entityGeneratorFactory).create(Ord.Link.class);
+    doReturn(packageLinkGenerator).when(entityGeneratorFactory).create(Ord.PackageLink.class);
 
-    @Ord.Package(
-        ordId = "customer:package:TestPackage:v1",
-        title = "Test Package",
-        shortDescription = "A short description",
-        description = "A description",
-        version = "1.0.0",
-        vendor = "customer:vendor:Customer:v1")
-    class WithEmptyPackage {}
-
-    Ord.Package annotation = WithEmptyPackage.class.getAnnotation(Ord.Package.class);
+    Ord.Package annotation = Annotations.mock(Ord.Package.class, Map.ofEntries(
+            Map.entry("version", "1.0.0"),
+            Map.entry("title", "Test Package"),
+            Map.entry("description", "A description"),
+            Map.entry("vendor", "customer:vendor:Customer:v1"),
+            Map.entry("shortDescription", "A short description"),
+            Map.entry("ordId", "customer:package:TestPackage:v1")
+    ));
 
     Package result =
-        packageGenerator.generate(Context.of(annotation, WithEmptyPackage.class, new DocumentSchema()));
+        packageGenerator.generate(Context.of(annotation, getClass(), new DocumentSchema()));
 
-    assertNull(result.getPackageLinks());
     assertNull(result.getLinks());
+    assertNull(result.getPackageLinks());
   }
 }
