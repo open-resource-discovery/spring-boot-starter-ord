@@ -20,7 +20,7 @@ jobs:
       - name: Setup Maven Action
         uses: s4u/setup-maven-action@v1.19.0
         with:
-          java-version: 25
+          java-version: 17
           maven-version: 3.9.14
 
       - name: Build project
