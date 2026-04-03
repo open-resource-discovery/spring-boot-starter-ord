@@ -1,0 +1,10 @@
+{
+  "openResourceDiscoveryV1": {
+    "documents": [
+      {
+        "url": "/ord/v1/documents/1",
+        "accessStrategies": [{ "type": "basic-auth" }]
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+name: CI – Build Spring Boot Starter ORD
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  build:
+    name: Build Spring Boot Starter ORD
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout spring-boot-starter-ord repo
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.19.0
+        with:
+          java-version: 17
+          maven-version: 3.9.14
+
+      - name: Build project
+        run: mvn clean install -B -Dgpg.skip=true

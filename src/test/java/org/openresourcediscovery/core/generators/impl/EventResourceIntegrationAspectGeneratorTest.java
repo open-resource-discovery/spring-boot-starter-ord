@@ -1,0 +1,109 @@
+package org.openresourcediscovery.core.generators.impl;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.lenient;
+
+import java.lang.annotation.Annotation;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.openresourcediscovery.annotations.Ord;
+import org.openresourcediscovery.core.configurations.properties.OrdProperties;
+import org.openresourcediscovery.core.generators.EntityAutoGenerator;
+import org.openresourcediscovery.core.generators.EntityGenerator;
+import org.openresourcediscovery.core.generators.EntityGenerator.Context;
+import org.openresourcediscovery.core.services.EntityGeneratorFactory;
+import org.openresourcediscovery.model.DocumentSchema;
+import org.openresourcediscovery.model.EventResourceIntegrationAspect;
+import org.openresourcediscovery.model.EventResourceIntegrationAspectSubset;
+import org.openresourcediscovery.testutils.Annotations;
+
+@ExtendWith(MockitoExtension.class)
+class EventResourceIntegrationAspectGeneratorTest {
+
+  private static final String NAMESPACE = "customer.test.namespace";
+
+  @Mock
+  private OrdProperties ordProperties;
+
+  @Mock
+  private EntityGeneratorFactory entityGeneratorFactory;
+
+  private EntityAutoGenerator<Ord.EventResourceIntegrationAspect, EventResourceIntegrationAspect> classUnderTest;
+
+  @BeforeEach
+  void setUp() {
+    classUnderTest = new EntityAutoGenerator<>(EventResourceIntegrationAspect::new);
+
+    classUnderTest.setOrdProperties(ordProperties);
+    classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+
+    prepareEntityGeneratorFactoryMock(
+        Ord.EventResourceIntegrationAspectSubset.class,
+        new EntityAutoGenerator<>(EventResourceIntegrationAspectSubset::new));
+  }
+
+  @Test
+  public void verifyAnnotationPropertiesCount() {
+    assertEquals(5, Ord.EventResourceIntegrationAspect.class.getDeclaredMethods().length);
+  }
+
+  @Test
+  void givenThatOrdIdIsMissing_whenGenerateIsCalled_thenExceptionIsThrown() {
+    assertThrows(
+        IllegalStateException.class,
+        () -> classUnderTest.generate(Context.of(
+            Annotations.mock(Ord.EventResourceIntegrationAspect.class), getClass(), new DocumentSchema())));
+  }
+
+  @Test
+  void givenThatOnlyRequiredFieldsAreProvided_whenGenerateIsCalled_thenCorrectResultIsReturned() {
+    Ord.EventResourceIntegrationAspect annotation = Annotations.mock(
+        Ord.EventResourceIntegrationAspect.class,
+        Map.ofEntries(Map.entry("ordId", NAMESPACE + ":eventResource:Test:v1")));
+
+    assertEquals(
+        new EventResourceIntegrationAspect().withOrdId(NAMESPACE + ":eventResource:Test:v1"),
+        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+  }
+
+  @Test
+  void whenGenerateIsCalled_thenCorrectResultIsReturned() {
+    Ord.EventResourceIntegrationAspect annotation = Annotations.mock(
+        Ord.EventResourceIntegrationAspect.class,
+        Map.ofEntries(
+            Map.entry("minVersion", "1.0.0"),
+            Map.entry("ordId", NAMESPACE + ":eventResource:Test:v1"),
+            Map.entry("systemTypeRestriction", new String[] {"test-1", "test-2"}),
+            Map.entry("subset", new Ord.EventResourceIntegrationAspectSubset[] {createSubsetAnnotationMock()
+            })));
+
+    assertEquals(
+        new EventResourceIntegrationAspect()
+            .withMinVersion("1.0.0")
+            .withOrdId(NAMESPACE + ":eventResource:Test:v1")
+            .withSystemTypeRestriction(List.of("test-1", "test-2"))
+            .withSubset(
+                List.of(new EventResourceIntegrationAspectSubset().withEventType("test-event-type"))),
+        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+  }
+
+  private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(
+      Class<T> annotation, EntityGenerator<T, E> generator) {
+    generator.setOrdProperties(ordProperties);
+    generator.setEntityGeneratorFactory(entityGeneratorFactory);
+
+    lenient().doReturn(generator).when(entityGeneratorFactory).create(annotation);
+  }
+
+  private static Ord.EventResourceIntegrationAspectSubset createSubsetAnnotationMock() {
+    return Annotations.mock(
+        Ord.EventResourceIntegrationAspectSubset.class,
+        Map.ofEntries(Map.entry("eventType", "test-event-type")));
+  }
+}

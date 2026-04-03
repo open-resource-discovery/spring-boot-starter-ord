@@ -1,0 +1,42 @@
+{
+  "$schema": "https://open-resource-discovery.github.io/specification/spec-v1/interfaces/Document.schema.json",
+  "openResourceDiscovery": "1.10",
+  "description": "Generated ORD metadata for snapshotapp",
+  "policyLevels": [ "sap:core:v1" ],
+  "packages": [
+    {
+      "ordId": "bookstore:package:entities:v1",
+      "title": "Bookstore Package Entities",
+      "version": "1.0.0",
+      "policyLevel": "none"
+    }
+  ],
+  "entityTypes": [
+    {
+      "ordId": "bookstore:entityType:Book:v1",
+      "localId": "Book",
+      "title": "Book",
+      "version": "1.0.0",
+      "visibility": "public",
+      "releaseStatus": "active",
+      "partOfPackage": "bookstore:package:entities:v1"
+    },
+    {
+      "ordId": "customer:entityType:BusinessPartner:v1",
+      "localId": "BusinessPartner",
+      "title": "Business Partner",
+      "version": "1.1.11",
+      "visibility": "internal",
+      "releaseStatus": "active",
+      "partOfPackage": "bookstore:package:entities:v1"
+    }
+  ],
+  "consumptionBundles": [
+    {
+      "ordId": "foo.ord.namespace:consumptionBundle:noAuth:v1",
+      "title": "Unprotected resources",
+      "version": "1.0.0",
+      "visibility": "public"
+    }
+  ]
+}
