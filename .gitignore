@@ -1,0 +1,25 @@
+# Java build
+*.class
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+# VS Code
+.idea
+*.iws
+*.iml
+*.ipr
+.vscode/
+
+# Logs
+*.log
+
+# Backup files
+*.swp123
+*.swo
+*~
+
+**/.flattened-pom.xml

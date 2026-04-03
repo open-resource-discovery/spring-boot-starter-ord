@@ -1,0 +1,156 @@
+name: "GitHub Release"
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish `spring-boot-starter-ord`"
+        required: false
+        type: boolean
+        default: true
+      githubRelease:
+        description: "GitHub Release"
+        required: false
+        type: boolean
+        default: true
+      nextVersion:
+        description: "Next Version"
+        required: false
+        type: string
+
+jobs:
+
+  determine-target-release-version:
+    runs-on: ubuntu-latest
+    outputs:
+      target-release-version: ${{ env.TARGET_RELEASE_VERSION }}
+    steps:
+
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.19.0
+        with:
+          java-version: 17
+          maven-version: 3.9.14
+
+      - name: Extract SNAPSHOT version from pom.xml
+        run: echo "PROJECT_SNAPSHOT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout 2> /dev/null)" >> $GITHUB_ENV
+
+      - name: Determine release version
+        run: echo "TARGET_RELEASE_VERSION=$(sed 's/-SNAPSHOT$//' <<<"${PROJECT_SNAPSHOT_VERSION}")" >> $GITHUB_ENV
+
+  determine-target-snapshot-version:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_VERSION: ${{ inputs.nextVersion }}
+    outputs:
+      target-snapshot-version: ${{ env.TARGET_SNAPSHOT_VERSION }}
+    steps:
+
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.19.0
+        with:
+          java-version: 17
+          maven-version: 3.9.14
+
+      - name: Extract SNAPSHOT version from pom.xml
+        run: echo "PROJECT_SNAPSHOT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout 2> /dev/null)" >> $GITHUB_ENV
+
+      - name: Determine new SNAPSHOT release version
+        run: echo "TARGET_SNAPSHOT_VERSION=${NEXT_VERSION:-$(cut -d. -f1 <<<"${PROJECT_SNAPSHOT_VERSION}").$(( $(cut -d. -f2 <<<"${PROJECT_SNAPSHOT_VERSION}") + 1 )).0}-SNAPSHOT" >> $GITHUB_ENV
+
+  create-github-release:
+    runs-on: ubuntu-latest
+    environment: maven-central
+    needs: determine-target-release-version
+    env:
+      TARGET_RELEASE_VERSION: ${{ needs.determine-target-release-version.outputs.target-release-version }}
+    steps:
+
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Create GitHub Release
+        uses: open-resource-discovery/github-release@main
+        if: inputs.githubRelease
+        with:
+          tag-template: "v<version>"
+          version: ${{ env.TARGET_RELEASE_VERSION }}
+
+  release-spring-boot-starter-ord:
+    runs-on: ubuntu-latest
+    environment: maven-central
+    needs: [create-github-release, determine-target-release-version]
+    env:
+      TARGET_RELEASE_VERSION: ${{ needs.determine-target-release-version.outputs.target-release-version }}
+    steps:
+
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.19.0
+        with:
+          java-version: 17
+          maven-version: 3.9.14
+          settings-servers: '[{"id": "central", "username": "${{ secrets.MAVEN_CENTRAL_USER }}", "password": "${{ secrets.MAVEN_CENTRAL_PASSWORD }}"}]'
+
+      - name: Configure GPG key
+        uses: crazy-max/ghaction-import-gpg@v7
+        with:
+          passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+          gpg_private_key: ${{ secrets.MAVEN_GPG_SECRET_KEY }}
+
+      - name: Update project release version
+        run: mvn versions:set -DgenerateBackupPoms=false -DnewVersion="${TARGET_RELEASE_VERSION}"
+
+      - name: Create Maven Central release for org.open-resource-discovery:spring-boot-starter-ord
+        if: inputs.publish
+        env:
+          POM_PATH: pom.xml
+          MAVEN_GPG_KEY: ${{ secrets.MAVEN_GPG_KEY }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+        run: mvn --batch-mode deploy -f "${POM_PATH}" -Dgpg.keyname="${MAVEN_GPG_KEY}"
+
+  update-project-version:
+    runs-on: ubuntu-latest
+    environment: maven-central
+    needs: [create-github-release, release-spring-boot-starter-ord, determine-target-snapshot-version]
+    env:
+      TARGET_SNAPSHOT_VERSION: ${{ needs.determine-target-snapshot-version.outputs.target-snapshot-version }}
+    steps:
+
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.19.0
+        with:
+          java-version: 17
+          maven-version: 3.9.14
+
+      - name: Update project version for next development iteration
+        run: mvn versions:set -DgenerateBackupPoms=false -DnewVersion="${TARGET_SNAPSHOT_VERSION}"
+
+      - name: Update project SNAPSHOT version in repository
+        uses: devops-infra/action-commit-push@v1.1.0
+        with:
+          target_branch: main
+          commit_prefix: "[AUTO]"
+          github_token: "${{ secrets.GH_TOKEN }}"
+          commit_message: This PR automatically updates the project version to ${{ env.TARGET_SNAPSHOT_VERSION }}
