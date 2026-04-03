@@ -1,0 +1,81 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":pinVersions"
+  ],
+  "semanticCommits": "enabled",
+  "branchPrefix": "deps/",
+  "timezone": "Europe/Berlin",
+  "schedule": [
+    "every weekend"
+  ],
+  "updateNotScheduled": false,
+  "prConcurrentLimit": 0,
+  "prHourlyLimit": 0,
+  "useBaseBranchConfig": "merge",
+  "enabledManagers": [
+    "maven",
+    "github-actions"
+  ],
+  "packageRules": [
+    {
+      "groupName": "Maven build plugins",
+      "matchManagers": [
+        "maven"
+      ],
+      "matchPackageNames": [
+        "/^org\\.apache\\.maven\\.plugins:/",
+        "org.codehaus.mojo:build-helper-maven-plugin"
+      ],
+      "semanticCommitType": "build",
+      "automerge": true,
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ]
+    },
+    {
+      "groupName": "Java library dependencies",
+      "matchManagers": [
+        "maven"
+      ],
+      "matchPackageNames": [
+        "com.fasterxml.jackson.core:jackson-annotations",
+        "javax.annotation:javax.annotation-api"
+      ],
+      "semanticCommitType": "chore",
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ]
+    },
+    {
+      "groupName": "GitHub Actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchPackageNames": [
+        "actions/checkout",
+        "s4u/setup-maven-action",
+        "crazy-max/ghaction-import-gpg",
+        "devops-infra/action-commit-push",
+        "peter-evans/create-pull-request",
+        "open-resource-discovery/github-release",
+        "peter-evans/enable-pull-request-automerge"
+      ],
+      "semanticCommitType": "ci",
+      "automerge": true,
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ]
+    }
+  ]
+}
