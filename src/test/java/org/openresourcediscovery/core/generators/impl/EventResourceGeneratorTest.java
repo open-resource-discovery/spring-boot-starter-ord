@@ -34,6 +34,8 @@ import org.openresourcediscovery.model.Extensible.Supported;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.model.Link;
 import org.openresourcediscovery.model.Package;
+import org.openresourcediscovery.model.RelatedApiResource;
+import org.openresourcediscovery.model.RelatedEventResource;
 import org.openresourcediscovery.testutils.Annotations;
 import org.openresourcediscovery.utils.Commons;
 
@@ -79,11 +81,15 @@ class EventResourceGeneratorTest {
         Ord.EventResourceDefinition.class, new EntityAutoGenerator<>(EventResourceDefinition::new));
     prepareEntityGeneratorFactoryMock(
         Ord.ConsumptionBundleReference.class, new EntityAutoGenerator<>(ConsumptionBundleReference::new));
+    prepareEntityGeneratorFactoryMock(
+        Ord.RelatedApiResource.class, new EntityAutoGenerator<>(RelatedApiResource::new));
+    prepareEntityGeneratorFactoryMock(
+        Ord.RelatedEventResource.class, new EntityAutoGenerator<>(RelatedEventResource::new));
   }
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(45, Ord.EventResource.class.getDeclaredMethods().length);
+    assertEquals(47, Ord.EventResource.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -184,7 +190,13 @@ class EventResourceGeneratorTest {
                 new Ord.EventResourceDefinition[] {createEventResourceDefinitionAnnotationMock()}),
             Map.entry("partOfConsumptionBundles", new Ord.ConsumptionBundleReference[] {
               createConsumptionBundleReferenceAnnotationMock()
-            })));
+            }),
+            Map.entry(
+                "relatedApiResources",
+                new Ord.RelatedApiResource[] {createRelatedApiResourceAnnotationMock()}),
+            Map.entry(
+                "relatedEventResources",
+                new Ord.RelatedEventResource[] {createRelatedEventResourceAnnotationMock()})));
 
     assertEquals(
         new EventResource()
@@ -266,7 +278,13 @@ class EventResourceGeneratorTest {
                 .withAccessStrategies(List.of(new AccessStrategy()
                     .withType("open")
                     .withCustomType("test-access-strategy-custom-type")
-                    .withCustomDescription("test-access-strategy-custom-description"))))),
+                    .withCustomDescription("test-access-strategy-custom-description")))))
+            .withRelatedApiResources(List.of(new RelatedApiResource()
+                .withOrdId("test-related-api-resource-ord-id")
+                .withRelationType("test-relation-type")))
+            .withRelatedEventResources(List.of(new RelatedEventResource()
+                .withOrdId("test-related-event-resource-ord-id")
+                .withRelationType("test-relation-type"))),
         classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
   }
 
@@ -393,5 +411,21 @@ class EventResourceGeneratorTest {
         Map.ofEntries(
             Map.entry("ordId", NAMESPACE + ":consumptionBundle:test:v1"),
             Map.entry("defaultEntryPoint", "https://test-entry-point.dummy.nowhere.org")));
+  }
+
+  private static Ord.RelatedApiResource createRelatedApiResourceAnnotationMock() {
+    return Annotations.mock(
+        Ord.RelatedApiResource.class,
+        Map.ofEntries(
+            Map.entry("ordId", "test-related-api-resource-ord-id"),
+            Map.entry("relationType", "test-relation-type")));
+  }
+
+  private static Ord.RelatedEventResource createRelatedEventResourceAnnotationMock() {
+    return Annotations.mock(
+        Ord.RelatedEventResource.class,
+        Map.ofEntries(
+            Map.entry("ordId", "test-related-event-resource-ord-id"),
+            Map.entry("relationType", "test-relation-type")));
   }
 }
