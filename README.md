@@ -4,6 +4,8 @@
 
 # Spring Boot Starter for ORD
 
+## About this project
+
 Spring Boot auto-configuration for [Open Resource Discovery (ORD)](https://open-resource-discovery.org). Adds two endpoints to your application:
 
 | Endpoint | Auth                         | Description |
@@ -15,7 +17,7 @@ Spring Boot auto-configuration for [Open Resource Discovery (ORD)](https://open-
 
 A set of dedicated AI agent skills can be found under [.skills/](.skills/). These can be used to enable AI agents to interact with this project in various ways, such as generating documentation, answering questions about the codebase, or assisting with development tasks.
 
-## Requirements
+## Requirements and Setup
 
 - Java 17+
 - Spring Boot 3.x (tested against 3.5.x)
@@ -171,9 +173,17 @@ ord:
   credentials: {}              # Basic Auth users (username: "{bcrypt}<password-hash>")
 ```
 
+## Support, Feedback, Contributing
+
+This project is open to feature requests/suggestions, bug reports etc. via [GitHub issues](https://github.com/open-resource-discovery/spring-boot-starter-ord/issues). Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project structure, as well as additional contribution information, see our [Contribution Guidelines](CONTRIBUTING.md).
+
+## Security / Disclosure
+
+If you find any bug that may be a security problem, please follow our instructions at [in our security policy](https://github.com/open-resource-discovery/spring-boot-starter-ord/security/policy) on how to report it. Please do not create GitHub issues for security-related doubts or problems.
+
 ## Code of Conduct
 
-We as members, contributors, and leaders pledge to make participation in our community a harassment-free experience for everyone. By participating in this project, you agree to abide by its [Code of Conduct](CODE_OF_CONDUCT.md) at all times.
+We as members, contributors, and leaders pledge to make participation in our community a harassment-free experience for everyone. By participating in this project, you agree to abide by its [Code of Conduct](https://github.com/open-resource-discovery/.github/blob/main/CODE_OF_CONDUCT.md) at all times.
 
 ## Licensing
 
