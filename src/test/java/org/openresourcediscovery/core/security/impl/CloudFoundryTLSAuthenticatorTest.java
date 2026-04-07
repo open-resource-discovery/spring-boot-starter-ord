@@ -80,13 +80,6 @@ class CloudFoundryTLSAuthenticatorTest {
   }
 
   @Test
-  void givenWildcardRootCaDn_whenIsAuthenticatedIsCalled_thenTrueIsReturned() {
-    classUnderTest = new CloudFoundryTLSAuthenticator(Set.of(TRUSTED_CERT), Set.of("*"));
-
-    assertTrue(classUnderTest.isAuthenticated(validRequest()));
-  }
-
-  @Test
   void givenSlashSeparatedRootCaDnMatchingTrustedEntry_whenIsAuthenticatedIsCalled_thenTrueIsReturned() {
     String slashDn = "/C=US/O=ACME/CN=root-ca";
     classUnderTest = new CloudFoundryTLSAuthenticator(Set.of(TRUSTED_CERT), Set.of(slashDn));

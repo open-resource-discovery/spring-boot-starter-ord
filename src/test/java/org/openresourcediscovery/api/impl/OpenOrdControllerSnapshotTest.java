@@ -45,7 +45,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
     },
     properties = {
       "ord.autoconfigure=true",
-      "ord.documents.0.id=1",
+      "ord.documents.0.name=1",
       "ord.documents.0.accessStrategies.0=open",
       "ord.documents.0.path=classpath:__fixtures__/ord-doc-full.json"
     })
@@ -68,7 +68,8 @@ public class OpenOrdControllerSnapshotTest {
       return spy(properties.getDocuments().stream()
           .reduce(
               new DocumentSchemaRegistryImpl(objectMapper()),
-              (r, d) -> r.register(d.getId(), d.getAccessStrategies(), load(d.getPath(), objectMapper())),
+              (r, d) ->
+                  r.register(d.getName(), d.getAccessStrategies(), load(d.getPath(), objectMapper())),
               (r1, r2) -> r1));
     }
 

@@ -26,7 +26,7 @@ import org.springframework.core.io.ResourceLoader;
 @ExtendWith(MockitoExtension.class)
 class StaticFileDocumentSchemaDetectorTest {
 
-  private static final String DOC_ID = "doc-1";
+  private static final String DOC_NAME = "doc-1";
   private static final String DOC_PATH = "classpath:__fixtures__/ord-doc-full.json";
   private static final String ACCESS_STRATEGY = "open";
 
@@ -59,7 +59,7 @@ class StaticFileDocumentSchemaDetectorTest {
   @Test
   void givenSingleDocument_whenDetectIsCalled_thenDocumentIsLoaded() throws IOException {
     OrdProperties.Document document = OrdProperties.Document.builder()
-        .id(DOC_ID)
+        .name(DOC_NAME)
         .path(DOC_PATH)
         .accessStrategies(Set.of(ACCESS_STRATEGY))
         .build();
@@ -74,15 +74,15 @@ class StaticFileDocumentSchemaDetectorTest {
 
     assertNotNull(result);
     assertEquals(1, result.size());
-    assertTrue(result.containsKey(DOC_ID));
-    assertEquals(expectedSchema, result.get(DOC_ID).document());
-    assertEquals(Set.of(ACCESS_STRATEGY), result.get(DOC_ID).strategies());
+    assertTrue(result.containsKey(DOC_NAME));
+    assertEquals(expectedSchema, result.get(DOC_NAME).document());
+    assertEquals(Set.of(ACCESS_STRATEGY), result.get(DOC_NAME).strategies());
   }
 
   @Test
   void givenDocumentWithNoAccessStrategies_whenDetectIsCalled_thenEmptySetIsReturned() throws IOException {
     OrdProperties.Document document =
-        OrdProperties.Document.builder().id(DOC_ID).path(DOC_PATH).build();
+        OrdProperties.Document.builder().name(DOC_NAME).path(DOC_PATH).build();
     OrdProperties properties =
         OrdProperties.builder().documents(List.of(document)).build();
     DocumentSchema expectedSchema = new DocumentSchema();
@@ -92,17 +92,17 @@ class StaticFileDocumentSchemaDetectorTest {
 
     Map<String, DetectionResult> result = classUnderTest.detect(properties);
 
-    assertTrue(result.get(DOC_ID).strategies().isEmpty());
+    assertTrue(result.get(DOC_NAME).strategies().isEmpty());
   }
 
   @Test
   void givenMultipleDocuments_whenDetectIsCalled_thenAllDocumentsAreLoaded() throws IOException {
     OrdProperties.Document doc1 = OrdProperties.Document.builder()
-        .id("doc-1")
+        .name("doc-1")
         .path("classpath:doc1.json")
         .build();
     OrdProperties.Document doc2 = OrdProperties.Document.builder()
-        .id("doc-2")
+        .name("doc-2")
         .path("classpath:doc2.json")
         .build();
     OrdProperties properties =
@@ -124,7 +124,7 @@ class StaticFileDocumentSchemaDetectorTest {
   @Test
   void givenResourceLoadFails_whenDetectIsCalled_thenExceptionIsPropagated() throws IOException {
     OrdProperties.Document document =
-        OrdProperties.Document.builder().id(DOC_ID).path(DOC_PATH).build();
+        OrdProperties.Document.builder().name(DOC_NAME).path(DOC_PATH).build();
     OrdProperties properties =
         OrdProperties.builder().documents(List.of(document)).build();
     doReturn(resource).when(resourceLoader).getResource(DOC_PATH);

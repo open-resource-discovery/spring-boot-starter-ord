@@ -50,7 +50,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
     },
     properties = {
       "ord.autoconfigure=true",
-      "ord.documents.0.id=1",
+      "ord.documents.0.name=1",
       "ord.documents.0.accessStrategies.0=basic-auth",
       "ord.documents.0.path=classpath:__fixtures__/ord-doc-full.json",
       "ord.credentials.admin={bcrypt}$2a$12$te68x8ajPZgD/icO90c0N.N23L0Igd8FN9n0XAv/Al1HFJVAMKoB2",
@@ -75,7 +75,8 @@ class BasicAuthOrdControllerSnapshotTest {
       return spy(properties.getDocuments().stream()
           .reduce(
               new DocumentSchemaRegistryImpl(objectMapper()),
-              (r, d) -> r.register(d.getId(), d.getAccessStrategies(), load(d.getPath(), objectMapper())),
+              (r, d) ->
+                  r.register(d.getName(), d.getAccessStrategies(), load(d.getPath(), objectMapper())),
               (r1, r2) -> r1));
     }
 
