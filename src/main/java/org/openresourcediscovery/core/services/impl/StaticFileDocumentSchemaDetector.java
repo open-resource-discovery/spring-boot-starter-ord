@@ -26,7 +26,7 @@ public class StaticFileDocumentSchemaDetector implements DocumentSchemaDetector 
   public Map<String, DetectionResult> detect(OrdProperties properties) {
     return properties.getDocuments().stream()
         .collect(toMap(
-            OrdProperties.Document::getId,
+            OrdProperties.Document::getName,
             d -> new DetectionResult(
                 loadDocumentSchema(d.getPath()), Set.copyOf(d.getAccessStrategies()))));
   }

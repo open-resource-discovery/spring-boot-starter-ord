@@ -26,7 +26,7 @@ import org.openresourcediscovery.model.Package;
 
 class DocumentSchemaRegistryImplTest {
 
-  private static final String DOC_ID = "doc-1";
+  private static final String DOC_NAME = "doc-1";
   private static final String PUBLIC = "public";
   private static final String INTERNAL = "internal";
   private static final String PACKAGE_ORD_ID = "customer:package:test:v1";
@@ -47,9 +47,9 @@ class DocumentSchemaRegistryImplTest {
 
   @Test
   void givenRegisteredDocument_whenGetAllDocumentIdsIsCalled_thenIdIsReturned() {
-    classUnderTest.register(DOC_ID, Set.of(), new DocumentSchema());
+    classUnderTest.register(DOC_NAME, Set.of(), new DocumentSchema());
 
-    assertEquals(Set.of(DOC_ID), classUnderTest.getAllDocumentIds());
+    assertEquals(Set.of(DOC_NAME), classUnderTest.getAllDocumentIds());
   }
 
   @Test
@@ -69,9 +69,9 @@ class DocumentSchemaRegistryImplTest {
 
   @Test
   void givenRegisteredDocument_whenLookupAccessStrategiesIsCalled_thenStrategiesAreReturned() {
-    classUnderTest.register(DOC_ID, Set.of("open", "sap:cmp-mtls:v1"), new DocumentSchema());
+    classUnderTest.register(DOC_NAME, Set.of("open", "sap:cmp-mtls:v1"), new DocumentSchema());
 
-    assertEquals(Set.of("open", "sap:cmp-mtls:v1"), classUnderTest.lookupAccessStrategies(DOC_ID));
+    assertEquals(Set.of("open", "sap:cmp-mtls:v1"), classUnderTest.lookupAccessStrategies(DOC_NAME));
   }
 
   // ── lookupDocumentSchema – missing document ─────────────────────────────────
@@ -88,10 +88,10 @@ class DocumentSchemaRegistryImplTest {
   @Test
   void givenRegisteredDocument_whenLookupDocumentSchemaIsCalled_thenCloneIsReturned() {
     DocumentSchema original = new DocumentSchema();
-    classUnderTest.register(DOC_ID, Set.of(), original);
+    classUnderTest.register(DOC_NAME, Set.of(), original);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertNotSame(original, result);
   }
@@ -103,10 +103,10 @@ class DocumentSchemaRegistryImplTest {
     Agent agent = new Agent().withVisibility(PUBLIC).withPartOfPackage(PACKAGE_ORD_ID);
     Package pkg = new Package().withOrdId(PACKAGE_ORD_ID);
     DocumentSchema doc = new DocumentSchema().withAgents(List.of(agent)).withPackages(List.of(pkg));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getAgents().size());
   }
@@ -115,10 +115,10 @@ class DocumentSchemaRegistryImplTest {
   void givenAgentsWithNonMatchingVisibility_whenLookupIsCalled_thenAgentsAreExcluded() {
     Agent agent = new Agent().withVisibility(INTERNAL);
     DocumentSchema doc = new DocumentSchema().withAgents(List.of(agent));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertTrue(result.getAgents().isEmpty());
   }
@@ -130,10 +130,10 @@ class DocumentSchemaRegistryImplTest {
     ApiResource api = new ApiResource().withVisibility(PUBLIC).withPartOfPackage(PACKAGE_ORD_ID);
     Package pkg = new Package().withOrdId(PACKAGE_ORD_ID);
     DocumentSchema doc = new DocumentSchema().withApiResources(List.of(api)).withPackages(List.of(pkg));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getPackages().size());
   }
@@ -143,10 +143,10 @@ class DocumentSchemaRegistryImplTest {
     ApiResource api = new ApiResource().withVisibility(INTERNAL).withPartOfPackage(PACKAGE_ORD_ID);
     Package pkg = new Package().withOrdId(PACKAGE_ORD_ID);
     DocumentSchema doc = new DocumentSchema().withApiResources(List.of(api)).withPackages(List.of(pkg));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertTrue(result.getPackages().isEmpty());
   }
@@ -156,10 +156,10 @@ class DocumentSchemaRegistryImplTest {
     DataProduct dp = new DataProduct().withVisibility(PUBLIC).withPartOfPackage(PACKAGE_ORD_ID);
     Package pkg = new Package().withOrdId(PACKAGE_ORD_ID);
     DocumentSchema doc = new DocumentSchema().withDataProducts(List.of(dp)).withPackages(List.of(pkg));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getPackages().size());
   }
@@ -170,10 +170,10 @@ class DocumentSchemaRegistryImplTest {
     Package pkg = new Package().withOrdId(PACKAGE_ORD_ID);
     DocumentSchema doc =
         new DocumentSchema().withEventResources(List.of(er)).withPackages(List.of(pkg));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getPackages().size());
   }
@@ -185,10 +185,10 @@ class DocumentSchemaRegistryImplTest {
     Package pkg = new Package().withOrdId(PACKAGE_ORD_ID);
     DocumentSchema doc =
         new DocumentSchema().withIntegrationDependencies(List.of(id)).withPackages(List.of(pkg));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getPackages().size());
   }
@@ -200,10 +200,10 @@ class DocumentSchemaRegistryImplTest {
     EntityType et = new EntityType().withVisibility(PUBLIC).withPartOfPackage(PACKAGE_ORD_ID);
     Package pkg = new Package().withOrdId(PACKAGE_ORD_ID);
     DocumentSchema doc = new DocumentSchema().withEntityTypes(List.of(et)).withPackages(List.of(pkg));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getEntityTypes().size());
   }
@@ -212,10 +212,10 @@ class DocumentSchemaRegistryImplTest {
   void givenEntityTypeWithNonMatchingVisibility_whenLookupIsCalled_thenEntityTypeIsExcluded() {
     EntityType et = new EntityType().withVisibility(INTERNAL);
     DocumentSchema doc = new DocumentSchema().withEntityTypes(List.of(et));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertTrue(result.getEntityTypes().isEmpty());
   }
@@ -226,10 +226,10 @@ class DocumentSchemaRegistryImplTest {
   void givenApiResourceWithMatchingVisibility_whenLookupIsCalled_thenApiResourceIsIncluded() {
     ApiResource api = new ApiResource().withVisibility(PUBLIC);
     DocumentSchema doc = new DocumentSchema().withApiResources(List.of(api));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getApiResources().size());
   }
@@ -238,10 +238,10 @@ class DocumentSchemaRegistryImplTest {
   void givenApiResourceWithNonMatchingVisibility_whenLookupIsCalled_thenApiResourceIsExcluded() {
     ApiResource api = new ApiResource().withVisibility(INTERNAL);
     DocumentSchema doc = new DocumentSchema().withApiResources(List.of(api));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertTrue(result.getApiResources().isEmpty());
   }
@@ -251,10 +251,10 @@ class DocumentSchemaRegistryImplTest {
     ApiResourceDefinition def = new ApiResourceDefinition(); // no own visibility → inherits
     ApiResource api = new ApiResource().withVisibility(PUBLIC).withResourceDefinitions(List.of(def));
     DocumentSchema doc = new DocumentSchema().withApiResources(List.of(api));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getApiResources().get(0).getResourceDefinitions().size());
   }
@@ -264,10 +264,10 @@ class DocumentSchemaRegistryImplTest {
     ApiResourceDefinition def = new ApiResourceDefinition().withVisibility(INTERNAL);
     ApiResource api = new ApiResource().withVisibility(PUBLIC).withResourceDefinitions(List.of(def));
     DocumentSchema doc = new DocumentSchema().withApiResources(List.of(api));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertTrue(result.getApiResources().get(0).getResourceDefinitions().isEmpty());
   }
@@ -278,10 +278,10 @@ class DocumentSchemaRegistryImplTest {
   void givenCapabilityWithMatchingVisibility_whenLookupIsCalled_thenCapabilityIsIncluded() {
     Capability cap = new Capability().withVisibility(PUBLIC);
     DocumentSchema doc = new DocumentSchema().withCapabilities(List.of(cap));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getCapabilities().size());
   }
@@ -291,10 +291,10 @@ class DocumentSchemaRegistryImplTest {
     CapabilityDefinition def = new CapabilityDefinition(); // no own visibility → inherits
     Capability cap = new Capability().withVisibility(PUBLIC).withDefinitions(List.of(def));
     DocumentSchema doc = new DocumentSchema().withCapabilities(List.of(cap));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getCapabilities().get(0).getDefinitions().size());
   }
@@ -305,10 +305,10 @@ class DocumentSchemaRegistryImplTest {
   void givenDataProductWithMatchingVisibility_whenLookupIsCalled_thenDataProductIsIncluded() {
     DataProduct dp = new DataProduct().withVisibility(PUBLIC);
     DocumentSchema doc = new DocumentSchema().withDataProducts(List.of(dp));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getDataProducts().size());
   }
@@ -317,10 +317,10 @@ class DocumentSchemaRegistryImplTest {
   void givenDataProductWithNonMatchingVisibility_whenLookupIsCalled_thenDataProductIsExcluded() {
     DataProduct dp = new DataProduct().withVisibility(INTERNAL);
     DocumentSchema doc = new DocumentSchema().withDataProducts(List.of(dp));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertTrue(result.getDataProducts().isEmpty());
   }
@@ -331,10 +331,10 @@ class DocumentSchemaRegistryImplTest {
   void givenEventResourceWithMatchingVisibility_whenLookupIsCalled_thenEventResourceIsIncluded() {
     EventResource er = new EventResource().withVisibility(PUBLIC);
     DocumentSchema doc = new DocumentSchema().withEventResources(List.of(er));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getEventResources().size());
   }
@@ -344,10 +344,10 @@ class DocumentSchemaRegistryImplTest {
     EventResourceDefinition def = new EventResourceDefinition(); // no own visibility → inherits
     EventResource er = new EventResource().withVisibility(PUBLIC).withResourceDefinitions(List.of(def));
     DocumentSchema doc = new DocumentSchema().withEventResources(List.of(er));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(
         1, result.getEventResources().get(0).getResourceDefinitions().size());
@@ -359,10 +359,10 @@ class DocumentSchemaRegistryImplTest {
   void givenConsumptionBundleWithNullVisibility_whenLookupIsCalled_thenBundleIsIncluded() {
     ConsumptionBundle bundle = new ConsumptionBundle(); // visibility is null
     DocumentSchema doc = new DocumentSchema().withConsumptionBundles(List.of(bundle));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getConsumptionBundles().size());
   }
@@ -371,10 +371,10 @@ class DocumentSchemaRegistryImplTest {
   void givenConsumptionBundleWithMatchingVisibility_whenLookupIsCalled_thenBundleIsIncluded() {
     ConsumptionBundle bundle = new ConsumptionBundle().withVisibility(PUBLIC);
     DocumentSchema doc = new DocumentSchema().withConsumptionBundles(List.of(bundle));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getConsumptionBundles().size());
   }
@@ -383,10 +383,10 @@ class DocumentSchemaRegistryImplTest {
   void givenConsumptionBundleWithNonMatchingVisibility_whenLookupIsCalled_thenBundleIsExcluded() {
     ConsumptionBundle bundle = new ConsumptionBundle().withVisibility(INTERNAL);
     DocumentSchema doc = new DocumentSchema().withConsumptionBundles(List.of(bundle));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertTrue(result.getConsumptionBundles().isEmpty());
   }
@@ -397,10 +397,10 @@ class DocumentSchemaRegistryImplTest {
   void givenIntegrationDependencyWithMatchingVisibility_whenLookupIsCalled_thenItIsIncluded() {
     IntegrationDependency dep = new IntegrationDependency().withVisibility(PUBLIC);
     DocumentSchema doc = new DocumentSchema().withIntegrationDependencies(List.of(dep));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertEquals(1, result.getIntegrationDependencies().size());
   }
@@ -409,10 +409,10 @@ class DocumentSchemaRegistryImplTest {
   void givenIntegrationDependencyWithNonMatchingVisibility_whenLookupIsCalled_thenItIsExcluded() {
     IntegrationDependency dep = new IntegrationDependency().withVisibility(INTERNAL);
     DocumentSchema doc = new DocumentSchema().withIntegrationDependencies(List.of(dep));
-    classUnderTest.register(DOC_ID, Set.of(), doc);
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
 
     DocumentSchema result =
-        classUnderTest.lookupDocumentSchema(DOC_ID, Set.of(PUBLIC)).orElseThrow();
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertTrue(result.getIntegrationDependencies().isEmpty());
   }

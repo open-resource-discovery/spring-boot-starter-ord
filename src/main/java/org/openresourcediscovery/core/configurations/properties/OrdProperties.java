@@ -26,7 +26,7 @@ public class OrdProperties {
   @AllArgsConstructor
   public static class Document {
 
-    private String id;
+    private String name;
     private String path;
 
     @Builder.Default

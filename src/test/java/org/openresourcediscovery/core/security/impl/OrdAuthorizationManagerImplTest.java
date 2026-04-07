@@ -25,8 +25,8 @@ import org.springframework.security.web.access.intercept.RequestAuthorizationCon
 @ExtendWith(MockitoExtension.class)
 class OrdAuthorizationManagerImplTest {
 
-  private static final String DOC_ID = "doc-1";
-  private static final String ORD_DOCUMENT_PATH = "/ord/v1/documents/" + DOC_ID;
+  private static final String DOC_NAME = "doc-1";
+  private static final String ORD_DOCUMENT_PATH = "/ord/v1/documents/" + DOC_NAME;
 
   @Mock
   private TLSAuthenticator tlsAuthenticator;
@@ -58,14 +58,14 @@ class OrdAuthorizationManagerImplTest {
 
   @Test
   void givenOpenAccessStrategy_whenCheckIsCalled_thenGranted() {
-    doReturn(Set.of("open")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_ID);
+    doReturn(Set.of("open")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_NAME);
 
     assertTrue(check(ORD_DOCUMENT_PATH).isGranted());
   }
 
   @Test
   void givenOpenAlongsideOtherStrategies_whenCheckIsCalled_thenGranted() {
-    doReturn(Set.of("open", "basic-auth")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_ID);
+    doReturn(Set.of("open", "basic-auth")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_NAME);
 
     assertTrue(check(ORD_DOCUMENT_PATH).isGranted());
   }
@@ -76,7 +76,7 @@ class OrdAuthorizationManagerImplTest {
   void givenMtlsStrategyAndTlsAuthenticated_whenCheckIsCalled_thenGranted() {
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.setServletPath(ORD_DOCUMENT_PATH);
-    doReturn(Set.of("sap:cmp-mtls:v1")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_ID);
+    doReturn(Set.of("sap:cmp-mtls:v1")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_NAME);
     doReturn(true).when(tlsAuthenticator).isAuthenticated(request);
 
     assertTrue(check(request, () -> null).isGranted());
@@ -86,7 +86,7 @@ class OrdAuthorizationManagerImplTest {
   void givenMtlsStrategyAndTlsNotAuthenticated_whenCheckIsCalled_thenDenied() {
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.setServletPath(ORD_DOCUMENT_PATH);
-    doReturn(Set.of("sap:cmp-mtls:v1")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_ID);
+    doReturn(Set.of("sap:cmp-mtls:v1")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_NAME);
     doReturn(false).when(tlsAuthenticator).isAuthenticated(request);
 
     assertFalse(check(request, () -> null).isGranted());
@@ -96,7 +96,7 @@ class OrdAuthorizationManagerImplTest {
 
   @Test
   void givenBasicAuthStrategyAndAuthenticated_whenCheckIsCalled_thenGranted() {
-    doReturn(Set.of("basic-auth")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_ID);
+    doReturn(Set.of("basic-auth")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_NAME);
     doReturn(true).when(authenticationTrustResolver).isAuthenticated(authentication);
 
     assertTrue(check(ORD_DOCUMENT_PATH, () -> authentication).isGranted());
@@ -104,7 +104,7 @@ class OrdAuthorizationManagerImplTest {
 
   @Test
   void givenBasicAuthStrategyAndNotAuthenticated_whenCheckIsCalled_thenDenied() {
-    doReturn(Set.of("basic-auth")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_ID);
+    doReturn(Set.of("basic-auth")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_NAME);
     doReturn(false).when(authenticationTrustResolver).isAuthenticated(authentication);
 
     assertFalse(check(ORD_DOCUMENT_PATH, () -> authentication).isGranted());
@@ -114,14 +114,14 @@ class OrdAuthorizationManagerImplTest {
 
   @Test
   void givenNoAccessStrategies_whenCheckIsCalled_thenDenied() {
-    doReturn(Set.of()).when(documentSchemaRegistry).lookupAccessStrategies(DOC_ID);
+    doReturn(Set.of()).when(documentSchemaRegistry).lookupAccessStrategies(DOC_NAME);
 
     assertFalse(check(ORD_DOCUMENT_PATH).isGranted());
   }
 
   @Test
   void givenUnknownAccessStrategy_whenCheckIsCalled_thenDenied() {
-    doReturn(Set.of("custom:strategy:v1")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_ID);
+    doReturn(Set.of("custom:strategy:v1")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_NAME);
 
     assertFalse(check(ORD_DOCUMENT_PATH).isGranted());
   }
@@ -144,7 +144,7 @@ class OrdAuthorizationManagerImplTest {
   void givenOpenStrategyResolvedViaPathInfo_whenCheckIsCalled_thenGranted() {
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.setPathInfo(ORD_DOCUMENT_PATH);
-    doReturn(Set.of("open")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_ID);
+    doReturn(Set.of("open")).when(documentSchemaRegistry).lookupAccessStrategies(DOC_NAME);
 
     assertTrue(check(request, () -> null).isGranted());
   }

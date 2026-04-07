@@ -50,8 +50,7 @@ public class CloudFoundryTLSAuthenticator implements TLSAuthenticator {
     String[] tokens = tokenize(decode(rootCertificateAuthorityDN));
 
     return isNotEmpty(tokens)
-        && trustedRootCertificateAuthorityDNs.stream().anyMatch(trusted -> {
-          return Objects.equals("*", trusted) || tokensMatch(tokens, tokenize(trusted));
-        });
+        && trustedRootCertificateAuthorityDNs.stream()
+            .anyMatch(trusted -> tokensMatch(tokens, tokenize(trusted)));
   }
 }
