@@ -28,7 +28,7 @@ public class SystemTypeAnnotationProcessor implements AnnotationProcessor<Ord.Sy
 
     ordAnnotationsScanner.scan(Ord.SystemType.class).forEach(st -> {
       DocumentSchema document =
-          documents.get(st.annotation().partOfDocument().id()).document();
+          documents.get(st.annotation().partOfDocument().name()).document();
 
       if (nonNull(document.getDescribedSystemType())) {
         throw new IllegalStateException("SystemType already specified");

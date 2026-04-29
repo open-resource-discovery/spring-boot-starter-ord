@@ -26,7 +26,7 @@ import org.openresourcediscovery.model.Vendor;
 @ExtendWith(MockitoExtension.class)
 class VendorAnnotationProcessorTest {
 
-  private static final String DOCUMENT_ID = "doc-1";
+  private static final String DOCUMENT_NAME = "doc-1";
 
   @Mock
   private OrdAnnotationsScanner ordAnnotationsScanner;
@@ -58,12 +58,12 @@ class VendorAnnotationProcessorTest {
     Vendor generatedVendor = new Vendor().withOrdId("vendor-1");
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Vendor, Vendor>create(Ord.Vendor.class))
         .thenReturn(entityGenerator);
     when(vendorAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.Vendor.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), vendorAnnotation)));
     when(entityGenerator.generate(EntityGenerator.Context.of(vendorAnnotation, getClass(), document)))
@@ -82,12 +82,12 @@ class VendorAnnotationProcessorTest {
     document.setVendors(List.of(existingVendor));
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Vendor, Vendor>create(Ord.Vendor.class))
         .thenReturn(entityGenerator);
     when(vendorAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.Vendor.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), vendorAnnotation)));
     when(entityGenerator.generate(EntityGenerator.Context.of(vendorAnnotation, getClass(), document)))
@@ -103,7 +103,7 @@ class VendorAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Vendor, Vendor>create(Ord.Vendor.class))
         .thenReturn(entityGenerator);
@@ -120,7 +120,7 @@ class VendorAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Vendor, Vendor>create(Ord.Vendor.class))
         .thenReturn(entityGenerator);
@@ -136,7 +136,7 @@ class VendorAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Vendor, Vendor>create(Ord.Vendor.class))
         .thenReturn(entityGenerator);
@@ -156,14 +156,14 @@ class VendorAnnotationProcessorTest {
     Vendor secondVendor = new Vendor().withOrdId("vendor-2");
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Vendor, Vendor>create(Ord.Vendor.class))
         .thenReturn(entityGenerator);
     when(vendorAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(secondAnnotation.partOfDocument()).thenReturn(secondDocRef);
-    when(secondDocRef.id()).thenReturn(DOCUMENT_ID);
+    when(secondDocRef.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.Vendor.class))
         .thenReturn(List.of(
             new ScanResult<>(getClass(), vendorAnnotation),

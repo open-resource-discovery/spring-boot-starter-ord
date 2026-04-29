@@ -73,14 +73,14 @@
         <dependency>
             <groupId>org.open-resource-discovery</groupId>
             <artifactId>ord-annotations</artifactId>
-            <version>0.8.0</version>
+            <version>0.9.0</version>
         </dependency>
 
         <!-- org.open-resource-discovery:ord-models -->
         <dependency>
             <groupId>org.open-resource-discovery</groupId>
             <artifactId>ord-models</artifactId>
-            <version>0.8.0</version>
+            <version>0.9.0</version>
         </dependency>
 
         <!-- com.fasterxml.jackson.core:jackson-databind -->

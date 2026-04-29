@@ -29,7 +29,7 @@ public class ProductAnnotationProcessor implements AnnotationProcessor<Ord.Produ
 
     ordAnnotationsScanner.scan(Ord.Product.class).forEach(p -> {
       DocumentSchema document =
-          documents.get(p.annotation().partOfDocument().id()).document();
+          documents.get(p.annotation().partOfDocument().name()).document();
 
       document.setProducts(ListUtils.union(
           emptyIfNull(document.getProducts()),

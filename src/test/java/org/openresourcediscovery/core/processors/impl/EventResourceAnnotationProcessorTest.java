@@ -26,7 +26,7 @@ import org.openresourcediscovery.model.EventResource;
 @ExtendWith(MockitoExtension.class)
 class EventResourceAnnotationProcessorTest {
 
-  private static final String DOCUMENT_ID = "doc-1";
+  private static final String DOCUMENT_NAME = "doc-1";
 
   @Mock
   private OrdAnnotationsScanner ordAnnotationsScanner;
@@ -58,12 +58,12 @@ class EventResourceAnnotationProcessorTest {
     EventResource generatedEventResource = new EventResource().withOrdId("event-resource-1");
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.EventResource, EventResource>create(Ord.EventResource.class))
         .thenReturn(entityGenerator);
     when(eventResourceAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.EventResource.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), eventResourceAnnotation)));
     when(entityGenerator.generate(EntityGenerator.Context.of(eventResourceAnnotation, getClass(), document)))
@@ -82,12 +82,12 @@ class EventResourceAnnotationProcessorTest {
     document.setEventResources(List.of(existingEventResource));
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.EventResource, EventResource>create(Ord.EventResource.class))
         .thenReturn(entityGenerator);
     when(eventResourceAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.EventResource.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), eventResourceAnnotation)));
     when(entityGenerator.generate(EntityGenerator.Context.of(eventResourceAnnotation, getClass(), document)))
@@ -103,7 +103,7 @@ class EventResourceAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.EventResource, EventResource>create(Ord.EventResource.class))
         .thenReturn(entityGenerator);
@@ -120,7 +120,7 @@ class EventResourceAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.EventResource, EventResource>create(Ord.EventResource.class))
         .thenReturn(entityGenerator);
@@ -136,7 +136,7 @@ class EventResourceAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.EventResource, EventResource>create(Ord.EventResource.class))
         .thenReturn(entityGenerator);
@@ -156,14 +156,14 @@ class EventResourceAnnotationProcessorTest {
     EventResource secondEventResource = new EventResource().withOrdId("event-resource-2");
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.EventResource, EventResource>create(Ord.EventResource.class))
         .thenReturn(entityGenerator);
     when(eventResourceAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(secondAnnotation.partOfDocument()).thenReturn(secondDocRef);
-    when(secondDocRef.id()).thenReturn(DOCUMENT_ID);
+    when(secondDocRef.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.EventResource.class))
         .thenReturn(List.of(
             new ScanResult<>(getClass(), eventResourceAnnotation),

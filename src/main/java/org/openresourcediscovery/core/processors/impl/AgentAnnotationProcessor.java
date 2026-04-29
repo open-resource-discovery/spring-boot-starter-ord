@@ -29,7 +29,7 @@ public class AgentAnnotationProcessor implements AnnotationProcessor<Ord.Agent, 
 
     ordAnnotationsScanner.scan(Ord.Agent.class).forEach(a -> {
       DocumentSchema document =
-          documents.get(a.annotation().partOfDocument().id()).document();
+          documents.get(a.annotation().partOfDocument().name()).document();
 
       document.setAgents(ListUtils.union(
           emptyIfNull(document.getAgents()),

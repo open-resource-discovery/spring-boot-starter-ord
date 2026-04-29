@@ -29,7 +29,7 @@ public class PackageAnnotationProcessor implements AnnotationProcessor<Ord.Packa
 
     ordAnnotationsScanner.scan(Ord.Package.class).forEach(p -> {
       DocumentSchema document =
-          documents.get(p.annotation().partOfDocument().id()).document();
+          documents.get(p.annotation().partOfDocument().name()).document();
 
       document.setPackages(ListUtils.union(
           emptyIfNull(document.getPackages()),

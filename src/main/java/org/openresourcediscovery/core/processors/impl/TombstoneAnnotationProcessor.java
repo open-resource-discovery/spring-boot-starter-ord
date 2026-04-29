@@ -29,7 +29,7 @@ public class TombstoneAnnotationProcessor implements AnnotationProcessor<Ord.Tom
 
     ordAnnotationsScanner.scan(Ord.Tombstone.class).forEach(t -> {
       DocumentSchema document =
-          documents.get(t.annotation().partOfDocument().id()).document();
+          documents.get(t.annotation().partOfDocument().name()).document();
 
       document.setTombstones(ListUtils.union(
           emptyIfNull(document.getTombstones()),

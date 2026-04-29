@@ -30,7 +30,7 @@ public class CapabilityAnnotationProcessor implements AnnotationProcessor<Ord.Ca
 
     ordAnnotationsScanner.scan(Ord.Capability.class).forEach(c -> {
       DocumentSchema document =
-          documents.get(c.annotation().partOfDocument().id()).document();
+          documents.get(c.annotation().partOfDocument().name()).document();
 
       document.setCapabilities(ListUtils.union(
           emptyIfNull(document.getCapabilities()),

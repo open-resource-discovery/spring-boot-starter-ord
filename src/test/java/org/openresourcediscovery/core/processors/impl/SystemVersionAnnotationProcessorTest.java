@@ -27,7 +27,7 @@ import org.openresourcediscovery.model.SystemVersion;
 @ExtendWith(MockitoExtension.class)
 class SystemVersionAnnotationProcessorTest {
 
-  private static final String DOCUMENT_ID = "doc-1";
+  private static final String DOCUMENT_NAME = "doc-1";
 
   @Mock
   private OrdAnnotationsScanner ordAnnotationsScanner;
@@ -59,12 +59,12 @@ class SystemVersionAnnotationProcessorTest {
     SystemVersion generatedSystemVersion = new SystemVersion();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.SystemVersion, SystemVersion>create(Ord.SystemVersion.class))
         .thenReturn(entityGenerator);
     when(systemVersionAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.SystemVersion.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), systemVersionAnnotation)));
     when(entityGenerator.generate(EntityGenerator.Context.of(systemVersionAnnotation, getClass(), document)))
@@ -80,7 +80,7 @@ class SystemVersionAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.SystemVersion, SystemVersion>create(Ord.SystemVersion.class))
         .thenReturn(entityGenerator);
@@ -97,7 +97,7 @@ class SystemVersionAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.SystemVersion, SystemVersion>create(Ord.SystemVersion.class))
         .thenReturn(entityGenerator);
@@ -113,7 +113,7 @@ class SystemVersionAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.SystemVersion, SystemVersion>create(Ord.SystemVersion.class))
         .thenReturn(entityGenerator);
@@ -133,12 +133,12 @@ class SystemVersionAnnotationProcessorTest {
     Ord.SystemVersion secondAnnotation = mock(Ord.SystemVersion.class);
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.SystemVersion, SystemVersion>create(Ord.SystemVersion.class))
         .thenReturn(entityGenerator);
     when(systemVersionAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.SystemVersion.class))
         .thenReturn(List.of(
             new ScanResult<>(getClass(), systemVersionAnnotation),

@@ -30,7 +30,7 @@ public class EventResourceAnnotationProcessor implements AnnotationProcessor<Ord
 
     ordAnnotationsScanner.scan(Ord.EventResource.class).forEach(er -> {
       DocumentSchema document =
-          documents.get(er.annotation().partOfDocument().id()).document();
+          documents.get(er.annotation().partOfDocument().name()).document();
 
       document.setEventResources(ListUtils.union(
           emptyIfNull(document.getEventResources()),

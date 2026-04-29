@@ -30,7 +30,7 @@ public class ApiResourceAnnotationProcessor implements AnnotationProcessor<Ord.A
 
     ordAnnotationsScanner.scan(Ord.ApiResource.class).forEach(ar -> {
       DocumentSchema document =
-          documents.get(ar.annotation().partOfDocument().id()).document();
+          documents.get(ar.annotation().partOfDocument().name()).document();
 
       document.setApiResources(ListUtils.union(
           emptyIfNull(document.getApiResources()),

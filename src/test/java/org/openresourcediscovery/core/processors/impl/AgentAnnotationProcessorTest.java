@@ -27,7 +27,7 @@ import org.openresourcediscovery.model.DocumentSchema;
 @ExtendWith(MockitoExtension.class)
 class AgentAnnotationProcessorTest {
 
-  private static final String DOCUMENT_ID = "doc-1";
+  private static final String DOCUMENT_NAME = "doc-1";
 
   @Mock
   private OrdAnnotationsScanner ordAnnotationsScanner;
@@ -58,7 +58,7 @@ class AgentAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
     Agent generatedAgent = new Agent().withOrdId("agent-1");
 
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(agentAnnotation.partOfDocument()).thenReturn(documentReference);
     when(entityGeneratorFactory.<Ord.Agent, Agent>create(Ord.Agent.class)).thenReturn(entityGenerator);
     when(entityGenerator.generate(Context.of(agentAnnotation, getClass(), document)))
@@ -66,7 +66,7 @@ class AgentAnnotationProcessorTest {
     when(ordAnnotationsScanner.scan(Ord.Agent.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), agentAnnotation)));
 
-    classUnderTest.process(Map.of(DOCUMENT_ID, new DetectionResult(document, Set.of("open"))));
+    classUnderTest.process(Map.of(DOCUMENT_NAME, new DetectionResult(document, Set.of("open"))));
 
     assertThat(document.getAgents()).containsExactly(generatedAgent);
   }
@@ -79,11 +79,11 @@ class AgentAnnotationProcessorTest {
     document.setAgents(List.of(existingAgent));
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Agent, Agent>create(Ord.Agent.class)).thenReturn(entityGenerator);
     when(agentAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.Agent.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), agentAnnotation)));
     when(entityGenerator.generate(Context.of(agentAnnotation, getClass(), document)))
@@ -99,7 +99,7 @@ class AgentAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Agent, Agent>create(Ord.Agent.class)).thenReturn(entityGenerator);
     when(ordAnnotationsScanner.scan(Ord.Agent.class)).thenReturn(List.of());
@@ -115,7 +115,7 @@ class AgentAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Agent, Agent>create(Ord.Agent.class)).thenReturn(entityGenerator);
     when(ordAnnotationsScanner.scan(Ord.Agent.class)).thenReturn(List.of());
@@ -130,7 +130,7 @@ class AgentAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Agent, Agent>create(Ord.Agent.class)).thenReturn(entityGenerator);
     when(ordAnnotationsScanner.scan(Ord.Agent.class)).thenReturn(List.of());
@@ -149,13 +149,13 @@ class AgentAnnotationProcessorTest {
     Agent secondAgent = new Agent().withOrdId("agent-2");
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Agent, Agent>create(Ord.Agent.class)).thenReturn(entityGenerator);
     when(agentAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(secondAnnotation.partOfDocument()).thenReturn(secondDocRef);
-    when(secondDocRef.id()).thenReturn(DOCUMENT_ID);
+    when(secondDocRef.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.Agent.class))
         .thenReturn(List.of(
             new ScanResult<>(getClass(), agentAnnotation),

@@ -26,7 +26,7 @@ import org.openresourcediscovery.model.Tombstone;
 @ExtendWith(MockitoExtension.class)
 class TombstoneAnnotationProcessorTest {
 
-  private static final String DOCUMENT_ID = "doc-1";
+  private static final String DOCUMENT_NAME = "doc-1";
 
   @Mock
   private OrdAnnotationsScanner ordAnnotationsScanner;
@@ -58,12 +58,12 @@ class TombstoneAnnotationProcessorTest {
     Tombstone generatedTombstone = new Tombstone().withOrdId("tombstone-1");
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Tombstone, Tombstone>create(Ord.Tombstone.class))
         .thenReturn(entityGenerator);
     when(tombstoneAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.Tombstone.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), tombstoneAnnotation)));
     when(entityGenerator.generate(EntityGenerator.Context.of(tombstoneAnnotation, getClass(), document)))
@@ -82,12 +82,12 @@ class TombstoneAnnotationProcessorTest {
     document.setTombstones(List.of(existingTombstone));
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Tombstone, Tombstone>create(Ord.Tombstone.class))
         .thenReturn(entityGenerator);
     when(tombstoneAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.Tombstone.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), tombstoneAnnotation)));
     when(entityGenerator.generate(EntityGenerator.Context.of(tombstoneAnnotation, getClass(), document)))
@@ -103,7 +103,7 @@ class TombstoneAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Tombstone, Tombstone>create(Ord.Tombstone.class))
         .thenReturn(entityGenerator);
@@ -120,7 +120,7 @@ class TombstoneAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Tombstone, Tombstone>create(Ord.Tombstone.class))
         .thenReturn(entityGenerator);
@@ -136,7 +136,7 @@ class TombstoneAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Tombstone, Tombstone>create(Ord.Tombstone.class))
         .thenReturn(entityGenerator);
@@ -156,14 +156,14 @@ class TombstoneAnnotationProcessorTest {
     Tombstone secondTombstone = new Tombstone().withOrdId("tombstone-2");
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.Tombstone, Tombstone>create(Ord.Tombstone.class))
         .thenReturn(entityGenerator);
     when(tombstoneAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(secondAnnotation.partOfDocument()).thenReturn(secondDocRef);
-    when(secondDocRef.id()).thenReturn(DOCUMENT_ID);
+    when(secondDocRef.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.Tombstone.class))
         .thenReturn(List.of(
             new ScanResult<>(getClass(), tombstoneAnnotation),

@@ -26,7 +26,7 @@ import org.openresourcediscovery.model.IntegrationDependency;
 @ExtendWith(MockitoExtension.class)
 class IntegrationDependencyAnnotationProcessorTest {
 
-  private static final String DOCUMENT_ID = "doc-1";
+  private static final String DOCUMENT_NAME = "doc-1";
 
   @Mock
   private OrdAnnotationsScanner ordAnnotationsScanner;
@@ -58,13 +58,13 @@ class IntegrationDependencyAnnotationProcessorTest {
     IntegrationDependency generatedDependency = new IntegrationDependency().withOrdId("integration-dep-1");
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.IntegrationDependency, IntegrationDependency>create(
             Ord.IntegrationDependency.class))
         .thenReturn(entityGenerator);
     when(integrationDependencyAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.IntegrationDependency.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), integrationDependencyAnnotation)));
     when(entityGenerator.generate(
@@ -84,13 +84,13 @@ class IntegrationDependencyAnnotationProcessorTest {
     document.setIntegrationDependencies(List.of(existingDependency));
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.IntegrationDependency, IntegrationDependency>create(
             Ord.IntegrationDependency.class))
         .thenReturn(entityGenerator);
     when(integrationDependencyAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.IntegrationDependency.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), integrationDependencyAnnotation)));
     when(entityGenerator.generate(
@@ -107,7 +107,7 @@ class IntegrationDependencyAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.IntegrationDependency, IntegrationDependency>create(
             Ord.IntegrationDependency.class))
@@ -125,7 +125,7 @@ class IntegrationDependencyAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.IntegrationDependency, IntegrationDependency>create(
             Ord.IntegrationDependency.class))
@@ -142,7 +142,7 @@ class IntegrationDependencyAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.IntegrationDependency, IntegrationDependency>create(
             Ord.IntegrationDependency.class))
@@ -163,15 +163,15 @@ class IntegrationDependencyAnnotationProcessorTest {
     IntegrationDependency secondDependency = new IntegrationDependency().withOrdId("integration-dep-2");
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.IntegrationDependency, IntegrationDependency>create(
             Ord.IntegrationDependency.class))
         .thenReturn(entityGenerator);
     when(integrationDependencyAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(secondAnnotation.partOfDocument()).thenReturn(secondDocRef);
-    when(secondDocRef.id()).thenReturn(DOCUMENT_ID);
+    when(secondDocRef.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.IntegrationDependency.class))
         .thenReturn(List.of(
             new ScanResult<>(getClass(), integrationDependencyAnnotation),

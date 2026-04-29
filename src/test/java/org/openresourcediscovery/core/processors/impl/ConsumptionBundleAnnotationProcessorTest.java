@@ -26,7 +26,7 @@ import org.openresourcediscovery.model.DocumentSchema;
 @ExtendWith(MockitoExtension.class)
 class ConsumptionBundleAnnotationProcessorTest {
 
-  private static final String DOCUMENT_ID = "doc-1";
+  private static final String DOCUMENT_NAME = "doc-1";
 
   @Mock
   private OrdAnnotationsScanner ordAnnotationsScanner;
@@ -58,12 +58,12 @@ class ConsumptionBundleAnnotationProcessorTest {
     ConsumptionBundle generatedConsumptionBundle = new ConsumptionBundle().withOrdId("bundle-1");
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.ConsumptionBundle, ConsumptionBundle>create(Ord.ConsumptionBundle.class))
         .thenReturn(entityGenerator);
     when(consumptionBundleAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.ConsumptionBundle.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), consumptionBundleAnnotation)));
     when(entityGenerator.generate(EntityGenerator.Context.of(consumptionBundleAnnotation, getClass(), document)))
@@ -82,12 +82,12 @@ class ConsumptionBundleAnnotationProcessorTest {
     document.setConsumptionBundles(List.of(existingConsumptionBundle));
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.ConsumptionBundle, ConsumptionBundle>create(Ord.ConsumptionBundle.class))
         .thenReturn(entityGenerator);
     when(consumptionBundleAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.ConsumptionBundle.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), consumptionBundleAnnotation)));
     when(entityGenerator.generate(EntityGenerator.Context.of(consumptionBundleAnnotation, getClass(), document)))
@@ -103,7 +103,7 @@ class ConsumptionBundleAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.ConsumptionBundle, ConsumptionBundle>create(Ord.ConsumptionBundle.class))
         .thenReturn(entityGenerator);
@@ -120,7 +120,7 @@ class ConsumptionBundleAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.ConsumptionBundle, ConsumptionBundle>create(Ord.ConsumptionBundle.class))
         .thenReturn(entityGenerator);
@@ -136,7 +136,7 @@ class ConsumptionBundleAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.ConsumptionBundle, ConsumptionBundle>create(Ord.ConsumptionBundle.class))
         .thenReturn(entityGenerator);
@@ -156,14 +156,14 @@ class ConsumptionBundleAnnotationProcessorTest {
     ConsumptionBundle secondConsumptionBundle = new ConsumptionBundle().withOrdId("bundle-2");
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.ConsumptionBundle, ConsumptionBundle>create(Ord.ConsumptionBundle.class))
         .thenReturn(entityGenerator);
     when(consumptionBundleAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(secondAnnotation.partOfDocument()).thenReturn(secondDocRef);
-    when(secondDocRef.id()).thenReturn(DOCUMENT_ID);
+    when(secondDocRef.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.ConsumptionBundle.class))
         .thenReturn(List.of(
             new ScanResult<>(getClass(), consumptionBundleAnnotation),

@@ -30,7 +30,7 @@ public class EntityTypeAnnotationProcessor implements AnnotationProcessor<Ord.En
 
     ordAnnotationsScanner.scan(Ord.EntityType.class).forEach(et -> {
       DocumentSchema document =
-          documents.get(et.annotation().partOfDocument().id()).document();
+          documents.get(et.annotation().partOfDocument().name()).document();
 
       document.setEntityTypes(ListUtils.union(
           emptyIfNull(document.getEntityTypes()),

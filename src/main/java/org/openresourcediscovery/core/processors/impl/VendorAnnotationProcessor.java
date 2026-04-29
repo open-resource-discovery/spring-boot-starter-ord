@@ -29,7 +29,7 @@ public class VendorAnnotationProcessor implements AnnotationProcessor<Ord.Vendor
 
     ordAnnotationsScanner.scan(Ord.Vendor.class).forEach(v -> {
       DocumentSchema document =
-          documents.get(v.annotation().partOfDocument().id()).document();
+          documents.get(v.annotation().partOfDocument().name()).document();
 
       document.setVendors(ListUtils.union(
           emptyIfNull(document.getVendors()),
