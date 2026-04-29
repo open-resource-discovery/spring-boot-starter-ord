@@ -28,7 +28,7 @@ public class SystemInstanceAnnotationProcessor implements AnnotationProcessor<Or
 
     ordAnnotationsScanner.scan(Ord.SystemInstance.class).forEach(si -> {
       DocumentSchema document =
-          documents.get(si.annotation().partOfDocument().id()).document();
+          documents.get(si.annotation().partOfDocument().name()).document();
 
       if (nonNull(document.getDescribedSystemInstance())) {
         throw new IllegalStateException("SystemInstance already specified");

@@ -31,7 +31,7 @@ public class ConsumptionBundleAnnotationProcessor
 
     ordAnnotationsScanner.scan(Ord.ConsumptionBundle.class).forEach(cb -> {
       DocumentSchema document =
-          documents.get(cb.annotation().partOfDocument().id()).document();
+          documents.get(cb.annotation().partOfDocument().name()).document();
 
       document.setConsumptionBundles(ListUtils.union(
           emptyIfNull(document.getConsumptionBundles()),

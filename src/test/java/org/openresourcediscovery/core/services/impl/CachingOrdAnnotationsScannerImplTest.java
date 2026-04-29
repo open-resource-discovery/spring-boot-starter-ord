@@ -76,7 +76,7 @@ class CachingOrdAnnotationsScannerImplTest {
         "doc-single",
         scanner(FIXTURES_PACKAGE).scan(Ord.Document.class).stream()
             .filter(p -> p.annotated().equals(SingleDocumentAnnotatedClass.class))
-            .map(p -> p.annotation().id())
+            .map(p -> p.annotation().name())
             .findFirst()
             .orElseThrow());
   }
@@ -96,7 +96,7 @@ class CachingOrdAnnotationsScannerImplTest {
         Set.of("doc-1", "doc-2"),
         scanner(FIXTURES_PACKAGE).scan(Ord.Document.class).stream()
             .filter(p -> p.annotated().equals(MultiDocumentAnnotatedClass.class))
-            .map(found -> found.annotation().id())
+            .map(found -> found.annotation().name())
             .collect(Collectors.toSet()));
   }
 

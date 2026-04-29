@@ -73,7 +73,7 @@ public class JavaAnnotationsDocumentSchemaDetector implements DocumentSchemaDete
     ordAnnotationsScanner
         .scan(Ord.Document.class)
         .forEach(d -> documents.put(
-            d.annotation().id(),
+            d.annotation().name(),
             new DetectionResult(
                 generator.generate(Context.of(d.annotation(), d.annotated(), null)),
                 Stream.of(d.annotation().accessStrategies())

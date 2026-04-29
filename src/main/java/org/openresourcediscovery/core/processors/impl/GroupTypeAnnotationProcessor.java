@@ -29,7 +29,7 @@ public class GroupTypeAnnotationProcessor implements AnnotationProcessor<Ord.Gro
 
     ordAnnotationsScanner.scan(Ord.GroupType.class).forEach(gt -> {
       DocumentSchema document =
-          documents.get(gt.annotation().partOfDocument().id()).document();
+          documents.get(gt.annotation().partOfDocument().name()).document();
 
       document.setGroupTypes(ListUtils.union(
           emptyIfNull(document.getGroupTypes()),

@@ -26,7 +26,7 @@ import org.openresourcediscovery.model.GroupType;
 @ExtendWith(MockitoExtension.class)
 class GroupTypeAnnotationProcessorTest {
 
-  private static final String DOCUMENT_ID = "doc-1";
+  private static final String DOCUMENT_NAME = "doc-1";
 
   @Mock
   private OrdAnnotationsScanner ordAnnotationsScanner;
@@ -58,12 +58,12 @@ class GroupTypeAnnotationProcessorTest {
     GroupType generatedGroupType = new GroupType().withGroupTypeId("group-type-1");
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.GroupType, GroupType>create(Ord.GroupType.class))
         .thenReturn(entityGenerator);
     when(groupTypeAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.GroupType.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), groupTypeAnnotation)));
     when(entityGenerator.generate(EntityGenerator.Context.of(groupTypeAnnotation, getClass(), document)))
@@ -82,12 +82,12 @@ class GroupTypeAnnotationProcessorTest {
     document.setGroupTypes(List.of(existingGroupType));
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.GroupType, GroupType>create(Ord.GroupType.class))
         .thenReturn(entityGenerator);
     when(groupTypeAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.GroupType.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), groupTypeAnnotation)));
     when(entityGenerator.generate(EntityGenerator.Context.of(groupTypeAnnotation, getClass(), document)))
@@ -103,7 +103,7 @@ class GroupTypeAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.GroupType, GroupType>create(Ord.GroupType.class))
         .thenReturn(entityGenerator);
@@ -120,7 +120,7 @@ class GroupTypeAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.GroupType, GroupType>create(Ord.GroupType.class))
         .thenReturn(entityGenerator);
@@ -136,7 +136,7 @@ class GroupTypeAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.GroupType, GroupType>create(Ord.GroupType.class))
         .thenReturn(entityGenerator);
@@ -156,14 +156,14 @@ class GroupTypeAnnotationProcessorTest {
     GroupType secondGroupType = new GroupType().withGroupTypeId("group-type-2");
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.GroupType, GroupType>create(Ord.GroupType.class))
         .thenReturn(entityGenerator);
     when(groupTypeAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(secondAnnotation.partOfDocument()).thenReturn(secondDocRef);
-    when(secondDocRef.id()).thenReturn(DOCUMENT_ID);
+    when(secondDocRef.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.GroupType.class))
         .thenReturn(List.of(
             new ScanResult<>(getClass(), groupTypeAnnotation),

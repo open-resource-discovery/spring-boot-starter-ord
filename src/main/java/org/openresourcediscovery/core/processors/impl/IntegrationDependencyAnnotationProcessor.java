@@ -31,7 +31,7 @@ public class IntegrationDependencyAnnotationProcessor
 
     ordAnnotationsScanner.scan(Ord.IntegrationDependency.class).forEach(id -> {
       DocumentSchema document =
-          documents.get(id.annotation().partOfDocument().id()).document();
+          documents.get(id.annotation().partOfDocument().name()).document();
 
       document.setIntegrationDependencies(ListUtils.union(
           emptyIfNull(document.getIntegrationDependencies()),

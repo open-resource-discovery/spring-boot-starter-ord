@@ -28,7 +28,7 @@ public class SystemVersionAnnotationProcessor implements AnnotationProcessor<Ord
 
     ordAnnotationsScanner.scan(Ord.SystemVersion.class).forEach(sv -> {
       DocumentSchema document =
-          documents.get(sv.annotation().partOfDocument().id()).document();
+          documents.get(sv.annotation().partOfDocument().name()).document();
 
       if (nonNull(document.getDescribedSystemVersion())) {
         throw new IllegalStateException("SystemVersion already specified");

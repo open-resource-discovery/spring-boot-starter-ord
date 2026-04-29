@@ -30,7 +30,7 @@ public class DataProductAnnotationProcessor implements AnnotationProcessor<Ord.D
 
     ordAnnotationsScanner.scan(Ord.DataProduct.class).forEach(dp -> {
       DocumentSchema document =
-          documents.get(dp.annotation().partOfDocument().id()).document();
+          documents.get(dp.annotation().partOfDocument().name()).document();
 
       document.setDataProducts(ListUtils.union(
           emptyIfNull(document.getDataProducts()),

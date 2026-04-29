@@ -27,7 +27,7 @@ import org.openresourcediscovery.model.SystemType;
 @ExtendWith(MockitoExtension.class)
 class SystemTypeAnnotationProcessorTest {
 
-  private static final String DOCUMENT_ID = "doc-1";
+  private static final String DOCUMENT_NAME = "doc-1";
 
   @Mock
   private OrdAnnotationsScanner ordAnnotationsScanner;
@@ -59,12 +59,12 @@ class SystemTypeAnnotationProcessorTest {
     SystemType generatedSystemType = new SystemType();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.SystemType, SystemType>create(Ord.SystemType.class))
         .thenReturn(entityGenerator);
     when(systemTypeAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.SystemType.class))
         .thenReturn(List.of(new ScanResult<>(getClass(), systemTypeAnnotation)));
     when(entityGenerator.generate(EntityGenerator.Context.of(systemTypeAnnotation, getClass(), document)))
@@ -80,7 +80,7 @@ class SystemTypeAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.SystemType, SystemType>create(Ord.SystemType.class))
         .thenReturn(entityGenerator);
@@ -97,7 +97,7 @@ class SystemTypeAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.SystemType, SystemType>create(Ord.SystemType.class))
         .thenReturn(entityGenerator);
@@ -113,7 +113,7 @@ class SystemTypeAnnotationProcessorTest {
     DocumentSchema document = new DocumentSchema();
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.SystemType, SystemType>create(Ord.SystemType.class))
         .thenReturn(entityGenerator);
@@ -133,12 +133,12 @@ class SystemTypeAnnotationProcessorTest {
     Ord.SystemType secondAnnotation = mock(Ord.SystemType.class);
 
     Map<String, DetectionResult> documents = new HashMap<>();
-    documents.put(DOCUMENT_ID, new DetectionResult(document, Set.of("open")));
+    documents.put(DOCUMENT_NAME, new DetectionResult(document, Set.of("open")));
 
     when(entityGeneratorFactory.<Ord.SystemType, SystemType>create(Ord.SystemType.class))
         .thenReturn(entityGenerator);
     when(systemTypeAnnotation.partOfDocument()).thenReturn(documentReference);
-    when(documentReference.id()).thenReturn(DOCUMENT_ID);
+    when(documentReference.name()).thenReturn(DOCUMENT_NAME);
     when(ordAnnotationsScanner.scan(Ord.SystemType.class))
         .thenReturn(List.of(
             new ScanResult<>(getClass(), systemTypeAnnotation),

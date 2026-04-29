@@ -92,7 +92,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
     EntityGenerator mockGenerator = mock(EntityGenerator.class);
 
     doReturn(schema).when(mockGenerator).generate(any());
-    doReturn("my-doc-id").when(docAnnotation).id();
+    doReturn("my-doc-name").when(docAnnotation).name();
     doReturn(new Ord.AccessStrategy[0]).when(docAnnotation).accessStrategies();
     doReturn(mockGenerator).when(entityGeneratorFactory).create(Ord.Document.class);
     doReturn(List.of(new ScanResult<>(String.class, docAnnotation)))
@@ -103,9 +103,9 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
         OrdProperties.builder().packages(List.of("com.example")).build());
 
     assertEquals(1, result.size());
-    assertTrue(result.containsKey("my-doc-id"));
-    assertEquals(schema, result.get("my-doc-id").document());
-    assertTrue(result.get("my-doc-id").strategies().isEmpty());
+    assertTrue(result.containsKey("my-doc-name"));
+    assertEquals(schema, result.get("my-doc-name").document());
+    assertTrue(result.get("my-doc-name").strategies().isEmpty());
   }
 
   @Test
@@ -117,7 +117,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
 
     doReturn("open").when(strategy).type();
     doReturn(new DocumentSchema()).when(mockGenerator).generate(any());
-    doReturn("doc-with-strategies").when(docAnnotation).id();
+    doReturn("doc-with-strategies").when(docAnnotation).name();
     doReturn(mockGenerator).when(entityGeneratorFactory).create(Ord.Document.class);
     doReturn(new Ord.AccessStrategy[] {strategy}).when(docAnnotation).accessStrategies();
     doReturn(List.of(new ScanResult(String.class, docAnnotation)))
@@ -170,7 +170,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
     Ord.Document docAnnotation = mock(Ord.Document.class);
     EntityGenerator mockGenerator = mock(EntityGenerator.class);
 
-    doReturn("doc-id").when(docAnnotation).id();
+    doReturn("doc-name").when(docAnnotation).name();
     doReturn(new DocumentSchema()).when(mockGenerator).generate(any());
     doReturn(new Ord.AccessStrategy[0]).when(docAnnotation).accessStrategies();
     doReturn(mockGenerator).when(entityGeneratorFactory).create(Ord.Document.class);
@@ -189,7 +189,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
             .withDescription("Auto-generated description for Default Package")
             .withOrdId("%s:package:default:v1".formatted(ordProperties.getNamespace()))
             .withShortDescription("Auto-generated short description for Default Package")),
-        result.get("doc-id").document().getPackages());
+        result.get("doc-name").document().getPackages());
   }
 
   @Test
@@ -201,7 +201,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
     DocumentSchema schema = new DocumentSchema().withPackages(List.of(existingPackage));
 
     doReturn(schema).when(mockGenerator).generate(any());
-    doReturn("doc-id").when(docAnnotation).id();
+    doReturn("doc-name").when(docAnnotation).name();
     doReturn(new Ord.AccessStrategy[0]).when(docAnnotation).accessStrategies();
     doReturn(mockGenerator).when(entityGeneratorFactory).create(Ord.Document.class);
     doReturn(List.of(new ScanResult<>(String.class, docAnnotation)))
@@ -211,7 +211,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
     Map<String, DetectionResult> result =
         classUnderTest.detect(OrdProperties.builder().build());
 
-    assertEquals(List.of(existingPackage), result.get("doc-id").document().getPackages());
+    assertEquals(List.of(existingPackage), result.get("doc-name").document().getPackages());
   }
 
   private <A extends java.lang.annotation.Annotation> void stubProcessorFor(Class<A> annotationClass) {

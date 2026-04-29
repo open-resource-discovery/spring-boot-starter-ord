@@ -70,13 +70,14 @@ class DocumentSchemaGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(12, Ord.Document.class.getDeclaredMethods().length);
+    assertEquals(15, Ord.Document.class.getDeclaredMethods().length);
   }
 
   @Test
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
     assertEquals(
         new DocumentSchema()
+            .withPerspective(null) // TODO - to be fixed
             .with$schema(DOCUMENT_SCHEMA_URL)
             .withOpenResourceDiscovery(OpenResourceDiscovery._1_14),
         classUnderTest.generate(
@@ -103,6 +104,7 @@ class DocumentSchemaGeneratorTest {
 
     assertEquals(
         new DocumentSchema()
+            .withPerspective(null) // TODO - to be fixed
             .with$schema(DOCUMENT_SCHEMA_URL)
             .withOpenResourceDiscovery(OpenResourceDiscovery._1_14)
             .withDescribedSystemType(new SystemType().withSystemNamespace(NAMESPACE))
