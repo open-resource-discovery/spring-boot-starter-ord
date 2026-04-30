@@ -3,6 +3,7 @@
     "documents": [
       {
         "url": "/ord/v1/documents/1",
+        "perspective": "system-instance",
         "accessStrategies": [{ "type": "open" }]
       }
     ]
