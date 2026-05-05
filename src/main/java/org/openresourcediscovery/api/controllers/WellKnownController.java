@@ -2,6 +2,7 @@ package org.openresourcediscovery.api.controllers;
 
 import static java.util.Map.entry;
 import static java.util.Map.ofEntries;
+import static org.apache.commons.lang3.StringUtils.firstNonBlank;
 import static org.springframework.http.CacheControl.noCache;
 
 import java.util.List;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class WellKnownController {
 
+  private static final String DEFAULT_PERSPECTIVE = "system-instance";
+
   private final DocumentSchemaRegistry documentSchemaRegistry;
 
   @GetMapping("/.well-known/open-resource-discovery")
@@ -27,12 +30,13 @@ public class WellKnownController {
   }
 
   private List<Map<String, Object>> asDocuments() {
-    return documentSchemaRegistry.getAllDocumentIds().stream()
-        .map(id -> ofEntries(
-            entry("url", "/ord/v1/documents/%s".formatted(id)),
+    return documentSchemaRegistry.getAllDocumentSchemas().entrySet().stream()
+        .map(e -> ofEntries(
+            entry("url", "/ord/v1/documents/%s".formatted(e.getKey())),
+            entry("perspective", firstNonBlank(e.getValue().getPerspective(), DEFAULT_PERSPECTIVE)),
             entry(
                 "accessStrategies",
-                documentSchemaRegistry.lookupAccessStrategies(id).stream()
+                documentSchemaRegistry.lookupAccessStrategies(e.getKey()).stream()
                     .map(as -> Map.of("type", as))
                     .toList())))
         .toList();

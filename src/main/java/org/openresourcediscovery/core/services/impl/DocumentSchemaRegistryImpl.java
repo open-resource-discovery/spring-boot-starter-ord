@@ -40,16 +40,16 @@ public class DocumentSchemaRegistryImpl implements DocumentSchemaRegistry {
     this.accessStrategies = new ConcurrentHashMap<>();
   }
 
-  public DocumentSchemaRegistryImpl register(String id, Set<String> strategies, DocumentSchema document) {
-    documents.put(id, document);
-    accessStrategies.put(id, strategies);
+  public DocumentSchemaRegistryImpl register(String name, Set<String> strategies, DocumentSchema document) {
+    documents.put(name, document);
+    accessStrategies.put(name, strategies);
 
     return this;
   }
 
   @Override
-  public Set<String> getAllDocumentIds() {
-    return unmodifiableSet(documents.keySet());
+  public Map<String, DocumentSchema> getAllDocumentSchemas() {
+    return Map.copyOf(documents);
   }
 
   @Override

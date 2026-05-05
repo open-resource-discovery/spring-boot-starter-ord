@@ -1,5 +1,7 @@
 package org.openresourcediscovery.core.services.impl;
 
+import static java.util.Map.entry;
+import static java.util.Map.ofEntries;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,23 +43,27 @@ class DocumentSchemaRegistryImplTest {
   // ── register / getAllDocumentIds ────────────────────────────────────────────
 
   @Test
-  void givenNoDocuments_whenGetAllDocumentIdsIsCalled_thenEmptySetIsReturned() {
-    assertTrue(classUnderTest.getAllDocumentIds().isEmpty());
+  void givenNoDocuments_whenGetAllDocumentSchemasIsCalled_thenEmptySetIsReturned() {
+    assertTrue(classUnderTest.getAllDocumentSchemas().isEmpty());
   }
 
   @Test
-  void givenRegisteredDocument_whenGetAllDocumentIdsIsCalled_thenIdIsReturned() {
-    classUnderTest.register(DOC_NAME, Set.of(), new DocumentSchema());
+  void givenRegisteredDocument_whenGetAllDocumentSchemasIsCalled_thenIdIsReturned() {
+    DocumentSchema doc1 = new DocumentSchema().withDescription("doc-1");
 
-    assertEquals(Set.of(DOC_NAME), classUnderTest.getAllDocumentIds());
+    classUnderTest.register("doc-1", Set.of(), doc1);
+
+    assertEquals(ofEntries(entry("doc-1", doc1)), classUnderTest.getAllDocumentSchemas());
   }
 
   @Test
-  void givenMultipleDocuments_whenGetAllDocumentIdsIsCalled_thenAllIdsAreReturned() {
-    classUnderTest.register("doc-1", Set.of(), new DocumentSchema());
-    classUnderTest.register("doc-2", Set.of(), new DocumentSchema());
+  void givenMultipleDocuments_whenGetAllDocumentSchemasIsCalled_thenAllNamesAreReturned() {
+    DocumentSchema doc1 = new DocumentSchema().withDescription("doc-1");
+    DocumentSchema doc2 = new DocumentSchema().withDescription("doc-2");
 
-    assertEquals(Set.of("doc-1", "doc-2"), classUnderTest.getAllDocumentIds());
+    classUnderTest.register("doc-1", Set.of(), doc1).register("doc-2", Set.of(), doc2);
+
+    assertEquals(ofEntries(entry("doc-1", doc1), entry("doc-2", doc2)), classUnderTest.getAllDocumentSchemas());
   }
 
   // ── lookupAccessStrategies ──────────────────────────────────────────────────

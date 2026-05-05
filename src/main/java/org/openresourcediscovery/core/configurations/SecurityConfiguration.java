@@ -92,8 +92,7 @@ public class SecurityConfiguration {
   public SecurityFilterChain ordDocumentsSecurityFilterChain(
       HttpSecurity http,
       OrdAuthorizationManager ordAuthorizationManager,
-      @Qualifier("ordUserDetailsService") UserDetailsService userDetailsService,
-      @Qualifier("ordAuthenticationTrustResolver") AuthenticationTrustResolver authenticationTrustResolver) {
+      @Qualifier("ordUserDetailsService") UserDetailsService userDetailsService) {
     return http //
         .httpBasic(withDefaults())
         .securityMatcher(PATTERN_ORD_DOCUMENTS)
