@@ -77,8 +77,8 @@ class DocumentSchemaGeneratorTest {
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
     assertEquals(
         new DocumentSchema()
-            .withPerspective(null) // TODO - to be fixed
             .with$schema(DOCUMENT_SCHEMA_URL)
+            .withPerspective("system-instance")
             .withOpenResourceDiscovery(OpenResourceDiscovery._1_14),
         classUnderTest.generate(
             Context.of(Annotations.mock(Ord.Document.class), getClass(), new DocumentSchema())));
@@ -104,8 +104,8 @@ class DocumentSchemaGeneratorTest {
 
     assertEquals(
         new DocumentSchema()
-            .withPerspective(null) // TODO - to be fixed
             .with$schema(DOCUMENT_SCHEMA_URL)
+            .withPerspective("system-instance")
             .withOpenResourceDiscovery(OpenResourceDiscovery._1_14)
             .withDescribedSystemType(new SystemType().withSystemNamespace(NAMESPACE))
             .withDescribedSystemVersion(
