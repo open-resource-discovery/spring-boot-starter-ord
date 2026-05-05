@@ -49,14 +49,14 @@ class PackageGeneratorTest {
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new));
+    prepareEntityGeneratorFactoryMock(Ord.File.class, new EntityAutoGenerator<>(File::new));
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
     prepareEntityGeneratorFactoryMock(Ord.PackageLink.class, new EntityAutoGenerator<>(PackageLink::new));
-    prepareEntityGeneratorFactoryMock(Ord.File.class, new EntityAutoGenerator<>(File::new));
   }
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(25, Ord.Package.class.getDeclaredMethods().length);
+    assertEquals(26, Ord.Package.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -94,6 +94,7 @@ class PackageGeneratorTest {
             Map.entry("labels", createLabelsAnnotationMock()),
             Map.entry("tags", new String[] {"tag-1", "tag-2"}),
             Map.entry("shortDescription", "Test short description"),
+            Map.entry("correlationIds", new String[] {"cid-1", "cid-2"}),
             Map.entry("customPolicyLevel", "test-custom-policy-level"),
             Map.entry("runtimeRestriction", "test-runtime-restriction"),
             Map.entry("links", new Ord.Link[] {createLinkAnnotationMock()}),
@@ -118,6 +119,7 @@ class PackageGeneratorTest {
             .withTags(List.of("tag-1", "tag-2"))
             .withSupportInfo("test-support-info")
             .withPolicyLevel("test-policy-level")
+            .withCorrelationIds(List.of("cid-1", "cid-2"))
             .withShortDescription("Test short description")
             .withCustomPolicyLevel("test-custom-policy-level")
             .withRuntimeRestriction("test-runtime-restriction")
