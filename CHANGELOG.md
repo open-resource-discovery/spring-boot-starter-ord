@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [[0.3.0](https://github.com/open-resource-discovery/spring-boot-starter-ord/releases/tag/v0.3.0)] - 2026-05-11
 
+Add built-in support for serving static API resources
 
 ## [[0.2.0](https://github.com/open-resource-discovery/spring-boot-starter-ord/releases/tag/v0.2.0)] - 2026-05-05
 
