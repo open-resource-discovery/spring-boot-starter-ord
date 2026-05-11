@@ -46,11 +46,11 @@ A single `DocumentSchemaDetector` bean can register any number of documents:
 
 ```java
 @Override
-public Map<String, Pair<DocumentSchema, Set<String>>> detect(OrdProperties properties) {
+public Map<String, DetectionResult> detect(OrdProperties properties) {
     return Map.of(
-        "service-apis",    ImmutablePair.of(apisSchema,    Set.of("basic-auth")),
-        "service-events",  ImmutablePair.of(eventsSchema,  Set.of("open")),
-        "service-internal", ImmutablePair.of(internalSchema, Set.of("basic-auth"))
+        "service-apis",     new DetectionResult(apisSchema,     Set.of("basic-auth")),
+        "service-events",   new DetectionResult(eventsSchema,   Set.of("open")),
+        "service-internal", new DetectionResult(internalSchema, Set.of("basic-auth"))
     );
 }
 ```
@@ -65,7 +65,7 @@ Each entry becomes its own endpoint: `/ord/v1/documents/service-apis`, etc.
 
 ```java
 @Override
-public Map<String, Pair<DocumentSchema, Set<String>>> detect(OrdProperties properties) {
+public Map<String, DetectionResult> detect(OrdProperties properties) {
     String namespace = properties.getNamespace();     // e.g. "customer"
     String application = properties.getApplication(); // e.g. "my-service"
 
@@ -76,7 +76,7 @@ public Map<String, Pair<DocumentSchema, Set<String>>> detect(OrdProperties prope
     // Use namespace to construct ordIds consistently:
     // e.g. namespace + ":package:apis:v1"
 
-    return Map.of("my-service", ImmutablePair.of(schema, Set.of("open")));
+    return Map.of("my-service", new DetectionResult(schema, Set.of("open")));
 }
 ```
 
@@ -99,13 +99,13 @@ public class MyCustomDocumentSchemaDetector implements DocumentSchemaDetector {
 
     @Override
     @SneakyThrows
-    public Map<String, Pair<DocumentSchema, Set<String>>> detect(OrdProperties properties) {
+    public Map<String, DetectionResult> detect(OrdProperties properties) {
         String json = resourceLoader
             .getResource("classpath:ord/my-document.json")
             .getContentAsString(StandardCharsets.UTF_8);
 
         DocumentSchema schema = objectMapper.readValue(json, DocumentSchema.class);
-        return Map.of("my-service", ImmutablePair.of(schema, Set.of("open")));
+        return Map.of("my-service", new DetectionResult(schema, Set.of("open")));
     }
 }
 ```
@@ -127,7 +127,7 @@ public class OrdConfiguration {
             return repo.findAll().stream()
                 .collect(Collectors.toMap(
                     tenant -> "tenant-" + tenant.getId(),
-                    tenant -> ImmutablePair.of(
+                    tenant -> new DetectionResult(
                         buildSchema(tenant, ordProperties),
                         Set.of("basic-auth")
                     )

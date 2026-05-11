@@ -1,10 +1,11 @@
 package org.openresourcediscovery.core.configurations;
 
+import static org.springframework.http.MediaType.parseMediaType;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collection;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.openresourcediscovery.core.configurations.properties.OrdProperties;
 import org.openresourcediscovery.core.security.TLSAuthenticator;
 import org.openresourcediscovery.core.services.AnnotationProcessorFactory;
@@ -14,12 +15,15 @@ import org.openresourcediscovery.core.services.DocumentSchemaRegistry;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory.EntityGeneratorFactoryCustomizer;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner;
+import org.openresourcediscovery.core.services.StaticResourceRegistry;
+import org.openresourcediscovery.core.services.StaticResourceRegistry.StaticResource;
 import org.openresourcediscovery.core.services.impl.AnnotationProcessorFactoryImpl;
 import org.openresourcediscovery.core.services.impl.CachingOrdAnnotationsScannerImpl;
 import org.openresourcediscovery.core.services.impl.DocumentSchemaRegistryImpl;
 import org.openresourcediscovery.core.services.impl.EntityGeneratorFactoryImpl;
 import org.openresourcediscovery.core.services.impl.JavaAnnotationsDocumentSchemaDetector;
 import org.openresourcediscovery.core.services.impl.StaticFileDocumentSchemaDetector;
+import org.openresourcediscovery.core.services.impl.StaticResourceRegistryImpl;
 import org.openresourcediscovery.utils.conditions.OnOrdDocumentsProvided;
 import org.openresourcediscovery.utils.conditions.OnOrdPackagesProvided;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +95,21 @@ public class ServicesConfiguration {
   }
 
   @Bean
-  @SneakyThrows
+  @ConditionalOnMissingBean
+  public StaticResourceRegistry staticResourceRegistry(OrdProperties ordProperties, ResourceLoader resourceLoader) {
+    return ordProperties.getApiResources().stream()
+        .reduce(
+            new StaticResourceRegistryImpl(),
+            (registry, resource) -> registry.register(
+                resource.getName(),
+                resource.getAccessStrategies(),
+                new StaticResource(
+                    resourceLoader.getResource(resource.getPath()),
+                    parseMediaType(resource.getMediaType()))),
+            (l, r) -> l);
+  }
+
+  @Bean
   @ConditionalOnMissingBean
   public DocumentSchemaRegistry documentSchemaRegistry(
       ObjectMapper objectMapper,

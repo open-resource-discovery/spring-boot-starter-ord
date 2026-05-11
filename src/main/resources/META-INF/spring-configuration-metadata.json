@@ -10,6 +10,12 @@
       "type": "org.openresourcediscovery.core.configurations.properties.OrdProperties$Document",
       "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
       "sourceMethod": "getDocuments()"
+    },
+    {
+      "name": "ord.api-resources",
+      "type": "org.openresourcediscovery.core.configurations.properties.OrdProperties$ApiResource",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
+      "sourceMethod": "getApiResources()"
     }
   ],
   "properties": [
@@ -47,10 +53,10 @@
       "description": "List of pre-built static ORD documents to load and serve. Enables static file mode when non-empty."
     },
     {
-      "name": "ord.documents[].id",
+      "name": "ord.documents[].name",
       "type": "java.lang.String",
       "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties$Document",
-      "description": "Unique identifier for this ORD document. Used as the path segment in /ord/v1/documents/{id}."
+      "description": "Unique name for this ORD document. Used as the path segment in /ord/v1/documents/{name}."
     },
     {
       "name": "ord.documents[].path",
@@ -69,6 +75,36 @@
       "type": "java.util.Map<java.lang.String,java.lang.String>",
       "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
       "description": "HTTP Basic Auth credentials for the ORD document endpoints. Key is username, value is bcrypt-encoded password (e.g. {bcrypt}<hash>). Required when any document uses Basic Auth access strategy."
+    },
+    {
+      "name": "ord.api-resources",
+      "type": "java.util.List<org.openresourcediscovery.core.configurations.properties.OrdProperties$ApiResource>",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
+      "description": "List of static API resource files to serve. Enables the /ord/v1/resources/{name} endpoint when non-empty."
+    },
+    {
+      "name": "ord.api-resources[].name",
+      "type": "java.lang.String",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties$ApiResource",
+      "description": "Unique name for this API resource. Used as the path segment in /ord/v1/resources/{name}."
+    },
+    {
+      "name": "ord.api-resources[].path",
+      "type": "java.lang.String",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties$ApiResource",
+      "description": "Resource path to the static API resource file (e.g. classpath:ord/my-api.yaml)."
+    },
+    {
+      "name": "ord.api-resources[].media-type",
+      "type": "java.lang.String",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties$ApiResource",
+      "description": "Media type of the API resource file (e.g. application/yaml, application/json)."
+    },
+    {
+      "name": "ord.api-resources[].access-strategies",
+      "type": "java.util.Set<java.lang.String>",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties$ApiResource",
+      "description": "Access strategies for this API resource. Use 'open' to allow unauthenticated access. Omit or leave empty to require Basic Auth."
     }
   ],
   "hints": [
@@ -78,6 +114,15 @@
         {
           "value": "open",
           "description": "Document is publicly accessible without authentication."
+        }
+      ]
+    },
+    {
+      "name": "ord.api-resources[].access-strategies",
+      "values": [
+        {
+          "value": "open",
+          "description": "API resource is publicly accessible without authentication."
         }
       ]
     }

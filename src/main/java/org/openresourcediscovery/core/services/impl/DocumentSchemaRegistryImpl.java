@@ -53,13 +53,13 @@ public class DocumentSchemaRegistryImpl implements DocumentSchemaRegistry {
   }
 
   @Override
-  public Set<String> lookupAccessStrategies(String id) {
-    return unmodifiableSet(accessStrategies.getOrDefault(id, emptySet()));
+  public Set<String> lookupAccessStrategies(String name) {
+    return unmodifiableSet(accessStrategies.getOrDefault(name, emptySet()));
   }
 
   @Override
-  public Optional<DocumentSchema> lookupDocumentSchema(String id, Set<String> visibilities) {
-    return Optional.ofNullable(documents.get(id))
+  public Optional<DocumentSchema> lookupDocumentSchema(String name, Set<String> visibilities) {
+    return Optional.ofNullable(documents.get(name))
         // Clone the document to avoid mutating the original when applying visibility filters
         .map(d -> objectMapper.convertValue(d, DocumentSchema.class))
         // Apply visibility filters to all components of the document

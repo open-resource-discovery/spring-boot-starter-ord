@@ -26,7 +26,9 @@ import org.openresourcediscovery.core.configurations.OrdAutoConfiguration;
 import org.openresourcediscovery.core.configurations.OrdSecurityAutoConfiguration;
 import org.openresourcediscovery.core.configurations.properties.OrdProperties;
 import org.openresourcediscovery.core.services.DocumentSchemaRegistry;
+import org.openresourcediscovery.core.services.StaticResourceRegistry;
 import org.openresourcediscovery.core.services.impl.DocumentSchemaRegistryImpl;
+import org.openresourcediscovery.core.services.impl.StaticResourceRegistryImpl;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -53,7 +56,11 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
       "ord.documents.0.name=1",
       "ord.documents.0.accessStrategies.0=basic-auth",
       "ord.documents.0.path=classpath:__fixtures__/ord-doc-full.json",
-      "ord.credentials.admin={bcrypt}$2a$12$te68x8ajPZgD/icO90c0N.N23L0Igd8FN9n0XAv/Al1HFJVAMKoB2",
+      "ord.apiResources.0.name=document-api.oas3.json",
+      "ord.apiResources.0.accessStrategies.0=basic-auth",
+      "ord.apiResources.0.mediaType=application/json",
+      "ord.apiResources.0.path=classpath:__fixtures__/document-api.oas3.json",
+      "ord.credentials.admin={bcrypt}$2a$12$te68x8ajPZgD/icO90c0N.N23L0Igd8FN9n0XAv/Al1HFJVAMKoB2"
     })
 class BasicAuthOrdControllerSnapshotTest {
 
@@ -80,6 +87,22 @@ class BasicAuthOrdControllerSnapshotTest {
               (r1, r2) -> r1));
     }
 
+    @Bean
+    @Primary
+    @SneakyThrows
+    public StaticResourceRegistry staticResourceRegistry(OrdProperties properties) {
+      return spy(properties.getApiResources().stream()
+          .reduce(
+              new StaticResourceRegistryImpl(),
+              (r, d) -> r.register(
+                  d.getName(),
+                  d.getAccessStrategies(),
+                  new StaticResourceRegistry.StaticResource(
+                      resourceLoader.getResource(d.getPath()),
+                      MediaType.parseMediaType(d.getMediaType()))),
+              (r1, r2) -> r1));
+    }
+
     @SneakyThrows
     private DocumentSchema load(String path, ObjectMapper mapper) {
       return mapper.readValue(resourceLoader.getResource(path).getContentAsString(UTF_8), DocumentSchema.class);
@@ -101,14 +124,16 @@ class BasicAuthOrdControllerSnapshotTest {
   @Autowired
   private DocumentSchemaRegistry documentSchemaRegistry;
 
+  @Autowired
+  private StaticResourceRegistry staticResourceRegistry;
+
   @AfterEach
   public void tearDown() {
-    Mockito.reset(documentSchemaRegistry);
+    Mockito.reset(documentSchemaRegistry, staticResourceRegistry);
   }
 
   @Test
-  @DisplayName("basic mode + valid auth → internal snapshot (real data)")
-  void basic_valid_internal_snapshot() throws Exception {
+  void document_basic_valid_internal_snapshot() throws Exception {
     var result = mvc.perform(get("/ord/v1/documents/1")
             .accept(APPLICATION_JSON)
             .header(AUTHORIZATION, basic(USERNAME, PASSWORD)))
@@ -122,8 +147,7 @@ class BasicAuthOrdControllerSnapshotTest {
   }
 
   @Test
-  @DisplayName("basic mode + missing/invalid auth → 401")
-  void basic_invalid_401() throws Exception {
+  void document_basic_invalid_401() throws Exception {
     mvc.perform(get("/ord/v1/documents/1"))
         .andExpect(status().isUnauthorized())
         .andExpect(header().string(WWW_AUTHENTICATE, startsWith("Basic")));
@@ -132,11 +156,43 @@ class BasicAuthOrdControllerSnapshotTest {
   }
 
   @Test
-  @DisplayName("service error → 500")
-  void service_error_500() throws Exception {
+  void document_service_error_500() throws Exception {
     doThrow(new RuntimeException()).when(documentSchemaRegistry).lookupDocumentSchema(any(), any());
 
     mvc.perform(get("/ord/v1/documents/1")
+            .accept(APPLICATION_JSON)
+            .header(AUTHORIZATION, basic(USERNAME, PASSWORD)))
+        .andExpect(status().isInternalServerError());
+  }
+
+  @Test
+  void resource_basic_valid_internal_snapshot() throws Exception {
+    var result = mvc.perform(get("/ord/v1/resources/document-api.oas3.json")
+            .accept(APPLICATION_JSON)
+            .header(AUTHORIZATION, basic(USERNAME, PASSWORD)))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    JSONAssert.assertEquals(
+        load("classpath:__snapshots__/document-api.oas3.json"),
+        pretty(result.getResponse().getContentAsString()),
+        false);
+  }
+
+  @Test
+  void resource_basic_invalid_401() throws Exception {
+    mvc.perform(get("/ord/v1/resources/document-api.oas3.json"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(header().string(WWW_AUTHENTICATE, startsWith("Basic")));
+
+    verify(staticResourceRegistry, never()).lookupStaticResource(any());
+  }
+
+  @Test
+  void resource_service_error_500() throws Exception {
+    doThrow(new RuntimeException()).when(staticResourceRegistry).lookupStaticResource(any());
+
+    mvc.perform(get("/ord/v1/resources/document-api.oas3.json")
             .accept(APPLICATION_JSON)
             .header(AUTHORIZATION, basic(USERNAME, PASSWORD)))
         .andExpect(status().isInternalServerError());

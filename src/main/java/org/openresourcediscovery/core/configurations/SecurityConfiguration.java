@@ -12,6 +12,7 @@ import org.openresourcediscovery.core.security.TLSAuthenticator;
 import org.openresourcediscovery.core.security.impl.OrdAuthenticationManagerImpl;
 import org.openresourcediscovery.core.security.impl.OrdAuthorizationManagerImpl;
 import org.openresourcediscovery.core.services.DocumentSchemaRegistry;
+import org.openresourcediscovery.core.services.StaticResourceRegistry;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +34,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfiguration {
 
   private static final String PATTERN_ORD_DOCUMENTS = "/ord/v1/documents/*";
+  private static final String PATTERN_ORD_RESOURCES = "/ord/v1/resources/*";
   private static final String PATTERN_WELL_KNOWN = "/.well-known/open-resource-discovery";
 
   @Bean(defaultCandidate = false)
@@ -55,8 +57,10 @@ public class SecurityConfiguration {
   public OrdAuthorizationManager ordAuthorizationManager(
       TLSAuthenticator tlsAuthenticator,
       DocumentSchemaRegistry documentSchemaRegistry,
+      StaticResourceRegistry staticResourceRegistry,
       @Qualifier("ordAuthenticationTrustResolver") AuthenticationTrustResolver authenticationTrustResolver) {
-    return new OrdAuthorizationManagerImpl(tlsAuthenticator, documentSchemaRegistry, authenticationTrustResolver);
+    return new OrdAuthorizationManagerImpl(
+        tlsAuthenticator, documentSchemaRegistry, staticResourceRegistry, authenticationTrustResolver);
   }
 
   @Bean(defaultCandidate = false)
@@ -99,6 +103,26 @@ public class SecurityConfiguration {
         .csrf(AbstractHttpConfigurer::disable)
         .userDetailsService(userDetailsService)
         .authorizeHttpRequests(auth -> auth.requestMatchers(GET, PATTERN_ORD_DOCUMENTS)
+            .access(ordAuthorizationManager)
+            .anyRequest()
+            .denyAll())
+        .build();
+  }
+
+  @Bean
+  @SneakyThrows
+  @Order(Ordered.HIGHEST_PRECEDENCE + 30)
+  @ConditionalOnMissingBean(name = "ordResourceSecurityFilterChain")
+  public SecurityFilterChain ordResourcesSecurityFilterChain(
+      HttpSecurity http,
+      OrdAuthorizationManager ordAuthorizationManager,
+      @Qualifier("ordUserDetailsService") UserDetailsService userDetailsService) {
+    return http //
+        .httpBasic(withDefaults())
+        .securityMatcher(PATTERN_ORD_RESOURCES)
+        .csrf(AbstractHttpConfigurer::disable)
+        .userDetailsService(userDetailsService)
+        .authorizeHttpRequests(auth -> auth.requestMatchers(GET, PATTERN_ORD_RESOURCES)
             .access(ordAuthorizationManager)
             .anyRequest()
             .denyAll())
