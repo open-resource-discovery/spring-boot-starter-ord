@@ -1,7 +1,7 @@
 ---
 name: integrate-ord-starter
 description: Integrates Open Resource Discovery (ORD) into Spring Boot applications using spring-boot-starter-ord. Use whenever the user mentions ORD, Open Resource Discovery, exposing service metadata, API catalogues, resource discovery endpoints, or the well-known ORD endpoint — even without the word "starter". Also use when the user asks about configuring ORD documents, using ORD annotations, implementing DocumentSchemaDetector, customizing ORD beans, overriding ORD factory defaults, or securing ORD endpoints with Basic Auth, mTLS, TLSAuthenticator, or Spring Security filter chains.
-version: 1.4.0
+version: 1.5.0
 tools: Read, Glob, Grep, Edit, Write, Bash(curl:*), Bash(spring encodepassword:*), Bash(jq:*)
 argument-hint: "[describe your goal, e.g. 'add ORD to my service' or 'secure the document endpoint with mTLS']"
 ---
@@ -85,7 +85,8 @@ Wait for the user's reply before proceeding to Phase 3.
 | Endpoint | Auth | Purpose |
 |---|---|---|
 | `GET /.well-known/open-resource-discovery` | None — always public | Lists all documents and their access strategies |
-| `GET /ord/v1/documents/{id}` | Conditional | Returns a document; unauthenticated requests receive `public`-visibility entities only |
+| `GET /ord/v1/documents/{name}` | Conditional | Returns a document; unauthenticated requests receive `public`-visibility entities only |
+| `GET /ord/v1/resources/{name}` | Conditional | Serves a static API resource file (e.g. OpenAPI YAML); access controlled per `ord.api-resources[].accessStrategies` |
 
 ---
 
@@ -147,13 +148,33 @@ Declare it in `application.yml`:
 ```yaml
 ord:
   documents:
-    - id: my-service             # URL: /ord/v1/documents/my-service
+    - name: my-service             # URL: /ord/v1/documents/my-service
       path: classpath:ord/document.json
       accessStrategies:
         - open                   # omit to require Basic Auth instead
 ```
 
-Multiple documents can be declared; each gets its own `{id}`. For the full `ord.documents` property schema and defaults, see `references/configuration.md`.
+Multiple documents can be declared; each gets its own `{name}`. For the full `ord.documents` property schema and defaults, see `references/configuration.md`.
+
+---
+
+## Static API resources
+
+Place the file on the classpath (e.g. `src/main/resources/ord/my-api.yaml`).
+
+Declare it in `application.yml`:
+
+```yaml
+ord:
+  api-resources:
+    - name: my-api                             # URL: /ord/v1/resources/my-api
+      path: classpath:ord/my-api.yaml
+      mediaType: application/yaml
+      accessStrategies:
+        - open                                 # omit to require Basic Auth instead
+```
+
+Each entry is served at `/ord/v1/resources/{name}` with the declared `Content-Type`. Multiple entries can be declared. For the full `ord.api-resources` property schema, see `references/configuration.md`.
 
 ---
 
@@ -207,8 +228,6 @@ Processing order matters because later entity types reference earlier ones — f
 ```java
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.openresourcediscovery.core.configurations.properties.OrdProperties;
 import org.openresourcediscovery.core.services.DocumentSchemaDetector;
 import org.openresourcediscovery.model.DocumentSchema;
@@ -222,20 +241,20 @@ public class MyCustomDocumentSchemaDetector implements DocumentSchemaDetector {
     }
 
     @Override
-    public Map<String, Pair<DocumentSchema, Set<String>>> detect(OrdProperties properties) {
+    public Map<String, DetectionResult> detect(OrdProperties properties) {
         DocumentSchema schema = source.load();
         return Map.of(
             "my-service",                        // id → /ord/v1/documents/my-service
-            ImmutablePair.of(schema, Set.of("open"))
+            new DetectionResult(schema, Set.of("open"))
         );
     }
 }
 ```
 
-**Return type:** `Map<String, Pair<DocumentSchema, Set<String>>>`
-- Key — document id (the URL path segment)
-- `Pair.Left` — the `DocumentSchema` object
-- `Pair.Right` — access strategy names: `"open"`, `"basic-auth"`, or `"sap:cmp-mtls:v1"`
+**Return type:** `Map<String, DetectionResult>`
+- Key — document name (the URL path segment)
+- `DetectionResult.document()` — the `DocumentSchema` object
+- `DetectionResult.strategies()` — access strategy names: `"open"`, `"basic-auth"`, or `"sap:cmp-mtls:v1"`
 
 **Register as a Spring bean:**
 
@@ -327,7 +346,7 @@ curl -u admin:my-password http://localhost:8080/ord/v1/documents/my-service
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| 404 on document endpoint | `id` mismatch between URL and config/annotation | Match ids exactly |
+| 404 on document endpoint | `name` mismatch between URL and config/annotation | Match names exactly |
 | 401 on every request | No `open` strategy, no credentials supplied | Add `accessStrategies: [open]` or pass `-u user:pass` |
 | Endpoints not registered | Missing `spring-boot-starter-web`, or `ord.autoconfigure: false` | Add web starter; check config |
 | Annotations ignored | Package not listed under `ord.packages` | Add the correct package name |

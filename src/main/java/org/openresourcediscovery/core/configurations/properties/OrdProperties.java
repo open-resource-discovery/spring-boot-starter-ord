@@ -33,6 +33,20 @@ public class OrdProperties {
     private Set<String> accessStrategies = emptySet();
   }
 
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class ApiResource {
+
+    private String name;
+    private String path;
+    private String mediaType;
+
+    @Builder.Default
+    private Set<String> accessStrategies = emptySet();
+  }
+
   @Builder.Default
   private boolean autoconfigure = true;
 
@@ -47,6 +61,9 @@ public class OrdProperties {
 
   @Builder.Default
   private List<Document> documents = emptyList();
+
+  @Builder.Default
+  private List<ApiResource> apiResources = emptyList();
 
   @Builder.Default
   private Map<String, String> credentials = emptyMap();

@@ -18,7 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.openresourcediscovery.api.controllers.OpenResourceDiscoveryController;
 import org.openresourcediscovery.core.security.OrdAuthenticationManager;
 import org.openresourcediscovery.core.services.DocumentSchemaRegistry;
+import org.openresourcediscovery.core.services.StaticResourceRegistry;
 import org.openresourcediscovery.core.services.impl.DocumentSchemaRegistryImpl;
+import org.openresourcediscovery.core.services.impl.StaticResourceRegistryImpl;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -29,17 +31,19 @@ class OrdRuntimeOpenSnapshotReceivedTest {
   private ObjectMapper objectMapper;
   private ResourceLoader resourceLoader;
   private DocumentSchemaRegistry documentSchemaRegistry;
+  private StaticResourceRegistry staticResourceRegistry;
   private OrdAuthenticationManager ordAuthenticationManager;
 
   @BeforeEach
   @SneakyThrows
   void setup() {
     resourceLoader = new DefaultResourceLoader();
+    staticResourceRegistry = new StaticResourceRegistryImpl();
     ordAuthenticationManager = mock(OrdAuthenticationManager.class);
     objectMapper = new ObjectMapper().enable(ORDER_MAP_ENTRIES_BY_KEYS);
     documentSchemaRegistry = new DocumentSchemaRegistryImpl(objectMapper)
         .register(
-            "1",
+            "ord-document",
             Set.of("open"),
             objectMapper.readValue(load("classpath:__fixtures__/ord-doc-full.json"), DocumentSchema.class));
   }
@@ -48,9 +52,9 @@ class OrdRuntimeOpenSnapshotReceivedTest {
   @DisplayName("Runtime open -> compare to snapshot")
   void runtime_open_snapshot_with_received_on_mismatch() throws Exception {
     var result = standaloneSetup(new OpenResourceDiscoveryController(
-            documentSchemaRegistry, Optional.of(ordAuthenticationManager)))
+            documentSchemaRegistry, staticResourceRegistry, Optional.of(ordAuthenticationManager)))
         .build()
-        .perform(get("/ord/v1/documents/1").accept(APPLICATION_JSON))
+        .perform(get("/ord/v1/documents/ord-document").accept(APPLICATION_JSON))
         .andExpect(status().isOk())
         .andReturn();
 

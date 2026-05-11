@@ -21,7 +21,9 @@ import org.junit.jupiter.api.Test;
 import org.openresourcediscovery.api.controllers.OpenResourceDiscoveryController;
 import org.openresourcediscovery.core.security.OrdAuthenticationManager;
 import org.openresourcediscovery.core.services.DocumentSchemaRegistry;
+import org.openresourcediscovery.core.services.StaticResourceRegistry;
 import org.openresourcediscovery.core.services.impl.DocumentSchemaRegistryImpl;
+import org.openresourcediscovery.core.services.impl.StaticResourceRegistryImpl;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -37,6 +39,7 @@ class OrdDocumentBuildVsRuntimeTest {
   private ResourceLoader resourceLoader;
   private SecurityContext securityContext;
   private DocumentSchemaRegistry documentSchemaRegistry;
+  private StaticResourceRegistry staticResourceRegistry;
   private OrdAuthenticationManager ordAuthenticationManager;
 
   @BeforeEach
@@ -46,6 +49,7 @@ class OrdDocumentBuildVsRuntimeTest {
     authentication = mock(Authentication.class);
     resourceLoader = new DefaultResourceLoader();
     securityContext = mock(SecurityContext.class);
+    staticResourceRegistry = new StaticResourceRegistryImpl();
     ordAuthenticationManager = mock(OrdAuthenticationManager.class);
     documentSchemaRegistry = new DocumentSchemaRegistryImpl(objectMapper)
         .register(
@@ -71,7 +75,7 @@ class OrdDocumentBuildVsRuntimeTest {
   @DisplayName("Runtime open -> public only")
   void runtime_open_snapshot() throws Exception {
     var result = standaloneSetup(new OpenResourceDiscoveryController(
-            documentSchemaRegistry, Optional.of(ordAuthenticationManager)))
+            documentSchemaRegistry, staticResourceRegistry, Optional.of(ordAuthenticationManager)))
         .build()
         .perform(get("/ord/v1/documents/1").accept(APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -91,7 +95,7 @@ class OrdDocumentBuildVsRuntimeTest {
     when(ordAuthenticationManager.isAuthenticated(any())).thenReturn(Boolean.TRUE);
 
     var result = standaloneSetup(new OpenResourceDiscoveryController(
-            documentSchemaRegistry, Optional.of(ordAuthenticationManager)))
+            documentSchemaRegistry, staticResourceRegistry, Optional.of(ordAuthenticationManager)))
         .build()
         .perform(get("/ord/v1/documents/1")
             .accept(APPLICATION_JSON)

@@ -27,16 +27,26 @@ ord:
     - com.example.myapp.events
 
   # Static ORD JSON documents to serve.
-  # Each entry is exposed at /ord/v1/documents/{id}.
+  # Each entry is exposed at /ord/v1/documents/{name}.
   documents:
-    - id: my-service                        # URL path segment (required, must be unique)
+    - name: my-service                       # URL path segment (required, must be unique)
       path: classpath:ord/document.json     # Spring resource path (required)
       accessStrategies:                     # Who can fetch this document
         - open                              # "open" | "basic-auth" | "sap:cmp-mtls:v1"
                                             # Omit list to default to basic-auth only
-    - id: my-service-internal
+    - name: my-service-internal
       path: classpath:ord/internal.json
       # No accessStrategies → defaults to basic-auth
+
+  # Static API resource files to serve.
+  # Each entry is exposed at /ord/v1/resources/{name}.
+  api-resources:
+    - name: my-api                           # URL path segment (required, must be unique)
+      path: classpath:ord/my-api.yaml       # Spring resource path (required)
+      mediaType: application/yaml           # Content-Type returned (required)
+      accessStrategies:                     # Who can fetch this resource
+        - open                              # "open" | "basic-auth" | "sap:cmp-mtls:v1"
+                                            # Omit list to default to basic-auth only
 
   # HTTP Basic Auth credentials.
   # Key = username, value = bcrypt-encoded password with {bcrypt} prefix.
@@ -68,9 +78,9 @@ ord:
 - **Default:** `[]` (empty — annotation scanning disabled)
 - Enables `JavaAnnotationsDocumentSchemaDetector`. Scanned once at startup; results cached by `CachingOrdAnnotationsScannerImpl`.
 
-### `ord.documents[].id`
+### `ord.documents[].name`
 - **Type:** `String` (required)
-- Becomes the URL path segment: `/ord/v1/documents/{id}`. Must be unique across all declared documents.
+- Becomes the URL path segment: `/ord/v1/documents/{name}`. Must be unique across all declared documents.
 
 ### `ord.documents[].path`
 - **Type:** `String` (required)
@@ -87,7 +97,31 @@ ord:
 - **Type:** `Map<String, String>` — username → encoded password
 - Passwords **must** use Spring Security's delegating encoder format: `{bcrypt}<hash>`.
 - Loaded into `InMemoryUserDetailsManager` at startup.
-- Only relevant when at least one document uses `basic-auth` access strategy.
+- Only relevant when at least one document or API resource uses `basic-auth` access strategy.
+
+### `ord.api-resources`
+- **Type:** `List<OrdProperties.ApiResource>`
+- **Default:** `[]` (empty — `/ord/v1/resources/*` endpoint inactive until non-empty)
+- Each entry registers a static file at `/ord/v1/resources/{name}`.
+
+### `ord.api-resources[].name`
+- **Type:** `String` (required)
+- Becomes the URL path segment: `/ord/v1/resources/{name}`. Must be unique across all declared API resources.
+
+### `ord.api-resources[].path`
+- **Type:** `String` (required)
+- Any Spring `Resource` path: `classpath:ord/my-api.yaml`, `file:/etc/ord/my-api.json`, etc.
+- Served verbatim with the declared `mediaType`.
+
+### `ord.api-resources[].mediaType`
+- **Type:** `String` (required)
+- The `Content-Type` returned with the file (e.g. `application/yaml`, `application/json`).
+
+### `ord.api-resources[].accessStrategies`
+- **Type:** `Set<String>`
+- **Default:** `[]` → treated as `basic-auth` only
+- Supported values: `"open"`, `"basic-auth"`, `"sap:cmp-mtls:v1"`
+- Multiple strategies can be declared; the caller picks one.
 
 ## Generating a bcrypt password hash
 
