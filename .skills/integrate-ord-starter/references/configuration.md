@@ -12,6 +12,15 @@ ord:
   # Default: true
   autoconfigure: true
 
+  # Base path for the document endpoints. Default: /ord/v1/documents
+  api-base-path-documents: /ord/v1/documents
+
+  # Base path for the static resource endpoints. Default: /ord/v1/resources
+  api-base-path-resources: /ord/v1/resources
+
+  # Path of the well-known discovery endpoint. Default: /.well-known/open-resource-discovery
+  api-base-path-well-known: /.well-known/open-resource-discovery
+
   # Application identifier embedded in generated documents.
   # Default: "" (empty string)
   application: my-service
@@ -62,6 +71,21 @@ ord:
 - **Default:** `true`
 - Controlled by `@ConditionalOnBooleanProperty(name = "ord.autoconfigure", matchIfMissing = true)`.
 - Set to `false` to suppress all ORD beans and endpoints without removing the dependency.
+
+### `ord.api-base-path-documents`
+- **Type:** `String`
+- **Default:** `"/ord/v1/documents"`
+- Base URL prefix for the document endpoints. Each document is served at `{api-base-path-documents}/{name}`. Configurable via `@GetMapping("${ord.api-base-path-documents:/ord/v1/documents}/{name}")`.
+
+### `ord.api-base-path-resources`
+- **Type:** `String`
+- **Default:** `"/ord/v1/resources"`
+- Base URL prefix for the static API resource endpoints.
+
+### `ord.api-base-path-well-known`
+- **Type:** `String`
+- **Default:** `"/.well-known/open-resource-discovery"`
+- Path of the discovery endpoint.
 
 ### `ord.application`
 - **Type:** `String`

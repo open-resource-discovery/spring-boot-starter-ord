@@ -56,7 +56,7 @@ class OrdAuthorizationManagerImplTest {
 
     when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(OPEN.getKey()));
 
-    assertThat(classUnderTest.check(authenticationSupplier, context).isGranted())
+    assertThat(classUnderTest.authorize(authenticationSupplier, context).isGranted())
         .isTrue();
 
     verify(authenticator, never()).isAuthenticated(request);
@@ -68,7 +68,7 @@ class OrdAuthorizationManagerImplTest {
 
     when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(OPEN.getKey(), BASIC.getKey()));
 
-    assertThat(classUnderTest.check(authenticationSupplier, context).isGranted())
+    assertThat(classUnderTest.authorize(authenticationSupplier, context).isGranted())
         .isTrue();
 
     verify(authenticator, never()).isAuthenticated(request);
@@ -81,7 +81,7 @@ class OrdAuthorizationManagerImplTest {
     when(authenticator.isAuthenticated(request)).thenReturn(true);
     when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(BASIC.getKey()));
 
-    assertThat(classUnderTest.check(authenticationSupplier, context).isGranted())
+    assertThat(classUnderTest.authorize(authenticationSupplier, context).isGranted())
         .isTrue();
   }
 
@@ -92,7 +92,7 @@ class OrdAuthorizationManagerImplTest {
     when(authenticator.isAuthenticated(request)).thenReturn(false);
     when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(BASIC.getKey()));
 
-    assertThat(classUnderTest.check(authenticationSupplier, context).isGranted())
+    assertThat(classUnderTest.authorize(authenticationSupplier, context).isGranted())
         .isFalse();
   }
 
@@ -102,7 +102,7 @@ class OrdAuthorizationManagerImplTest {
 
     when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(BASIC.getKey()));
 
-    assertThat(classUnderTest.check(authenticationSupplier, context).isGranted())
+    assertThat(classUnderTest.authorize(authenticationSupplier, context).isGranted())
         .isFalse();
   }
 
@@ -113,7 +113,7 @@ class OrdAuthorizationManagerImplTest {
     when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of());
     when(authenticator.isAuthenticated(request)).thenReturn(false);
 
-    assertThat(classUnderTest.check(authenticationSupplier, context).isGranted())
+    assertThat(classUnderTest.authorize(authenticationSupplier, context).isGranted())
         .isFalse();
   }
 
@@ -126,7 +126,7 @@ class OrdAuthorizationManagerImplTest {
     when(secondAuthenticator.isAuthenticated(request)).thenReturn(true);
     when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
 
-    assertThat(classUnderTest.check(authenticationSupplier, context).isGranted())
+    assertThat(classUnderTest.authorize(authenticationSupplier, context).isGranted())
         .isTrue();
   }
 
@@ -139,7 +139,7 @@ class OrdAuthorizationManagerImplTest {
     when(secondAuthenticator.isAuthenticated(request)).thenReturn(false);
     when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
 
-    assertThat(classUnderTest.check(authenticationSupplier, context).isGranted())
+    assertThat(classUnderTest.authorize(authenticationSupplier, context).isGranted())
         .isFalse();
   }
 
@@ -151,7 +151,7 @@ class OrdAuthorizationManagerImplTest {
     when(authenticator.isAuthenticated(request)).thenReturn(true);
     when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(BASIC.getKey()));
 
-    classUnderTest.check(authenticationSupplier, context);
+    classUnderTest.authorize(authenticationSupplier, context);
 
     verify(secondAuthenticator, never()).isAuthenticated(request);
   }

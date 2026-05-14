@@ -1,7 +1,7 @@
 ---
 name: integrate-ord-starter
 description: Integrates Open Resource Discovery (ORD) into Spring Boot applications using spring-boot-starter-ord. Use whenever the user mentions ORD, Open Resource Discovery, exposing service metadata, API catalogues, resource discovery endpoints, or the well-known ORD endpoint — even without the word "starter". Also use when the user asks about configuring ORD documents, using ORD annotations, implementing DocumentSchemaDetector, customizing ORD beans, overriding ORD factory defaults, or securing ORD endpoints with Basic Auth, mTLS, OrdAuthenticationManager, or Spring Security filter chains.
-version: 1.5.0
+version: 1.6.0
 tools: Read, Glob, Grep, Edit, Write, Bash(curl:*), Bash(spring encodepassword:*), Bash(jq:*)
 argument-hint: "[describe your goal, e.g. 'add ORD to my service' or 'secure the document endpoint with mTLS']"
 ---
@@ -18,7 +18,7 @@ The two-endpoint design reflects this contract:
 
 `spring-boot-starter-ord` auto-configures both endpoints for a Spring Boot application with no boilerplate beyond a dependency and a few configuration lines.
 
-**Requirements:** Java 17+, Spring Boot 3.x, servlet stack (`spring-boot-starter-web`) — reactive is not supported.
+**Requirements:** Java 17+, Spring Boot 4.x, servlet stack (`spring-boot-starter-web`) — reactive is not supported.
 
 ---
 
@@ -213,7 +213,7 @@ public class MyServiceOrdDocument {
 ```
 
 **All supported annotation types** (in `@Ord.*`, processed in this order):
-`Vendor` → `SystemType` → `SystemVersion` → `SystemInstance` → `ConsumptionBundle` → `Product` → `Package` → `GroupType` → `Group` → `Tombstone` → `Agent` → `EntityType` → `Capability` → `DataProduct` → `ApiResource` → `EventResource` → `IntegrationDependency`
+`Vendor` → `SystemType` → `SystemVersion` → `SystemInstance` → `ConsumptionBundle` → `Product` → `Package` → `GroupType` → `Group` → `Tombstone` → `Agent` → `EntityType` → `Capability` → `DataProduct` → `ApiResource` → `EventResource` → `Overlay` → `IntegrationDependency`
 
 Processing order matters because later entity types reference earlier ones — for example, an `ApiResource` must reference a `Package` ordId, so `Package` is processed first. Declare annotations in any order; the scanner enforces the sequence internally.
 
@@ -338,7 +338,7 @@ curl -u admin:my-password http://localhost:8080/ord/v1/documents/my-service
 ```
 
 **Expected responses:**
-- Well-known: `200` with a JSON body containing an `"openResourceDiscovery"` field and a `"documents"` array listing the configured document ids and their access strategies.
+- Well-known: `200` with a JSON body under the key `"openResourceDiscoveryV1"`, containing a `"documents"` array. Each entry has `"url"`, `"perspective"` (default `"system-instance"`), and `"accessStrategies"`.
 - Document endpoint: `200` with the ORD document JSON. If using Basic Auth and credentials are wrong, expect `401`. If the id in the URL does not match any configured document, expect `404`.
 
 **If verification fails, check the Common pitfalls table below before investigating further.**
