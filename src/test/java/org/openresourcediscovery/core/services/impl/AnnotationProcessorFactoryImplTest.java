@@ -23,6 +23,7 @@ import org.openresourcediscovery.core.processors.impl.EventResourceAnnotationPro
 import org.openresourcediscovery.core.processors.impl.GroupAnnotationProcessor;
 import org.openresourcediscovery.core.processors.impl.GroupTypeAnnotationProcessor;
 import org.openresourcediscovery.core.processors.impl.IntegrationDependencyAnnotationProcessor;
+import org.openresourcediscovery.core.processors.impl.OverlayAnnotationProcessor;
 import org.openresourcediscovery.core.processors.impl.PackageAnnotationProcessor;
 import org.openresourcediscovery.core.processors.impl.ProductAnnotationProcessor;
 import org.openresourcediscovery.core.processors.impl.SystemInstanceAnnotationProcessor;
@@ -44,6 +45,11 @@ class AnnotationProcessorFactoryImplTest {
   void setUp() {
     classUnderTest = (AnnotationProcessorFactoryImpl)
         builder(autowireCapableBeanFactory).build();
+  }
+
+  @Test
+  void givenOverlayAnnotation_whenCreateIsCalled_thenOverlayAnnotationProcessorIsReturned() {
+    assertInstanceOf(OverlayAnnotationProcessor.class, classUnderTest.create(Ord.Overlay.class));
   }
 
   @Test

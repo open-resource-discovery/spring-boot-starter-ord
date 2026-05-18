@@ -26,6 +26,7 @@ import org.openresourcediscovery.model.EntityType;
 import org.openresourcediscovery.model.EventResource;
 import org.openresourcediscovery.model.EventResourceDefinition;
 import org.openresourcediscovery.model.IntegrationDependency;
+import org.openresourcediscovery.model.Overlay;
 import org.openresourcediscovery.model.Package;
 
 public class DocumentSchemaRegistryImpl implements DocumentSchemaRegistry {
@@ -71,11 +72,18 @@ public class DocumentSchemaRegistryImpl implements DocumentSchemaRegistry {
         .map(d -> d.withDataProducts(filterDataProducts(d, visibilities)))
         .map(d -> d.withEventResources(filterEventResources(d, visibilities)))
         .map(d -> d.withConsumptionBundles(filterConsumptionBundles(d, visibilities)))
+        .map(d -> d.withOverlays(filterOverlays(d, visibilities)))
         .map(d -> d.withIntegrationDependencies(filterIntegrationDependencies(d, visibilities)));
   }
 
   private static List<Agent> filterAgents(DocumentSchema document, Set<String> visibilities) {
     return emptyIfNull(document.getAgents()).stream()
+        .filter(r -> visibilities.contains(r.getVisibility()))
+        .toList();
+  }
+
+  private static List<Overlay> filterOverlays(DocumentSchema document, Set<String> visibilities) {
+    return emptyIfNull(document.getOverlays()).stream()
         .filter(r -> visibilities.contains(r.getVisibility()))
         .toList();
   }

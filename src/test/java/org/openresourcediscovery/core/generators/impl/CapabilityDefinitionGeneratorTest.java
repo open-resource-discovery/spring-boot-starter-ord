@@ -46,7 +46,7 @@ class CapabilityDefinitionGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(7, Ord.CapabilityDefinition.class.getDeclaredMethods().length);
+    assertEquals(8, Ord.CapabilityDefinition.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -110,6 +110,7 @@ class CapabilityDefinitionGeneratorTest {
         Map.ofEntries(
             Map.entry("type", "custom"),
             Map.entry("visibility", "public"),
+            Map.entry("purpose", "ord:ai-enrichment"),
             Map.entry("mediaType", "application/json"),
             Map.entry("customType", "test-custom-type"),
             Map.entry("url", "https://test-definition.dummy.nowhere.org"),
@@ -120,6 +121,7 @@ class CapabilityDefinitionGeneratorTest {
         new CapabilityDefinition()
             .withType("custom")
             .withVisibility("public")
+            .withPurpose("ord:ai-enrichment")
             .withMediaType("application/json")
             .withCustomType("test-custom-type")
             .withUrl("https://test-definition.dummy.nowhere.org")

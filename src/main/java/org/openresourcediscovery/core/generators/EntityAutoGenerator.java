@@ -22,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.openresourcediscovery.model.Extensible.Supported;
 import org.openresourcediscovery.utils.Commons;
 
 @RequiredArgsConstructor
@@ -199,10 +198,6 @@ public class EntityAutoGenerator<A extends Annotation, E> extends EntityGenerato
 
     if (Objects.equals(String.class, value.getClass()) && Objects.equals(String.class, target)) {
       return value.toString().trim();
-    }
-
-    if (Objects.equals(String.class, value.getClass()) && Objects.equals(Supported.class, target)) {
-      return Supported.fromValue(value.toString().trim());
     }
 
     return target.cast(value);

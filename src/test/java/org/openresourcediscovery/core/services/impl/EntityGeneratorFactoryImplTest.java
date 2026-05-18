@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
+import org.openresourcediscovery.core.generators.EntityAutoGenerator;
 import org.openresourcediscovery.core.generators.impl.AgentGenerator;
 import org.openresourcediscovery.core.generators.impl.ApiModelSelectorODataGenerator;
 import org.openresourcediscovery.core.generators.impl.ApiResourceGenerator;
@@ -22,12 +23,14 @@ import org.openresourcediscovery.core.generators.impl.DataProductGenerator;
 import org.openresourcediscovery.core.generators.impl.DocumentSchemaGenerator;
 import org.openresourcediscovery.core.generators.impl.DocumentationLabelsGenerator;
 import org.openresourcediscovery.core.generators.impl.EntityTypeGenerator;
+import org.openresourcediscovery.core.generators.impl.EntityTypeOrdIdTargetGenerator;
 import org.openresourcediscovery.core.generators.impl.EventResourceGenerator;
 import org.openresourcediscovery.core.generators.impl.ExtensibleGenerator;
 import org.openresourcediscovery.core.generators.impl.GroupGenerator;
 import org.openresourcediscovery.core.generators.impl.GroupTypeGenerator;
 import org.openresourcediscovery.core.generators.impl.IntegrationDependencyGenerator;
 import org.openresourcediscovery.core.generators.impl.LabelsGenerator;
+import org.openresourcediscovery.core.generators.impl.OverlayGenerator;
 import org.openresourcediscovery.core.generators.impl.PackageGenerator;
 import org.openresourcediscovery.core.generators.impl.ProductGenerator;
 import org.openresourcediscovery.core.generators.impl.SystemInstanceGenerator;
@@ -48,6 +51,173 @@ class EntityGeneratorFactoryImplTest {
   void setUp() {
     classUnderTest =
         (EntityGeneratorFactoryImpl) builder(autowireCapableBeanFactory).build();
+  }
+
+  @Test
+  void givenAccessStrategyAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.AccessStrategy.class));
+  }
+
+  @Test
+  void givenApiCompatibilityAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.ApiCompatibility.class));
+  }
+
+  @Test
+  void givenAPIEventResourceLinkAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.APIEventResourceLink.class));
+  }
+
+  @Test
+  void givenApiResourceDefinitionAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.ApiResourceDefinition.class));
+  }
+
+  @Test
+  void givenApiResourceIntegrationAspectAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.ApiResourceIntegrationAspect.class));
+  }
+
+  @Test
+  void givenApiResourceIntegrationAspectSubsetAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(
+        EntityAutoGenerator.class, classUnderTest.create(Ord.ApiResourceIntegrationAspectSubset.class));
+  }
+
+  @Test
+  void givenCapabilityDefinitionAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.CapabilityDefinition.class));
+  }
+
+  @Test
+  void givenCapabilityIntegrationAspectAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.CapabilityIntegrationAspect.class));
+  }
+
+  @Test
+  void givenChangelogEntryAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.ChangelogEntry.class));
+  }
+
+  @Test
+  void givenConsumptionBundleReferenceAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.ConsumptionBundleReference.class));
+  }
+
+  @Test
+  void givenCredentialExchangeStrategyAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.CredentialExchangeStrategy.class));
+  }
+
+  @Test
+  void givenDataProductInputPortAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.DataProductInputPort.class));
+  }
+
+  @Test
+  void givenDataProductLinkAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.DataProductLink.class));
+  }
+
+  @Test
+  void givenDataProductOutputPortAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.DataProductOutputPort.class));
+  }
+
+  @Test
+  void givenEntityTypeMappingAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.EntityTypeMapping.class));
+  }
+
+  @Test
+  void givenEntityTypeOrdIdTargetAnnotation_whenCreateIsCalled_thenEntityTypeOrdIdTargetGeneratorIsReturned() {
+    assertInstanceOf(EntityTypeOrdIdTargetGenerator.class, classUnderTest.create(Ord.EntityTypeOrdIdTarget.class));
+  }
+
+  @Test
+  void givenEventCompatibilityAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.EventCompatibility.class));
+  }
+
+  @Test
+  void givenEventResourceDefinitionAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.EventResourceDefinition.class));
+  }
+
+  @Test
+  void givenEventResourceIntegrationAspectAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.EventResourceIntegrationAspect.class));
+  }
+
+  @Test
+  void givenEventResourceIntegrationAspectSubsetAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(
+        EntityAutoGenerator.class, classUnderTest.create(Ord.EventResourceIntegrationAspectSubset.class));
+  }
+
+  @Test
+  void givenExposedApiResourcesTargetAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.ExposedApiResourcesTarget.class));
+  }
+
+  @Test
+  void givenExposedEntityTypeAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.ExposedEntityType.class));
+  }
+
+  @Test
+  void givenFileAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.File.class));
+  }
+
+  @Test
+  void givenIntegrationAspectAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.IntegrationAspect.class));
+  }
+
+  @Test
+  void givenLinkAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.Link.class));
+  }
+
+  @Test
+  void givenPackageLinkAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.PackageLink.class));
+  }
+
+  @Test
+  void givenRelatedApiResourceAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.RelatedApiResource.class));
+  }
+
+  @Test
+  void givenRelatedCapabilityAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.RelatedCapability.class));
+  }
+
+  @Test
+  void givenRelatedEntityTypeAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.RelatedEntityType.class));
+  }
+
+  @Test
+  void givenRelatedEventResourceAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.RelatedEventResource.class));
+  }
+
+  @Test
+  void givenTombstoneAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.Tombstone.class));
+  }
+
+  @Test
+  void givenOverlayAnnotation_whenCreateIsCalled_thenOverlayGeneratorIsReturned() {
+    assertInstanceOf(OverlayGenerator.class, classUnderTest.create(Ord.Overlay.class));
+  }
+
+  @Test
+  void givenOverlayDefinitionAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.OverlayDefinition.class));
   }
 
   @Test

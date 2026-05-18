@@ -30,7 +30,6 @@ import org.openresourcediscovery.model.DocumentationLabels;
 import org.openresourcediscovery.model.EntityTypeMapping;
 import org.openresourcediscovery.model.ExposedEntityType;
 import org.openresourcediscovery.model.Extensible;
-import org.openresourcediscovery.model.Extensible.Supported;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.model.Link;
 import org.openresourcediscovery.model.Package;
@@ -242,8 +241,7 @@ class ApiResourceGeneratorTest {
             .withPolicyLevels(List.of("test-policy-level-1", "test-policy-level-2"))
             .withDefaultConsumptionBundle(NAMESPACE + ":consumptionBundle:default:v1")
             .withCustomImplementationStandardDescription("test-custom-impl-standard-desc")
-            .withExtensible(
-                new Extensible().withSupported(Supported.MANUAL).withDescription("test-description"))
+            .withExtensible(new Extensible().withSupported("manual").withDescription("test-description"))
             .withExposedEntityTypes(
                 List.of(new ExposedEntityType().withOrdId(NAMESPACE + ":entityType:TestEntity:v1")))
             .withLabels(new Labels()

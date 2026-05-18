@@ -23,7 +23,6 @@ import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.DocumentationLabels;
 import org.openresourcediscovery.model.EntityType;
 import org.openresourcediscovery.model.Extensible;
-import org.openresourcediscovery.model.Extensible.Supported;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.model.Link;
 import org.openresourcediscovery.model.Package;
@@ -162,8 +161,7 @@ class EntityTypeGeneratorTest {
             .withCorrelationIds(List.of("correlation-id-1", "correlation-id-2"))
             .withDeprecationDate(Commons.asDate("2026-03-25T14:30:00Z"))
             .withPolicyLevels(List.of("test-policy-level-1", "test-policy-level-2"))
-            .withExtensible(
-                new Extensible().withSupported(Supported.MANUAL).withDescription("test-description"))
+            .withExtensible(new Extensible().withSupported("manual").withDescription("test-description"))
             .withLabels(new Labels()
                 .withAdditionalProperty(
                     "test-label-key", List.of("test-label-value-1", "test-label-value-2")))
