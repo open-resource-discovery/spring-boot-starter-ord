@@ -28,6 +28,7 @@ import org.openresourcediscovery.core.generators.impl.GroupTypeGenerator;
 import org.openresourcediscovery.core.generators.impl.IntegrationAspectGenerator;
 import org.openresourcediscovery.core.generators.impl.IntegrationDependencyGenerator;
 import org.openresourcediscovery.core.generators.impl.LabelsGenerator;
+import org.openresourcediscovery.core.generators.impl.OverlayGenerator;
 import org.openresourcediscovery.core.generators.impl.PackageGenerator;
 import org.openresourcediscovery.core.generators.impl.ProductGenerator;
 import org.openresourcediscovery.core.generators.impl.SystemInstanceGenerator;
@@ -58,6 +59,7 @@ import org.openresourcediscovery.model.ExposedApiResourcesTarget;
 import org.openresourcediscovery.model.ExposedEntityType;
 import org.openresourcediscovery.model.File;
 import org.openresourcediscovery.model.Link;
+import org.openresourcediscovery.model.OverlayDefinition;
 import org.openresourcediscovery.model.PackageLink;
 import org.openresourcediscovery.model.RelatedApiResource;
 import org.openresourcediscovery.model.RelatedCapability;
@@ -219,6 +221,11 @@ public class EntityGeneratorFactoryImpl implements EntityGeneratorFactory {
               entry(Ord.IntegrationDependency.class, IntegrationDependencyGenerator::new),
               entry(Ord.Labels.class, LabelsGenerator::new),
               entry(Ord.Link.class, () -> new EntityAutoGenerator<Ord.Link, Link>(Link::new)),
+              entry(Ord.Overlay.class, OverlayGenerator::new),
+              entry(
+                  Ord.OverlayDefinition.class,
+                  () -> new EntityAutoGenerator<Ord.OverlayDefinition, OverlayDefinition>(
+                      OverlayDefinition::new)),
               entry(Ord.Package.class, PackageGenerator::new),
               entry(
                   Ord.PackageLink.class,

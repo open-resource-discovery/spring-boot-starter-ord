@@ -56,6 +56,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
     stubProcessorFor(Ord.Group.class);
     stubProcessorFor(Ord.Agent.class);
     stubProcessorFor(Ord.Vendor.class);
+    stubProcessorFor(Ord.Overlay.class);
     stubProcessorFor(Ord.Product.class);
     stubProcessorFor(Ord.Package.class);
     stubProcessorFor(Ord.GroupType.class);
@@ -138,7 +139,24 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
     classUnderTest.detect(OrdProperties.builder().build());
 
     verify(annotationProcessorFactory.create(Ord.Vendor.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.SystemType.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.SystemVersion.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.SystemInstance.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.ConsumptionBundle.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.Product.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.Package.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.GroupType.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.Group.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.Tombstone.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.Agent.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.EntityType.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.Capability.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.DataProduct.class)).process(any());
     verify(annotationProcessorFactory.create(Ord.ApiResource.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.EventResource.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.Overlay.class)).process(any());
+    verify(annotationProcessorFactory.create(Ord.IntegrationDependency.class))
+        .process(any());
   }
 
   @Test

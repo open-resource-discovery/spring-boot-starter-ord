@@ -22,7 +22,6 @@ import org.openresourcediscovery.core.generators.impl.VendorGenerator;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.model.ApiResource;
 import org.openresourcediscovery.model.DocumentSchema;
-import org.openresourcediscovery.model.Extensible.Supported;
 import org.openresourcediscovery.model.File;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.model.Link;
@@ -175,7 +174,7 @@ class EntityAutoGeneratorTest {
     org.openresourcediscovery.model.Extensible result =
         generator.generate(Context.of(annotation, WithSupported.class, new DocumentSchema()));
 
-    assertEquals(Supported.MANUAL, result.getSupported());
+    assertEquals("manual", result.getSupported());
   }
 
   // ── processPlainArrays — String[] → List ─────────────────────────────────
