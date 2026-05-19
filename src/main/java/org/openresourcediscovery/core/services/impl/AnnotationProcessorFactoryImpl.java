@@ -20,6 +20,7 @@ import org.openresourcediscovery.core.processors.impl.EventResourceAnnotationPro
 import org.openresourcediscovery.core.processors.impl.GroupAnnotationProcessor;
 import org.openresourcediscovery.core.processors.impl.GroupTypeAnnotationProcessor;
 import org.openresourcediscovery.core.processors.impl.IntegrationDependencyAnnotationProcessor;
+import org.openresourcediscovery.core.processors.impl.OverlayAnnotationProcessor;
 import org.openresourcediscovery.core.processors.impl.PackageAnnotationProcessor;
 import org.openresourcediscovery.core.processors.impl.ProductAnnotationProcessor;
 import org.openresourcediscovery.core.processors.impl.SystemInstanceAnnotationProcessor;
@@ -80,6 +81,7 @@ public class AnnotationProcessorFactoryImpl implements AnnotationProcessorFactor
           entry(Ord.Group.class, GroupAnnotationProcessor::new),
           entry(Ord.GroupType.class, GroupTypeAnnotationProcessor::new),
           entry(Ord.IntegrationDependency.class, IntegrationDependencyAnnotationProcessor::new),
+          entry(Ord.Overlay.class, OverlayAnnotationProcessor::new),
           entry(Ord.Package.class, PackageAnnotationProcessor::new),
           entry(Ord.Product.class, ProductAnnotationProcessor::new),
           entry(Ord.SystemInstance.class, SystemInstanceAnnotationProcessor::new),

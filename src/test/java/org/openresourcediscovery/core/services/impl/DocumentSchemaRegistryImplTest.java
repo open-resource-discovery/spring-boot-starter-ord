@@ -24,6 +24,7 @@ import org.openresourcediscovery.model.EntityType;
 import org.openresourcediscovery.model.EventResource;
 import org.openresourcediscovery.model.EventResourceDefinition;
 import org.openresourcediscovery.model.IntegrationDependency;
+import org.openresourcediscovery.model.Overlay;
 import org.openresourcediscovery.model.Package;
 
 class DocumentSchemaRegistryImplTest {
@@ -421,5 +422,31 @@ class DocumentSchemaRegistryImplTest {
         classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
 
     assertTrue(result.getIntegrationDependencies().isEmpty());
+  }
+
+  // ── filterOverlays ──────────────────────────────────────────
+
+  @Test
+  void givenOverlayWithMatchingVisibility_whenLookupIsCalled_thenItIsIncluded() {
+    Overlay dep = new Overlay().withVisibility(PUBLIC);
+    DocumentSchema doc = new DocumentSchema().withOverlays(List.of(dep));
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
+
+    DocumentSchema result =
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
+
+    assertEquals(1, result.getOverlays().size());
+  }
+
+  @Test
+  void givenOverlayWithNonMatchingVisibility_whenLookupIsCalled_thenItIsExcluded() {
+    Overlay dep = new Overlay().withVisibility(INTERNAL);
+    DocumentSchema doc = new DocumentSchema().withOverlays(List.of(dep));
+    classUnderTest.register(DOC_NAME, Set.of(), doc);
+
+    DocumentSchema result =
+        classUnderTest.lookupDocumentSchema(DOC_NAME, Set.of(PUBLIC)).orElseThrow();
+
+    assertTrue(result.getOverlays().isEmpty());
   }
 }

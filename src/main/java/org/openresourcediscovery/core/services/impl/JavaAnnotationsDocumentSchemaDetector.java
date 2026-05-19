@@ -46,6 +46,7 @@ public class JavaAnnotationsDocumentSchemaDetector implements DocumentSchemaDete
     annotationProcessorFactory.create(Ord.DataProduct.class).process(documents);
     annotationProcessorFactory.create(Ord.ApiResource.class).process(documents);
     annotationProcessorFactory.create(Ord.EventResource.class).process(documents);
+    annotationProcessorFactory.create(Ord.Overlay.class).process(documents);
     annotationProcessorFactory.create(Ord.IntegrationDependency.class).process(documents);
 
     documents.values().stream()

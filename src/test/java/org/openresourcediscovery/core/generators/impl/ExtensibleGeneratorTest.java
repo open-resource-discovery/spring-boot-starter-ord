@@ -2,7 +2,6 @@ package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +15,6 @@ import org.openresourcediscovery.core.generators.EntityGenerator.Context;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.Extensible;
-import org.openresourcediscovery.model.Extensible.Supported;
 import org.openresourcediscovery.testutils.Annotations;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,7 +50,7 @@ class ExtensibleGeneratorTest {
   @Test
   void givenManualSupported_whenGenerateIsCalled_thenEntityIsReturned() {
     assertEquals(
-        new Extensible().withSupported(Supported.MANUAL),
+        new Extensible().withSupported("manual"),
         classUnderTest.generate(Context.of(
             Annotations.mock(Ord.Extensible.class, Map.of("supported", "manual")),
             getClass(),
@@ -62,7 +60,7 @@ class ExtensibleGeneratorTest {
   @Test
   void givenAutomaticSupported_whenGenerateIsCalled_thenEntityIsReturned() {
     assertEquals(
-        new Extensible().withSupported(Supported.AUTOMATIC),
+        new Extensible().withSupported("automatic"),
         classUnderTest.generate(Context.of(
             Annotations.mock(Ord.Extensible.class, Map.of("supported", "automatic")),
             getClass(),
@@ -72,7 +70,7 @@ class ExtensibleGeneratorTest {
   @Test
   void givenNoSupported_whenGenerateIsCalled_thenEntityIsReturned() {
     assertEquals(
-        new Extensible().withSupported(Supported.NO),
+        new Extensible().withSupported("no"),
         classUnderTest.generate(Context.of(
             Annotations.mock(Ord.Extensible.class, Map.of("supported", "no")),
             getClass(),
@@ -80,19 +78,9 @@ class ExtensibleGeneratorTest {
   }
 
   @Test
-  void givenInvalidSupportedValueSupported_whenGenerateIsCalled_thenExceptionIsThrown() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> classUnderTest.generate(Context.of(
-            Annotations.mock(Ord.Extensible.class, Map.of("supported", "invalid")),
-            getClass(),
-            new DocumentSchema())));
-  }
-
-  @Test
   void whenGenerateIsCalled_thenCorrectResultIsReturned() {
     assertEquals(
-        new Extensible().withSupported(Supported.MANUAL).withDescription("test-extensible-description"),
+        new Extensible().withSupported("manual").withDescription("test-extensible-description"),
         classUnderTest.generate(Context.of(
             Annotations.mock(
                 Ord.Extensible.class,

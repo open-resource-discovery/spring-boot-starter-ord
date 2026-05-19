@@ -46,7 +46,7 @@ class EventResourceDefinitionGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(7, Ord.EventResourceDefinition.class.getDeclaredMethods().length);
+    assertEquals(8, Ord.EventResourceDefinition.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -111,6 +111,7 @@ class EventResourceDefinitionGeneratorTest {
         Map.ofEntries(
             Map.entry("type", "asyncapi-v2"),
             Map.entry("visibility", "public"),
+            Map.entry("purpose", "ord:ai-enrichment"),
             Map.entry("mediaType", "application/json"),
             Map.entry("customType", "test-custom-type"),
             Map.entry("url", "https://test-definition.dummy.nowhere.org"),
@@ -121,6 +122,7 @@ class EventResourceDefinitionGeneratorTest {
         new EventResourceDefinition()
             .withType("asyncapi-v2")
             .withVisibility("public")
+            .withPurpose("ord:ai-enrichment")
             .withMediaType("application/json")
             .withCustomType("test-custom-type")
             .withUrl("https://test-definition.dummy.nowhere.org")
