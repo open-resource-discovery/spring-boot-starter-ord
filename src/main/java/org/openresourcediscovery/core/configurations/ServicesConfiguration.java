@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.openresourcediscovery.core.configurations.properties.OrdProperties;
-import org.openresourcediscovery.core.security.TLSAuthenticator;
 import org.openresourcediscovery.core.services.AnnotationProcessorFactory;
 import org.openresourcediscovery.core.services.AnnotationProcessorFactory.AnnotationProcessorFactoryCustomizer;
 import org.openresourcediscovery.core.services.DocumentSchemaDetector;
@@ -75,12 +74,6 @@ public class ServicesConfiguration {
   public DocumentSchemaDetector ordStaticFileDocumentSchemaDetector(
       ObjectMapper objectMapper, ResourceLoader resourceLoader) {
     return new StaticFileDocumentSchemaDetector(objectMapper, resourceLoader);
-  }
-
-  @Bean
-  @ConditionalOnMissingBean
-  public TLSAuthenticator tlsAuthenticator() {
-    return request -> false;
   }
 
   @Bean
