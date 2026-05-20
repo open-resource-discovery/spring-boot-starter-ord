@@ -94,37 +94,19 @@ public EntityGeneratorFactoryCustomizer entityGeneratorFactoryCustomizer() {
 
 ## Coarse-grained: replacing entire beans
 
-Most beans in `ServicesConfiguration` are guarded by `@ConditionalOnMissingBean` (type-based). The two security-internal beans — `ordAuthenticationTrustResolver` and `ordUserDetailsService` — are guarded by `@ConditionalOnMissingBean(name = "...")`. To override them, register a bean with that exact name; registering a bean of the same type alone is not sufficient.
+Most beans in `SecurityConfiguration` and `ServicesConfiguration` are guarded by `@ConditionalOnMissingBean` (type-based). The security-internal bean `ordUserDetailsService` is guarded by `@ConditionalOnMissingBean(name = "...")`. To override it, register a bean with that exact name; registering a bean of the same type alone is not sufficient.
 
-### Replace the TLS authenticator
+### Add or replace an mTLS authenticator
 
-The default `TLSAuthenticator` always returns `false` (no mTLS). Replace it to validate client certificates:
-
-```java
-import jakarta.servlet.http.HttpServletRequest;
-import org.openresourcediscovery.core.security.TLSAuthenticator;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-@Configuration
-public class OrdCustomizationConfig {
-
-    @Bean
-    public TLSAuthenticator tlsAuthenticator() {
-        return request -> {
-            X509Certificate[] certs =
-                (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-            return certs != null && isValidCert(certs[0]);
-        };
-    }
-}
-```
+mTLS is not enabled by default. To enable it, register a `CloudFoundryTLSAuthenticator` or `KymaTLSAuthenticator` as an `OrdAuthenticationManager` bean. Multiple `OrdAuthenticationManager` beans can coexist — all are collected automatically and any one returning `true` grants access. See `references/security.md` for full examples with the fluent `configure(strategy, ...)` API.
 
 Two built-in implementations are provided if you are on SAP infrastructure:
-- `CloudFoundryTLSAuthenticator` — validates the SAP Cloud Foundry client certificate header
-- `KymaTLSAuthenticator` — validates the SAP Kyma client certificate header
+- `CloudFoundryTLSAuthenticator` — validates the SAP Cloud Foundry client certificate headers; binds certificates to `AccessStrategy.CMP_MTLS` and `AccessStrategy.BAH_MTLS`
+- `KymaTLSAuthenticator` — validates the SAP Kyma client certificate headers; binds certificates to `AccessStrategy.CMP_MTLS` and `AccessStrategy.BAH_MTLS`
 
-Instantiate and register either as a `@Bean` to activate it.
+### Override the Basic Auth authenticator
+
+The built-in Basic Auth authenticator is guarded by `@ConditionalOnMissingBean(name = "ordBasicAuthenticator")`. Replace it by declaring a bean with that exact name. For full details, see the "Replace the authentication manager" section in `references/security.md`.
 
 ### Replace the document schema registry
 
@@ -186,7 +168,7 @@ public DocumentSchemaDetector noOpAnnotationDetector() {
 |---|---|
 | Customise how one ORD entity type is generated from annotations | `EntityGeneratorFactoryCustomizer` + `withSupplier(...)` |
 | Customise how one annotation type assembles its document section | `AnnotationProcessorFactoryCustomizer` + `withSupplier(...)` |
-| Add mTLS support | `TLSAuthenticator` `@Bean` override |
+| Add mTLS support | `OrdAuthenticationManager` `@Bean` (use `CloudFoundryTLSAuthenticator` or `KymaTLSAuthenticator`) |
 | Live-reload documents without restart | `DocumentSchemaRegistry` `@Bean` override |
 | Custom scanning strategy | `OrdAnnotationsScanner` `@Bean` override |
 | Provide documents from a database or external API | Custom `DocumentSchemaDetector` — see `references/custom-detector.md` |

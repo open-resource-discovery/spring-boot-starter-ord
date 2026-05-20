@@ -1,6 +1,6 @@
 ---
 name: integrate-ord-starter
-description: Integrates Open Resource Discovery (ORD) into Spring Boot applications using spring-boot-starter-ord. Use whenever the user mentions ORD, Open Resource Discovery, exposing service metadata, API catalogues, resource discovery endpoints, or the well-known ORD endpoint — even without the word "starter". Also use when the user asks about configuring ORD documents, using ORD annotations, implementing DocumentSchemaDetector, customizing ORD beans, overriding ORD factory defaults, or securing ORD endpoints with Basic Auth, mTLS, TLSAuthenticator, or Spring Security filter chains.
+description: Integrates Open Resource Discovery (ORD) into Spring Boot applications using spring-boot-starter-ord. Use whenever the user mentions ORD, Open Resource Discovery, exposing service metadata, API catalogues, resource discovery endpoints, or the well-known ORD endpoint — even without the word "starter". Also use when the user asks about configuring ORD documents, using ORD annotations, implementing DocumentSchemaDetector, customizing ORD beans, overriding ORD factory defaults, or securing ORD endpoints with Basic Auth, mTLS, OrdAuthenticationManager, or Spring Security filter chains.
 version: 1.5.0
 tools: Read, Glob, Grep, Edit, Write, Bash(curl:*), Bash(spring encodepassword:*), Bash(jq:*)
 argument-hint: "[describe your goal, e.g. 'add ORD to my service' or 'secure the document endpoint with mTLS']"
@@ -284,11 +284,12 @@ For building `DocumentSchema` objects in code, returning multiple documents from
 
 ### Access strategies
 
-| Strategy | Behaviour |
-|---|---|
-| `open` | No auth required |
-| `basic-auth` *(default when omitted)* | HTTP Basic Auth required |
+| Strategy | Behaviour                          |
+|---|------------------------------------|
+| `open` | No auth required                   |
+| `basic-auth` *(default when omitted)* | HTTP Basic Auth required           |
 | `sap:cmp-mtls:v1` | SAP Cloud Management Platform mTLS |
+| `sap.businesshub:mtls:v1` | SAP Business Accelerator Hub mTLS  |
 
 A document can declare multiple strategies; the caller picks one.
 
@@ -317,7 +318,7 @@ ord:
   autoconfigure: false
 ```
 
-For the full `ord.*` property schema, all defaults, and per-property Spring condition details, see `references/configuration.md`. For how the Spring Security filter chains are wired, how access decisions are made, and how to replace any security bean (`TLSAuthenticator`, `OrdAuthorizationManager`, a filter chain), see `references/security.md`. To override individual generators, processors, or other default beans, see `references/customization.md`.
+For the full `ord.*` property schema, all defaults, and per-property Spring condition details, see `references/configuration.md`. For how the Spring Security filter chains are wired, how access decisions are made, and how to replace any security bean (`OrdAuthenticationManager`, `OrdAuthorizationManager`, a filter chain), see `references/security.md`. To override individual generators, processors, or other default beans, see `references/customization.md`.
 
 ---
 
@@ -360,7 +361,7 @@ curl -u admin:my-password http://localhost:8080/ord/v1/documents/my-service
 
 - `references/custom-detector.md` — Load when building `DocumentSchema` objects in code, returning multiple documents from one detector, or implementing a dynamic multi-tenant detector
 - `references/customization.md` — Load when the user wants to override a default bean, replace a specific generator or processor, add mTLS support, or use the `EntityGeneratorFactoryCustomizer` / `AnnotationProcessorFactoryCustomizer` SPIs
-- `references/security.md` — Load when the user asks how Spring Security is configured, how the filter chains work, how access decisions are made, how to configure Basic Auth credentials, how to enable mTLS, or how to replace any security bean (`TLSAuthenticator`, `OrdAuthorizationManager`, `OrdAuthenticationManager`, a filter chain)
+- `references/security.md` — Load when the user asks how Spring Security is configured, how the filter chains work, how access decisions are made, how to configure Basic Auth credentials, how to enable mTLS, or how to replace any security bean (`OrdAuthenticationManager`, `OrdAuthorizationManager`, a filter chain)
 - `references/configuration.md` — Load when looking up the full `ord.*` property schema, defaults, and per-property Spring condition details
 - `references/versions.md` — Version-sensitive claims ledger; check here before inserting dependency versions or ORD schema version strings
 

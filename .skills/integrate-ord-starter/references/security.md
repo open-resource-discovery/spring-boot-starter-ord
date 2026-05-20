@@ -30,6 +30,7 @@ Both chains are scoped to ORD paths only and are ordered before any application-
 |---|---|---|---|
 | `ordWellKnownSecurityFilterChain` | `HIGHEST_PRECEDENCE + 10` | `/.well-known/open-resource-discovery` | `GET` is always anonymous. All other methods are denied. |
 | `ordDocumentsSecurityFilterChain` | `HIGHEST_PRECEDENCE + 20` | `/ord/v1/documents/*` | `GET` is delegated to `OrdAuthorizationManager`. All other methods are denied. HTTP Basic is enabled for credential exchange. |
+| `ordResourcesSecurityFilterChain` | `HIGHEST_PRECEDENCE + 30` | `/ord/v1/resources/*` | `GET` is delegated to `OrdAuthorizationManager`. All other methods are denied. HTTP Basic is enabled for credential exchange. |
 
 Both chains:
 - disable CSRF (these are read-only API endpoints consumed by automated tooling)
@@ -39,33 +40,31 @@ Both chains:
 
 Built from `ord.credentials` at startup. Each map key becomes a username; the value must be a Spring Security password-encoded string (e.g. `{bcrypt}$2a$12$...`). Registered with `defaultCandidate = false` so it never participates in the host application's authentication.
 
-### `AuthenticationTrustResolver` (qualifier: `ordAuthenticationTrustResolver`)
+### `AccessStrategiesResolver`
 
-A standard `AuthenticationTrustResolverImpl` instance. Also registered with `defaultCandidate = false` to avoid polluting the application context.
+Resolves the set of access strategies for a given request by extracting the document or resource name from the URL path (`/ord/v1/documents/{name}` or `/ord/v1/resources/{name}`) and looking it up in the appropriate registry. Returns an empty set for any other path.
 
-### `OrdAuthenticationManager`
+### `OrdAuthenticationManager` (bean name: `ordBasicAuthenticator`)
 
-Used internally to answer "is the current caller authenticated?" — combines the result of the configured `TLSAuthenticator` (mTLS check) with the Spring Security `SecurityContextHolder` state (Basic Auth check). Injected into controllers that need to determine authenticated-vs-anonymous for visibility filtering.
+The built-in Basic Auth authenticator. Checks whether the request's access strategies include `basic-auth` and, if so, whether the Spring Security `SecurityContextHolder` reports a fully authenticated caller. This is one of potentially many `OrdAuthenticationManager` beans — all of them are collected and injected into `OrdAuthorizationManager` as a `List`.
 
 ### `OrdAuthorizationManager`
 
-The access-decision component for the documents filter chain. For each incoming request it:
+The access-decision component for the documents and resources filter chains. For each incoming request it:
 
-1. Extracts the document `{id}` from the URL path.
-2. Looks up the access strategies registered for that document in the `DocumentSchemaRegistry`.
-3. Grants access if **any** of the following holds:
-   - The document has strategy `open`
-   - The document has strategy `sap:cmp-mtls:v1` **and** `TLSAuthenticator.isAuthenticated()` returns `true`
-   - The document has strategy `basic-auth` **and** Spring Security reports the caller as authenticated
+1. Resolves the access strategies for the request via `AccessStrategiesResolver`.
+2. Grants access if **any** of the following holds:
+   - The strategies include `open`
+   - **Any** registered `OrdAuthenticationManager` bean returns `true` for the request
 
-If the document id is not found in the registry the strategies set is empty and access is denied.
+If the document/resource name is not found in the registry the strategies set is empty and access is denied.
 
 ---
 
 ## Authentication flow diagram
 
 ```
-GET /ord/v1/documents/{id}
+GET /ord/v1/documents/{name}  (or /ord/v1/resources/{name})
         │
         ▼
 ordDocumentsSecurityFilterChain  (order HIGHEST_PRECEDENCE + 20)
@@ -76,12 +75,17 @@ ordDocumentsSecurityFilterChain  (order HIGHEST_PRECEDENCE + 20)
         ▼
 OrdAuthorizationManager.check()
         │
-        ├─ strategies contains "open"?               ──► ALLOW
-        ├─ strategies contains "sap:cmp-mtls:v1"
-        │    AND TLSAuthenticator.isAuthenticated()?  ──► ALLOW
-        ├─ strategies contains "basic-auth"
-        │    AND SecurityContext.isAuthenticated()?   ──► ALLOW
-        └─ (none of the above)                        ──► DENY (403)
+        ├─ AccessStrategiesResolver.resolve()
+        │       └─ looks up strategies for {name} in DocumentSchemaRegistry / StaticResourceRegistry
+        │
+        ├─ strategies contains "open"?                        ──► ALLOW
+        ├─ ordBasicAuthenticator.isAuthenticated()?
+        │       strategies contain "basic-auth"
+        │       AND SecurityContext is fully authenticated?   ──► ALLOW
+        ├─ (any other OrdAuthenticationManager bean)?
+        │       e.g. CloudFoundryTLSAuthenticator,
+        │            KymaTLSAuthenticator, custom bean        ──► ALLOW if returns true
+        └─ (none of the above)                                ──► DENY (403)
 
 GET /.well-known/open-resource-discovery
         │
@@ -115,70 +119,85 @@ All credentials share a single in-memory store; there is no role distinction bet
 
 ## Customization
 
-### Replace the TLS authenticator
+### Add an mTLS authenticator
 
-The default `TLSAuthenticator` always returns `false`. To enable mTLS, replace it with one of the two built-in implementations or a custom one:
+mTLS is not enabled by default. To activate it, register a configured `CloudFoundryTLSAuthenticator` or `KymaTLSAuthenticator` bean — or any custom `OrdAuthenticationManager` implementation. All registered `OrdAuthenticationManager` beans are collected automatically and evaluated together; registering one does not remove the built-in Basic Auth authenticator.
 
-**SAP Cloud Foundry** — validates client certificates forwarded by the CF router via `X-Forwarded-Client-Cert`, `X-SSL-Client`, `X-SSL-Client-Verify`, `X-SSL-Client-Issuer-DN`, `X-SSL-Client-Subject-DN`, and `X-SSL-Client-Root-CA-DN` headers:
+**SAP Cloud Foundry** — validates client certificates forwarded by the CF router via `X-Forwarded-Client-Cert`, `X-SSL-Client`, `X-SSL-Client-Verify`, `X-SSL-Client-Issuer-DN`, `X-SSL-Client-Subject-DN`, and `X-SSL-Client-Root-CA-DN` headers. Use the fluent `configure(strategy, rootCAs, certs)` method to bind trusted certificates to specific access strategies:
 
 ```java
-import org.openresourcediscovery.core.security.TLSAuthenticator;
+import org.openresourcediscovery.core.security.OrdAuthenticationManager;
+import org.openresourcediscovery.core.security.OrdAuthenticationManager.AccessStrategy;
+import org.openresourcediscovery.core.security.OrdAuthenticationManager.TrustedCertificate;
+import org.openresourcediscovery.core.security.AccessStrategiesResolver;
 import org.openresourcediscovery.core.security.impl.CloudFoundryTLSAuthenticator;
 import java.util.Set;
 
 @Bean
-public TLSAuthenticator tlsAuthenticator() {
-    return new CloudFoundryTLSAuthenticator(
-        Set.of(new TLSAuthenticator.TrustedCertificate(
-            "CN=trusted-issuer,O=MyOrg",   // issuer DN — use "*" to accept any
-            "CN=trusted-client,O=MyOrg"    // subject DN — use "*" to accept any
-        )),
-        Set.of("CN=root-ca,O=MyOrg")       // trusted root CA DNs — use "*" to accept any
-    );
+public OrdAuthenticationManager cloudFoundryTlsAuthenticator(
+        AccessStrategiesResolver accessStrategiesResolver) {
+    return new CloudFoundryTLSAuthenticator(accessStrategiesResolver)
+        .configure(
+            AccessStrategy.CMP_MTLS,
+            Set.of("CN=root-ca,O=MyOrg"),               // trusted root CA DNs
+            Set.of(new TrustedCertificate(
+                "CN=trusted-issuer,O=MyOrg",             // issuer DN — use "*" to accept any
+                "CN=trusted-client,O=MyOrg"              // subject DN — use "*" to accept any
+            ))
+        );
 }
 ```
 
 **SAP Kyma** — validates via `X-SSL-Client-Issuer` and `X-SSL-Client-CN` headers:
 
 ```java
+import org.openresourcediscovery.core.security.OrdAuthenticationManager;
+import org.openresourcediscovery.core.security.OrdAuthenticationManager.AccessStrategy;
+import org.openresourcediscovery.core.security.OrdAuthenticationManager.TrustedCertificate;
+import org.openresourcediscovery.core.security.AccessStrategiesResolver;
+import org.openresourcediscovery.core.security.impl.KymaTLSAuthenticator;
+import java.util.Set;
+
 @Bean
-public TLSAuthenticator tlsAuthenticator() {
-    return new KymaTLSAuthenticator(
-        Set.of(new TLSAuthenticator.TrustedCertificate(
-            "CN=trusted-issuer,O=MyOrg",
-            "CN=trusted-client,O=MyOrg"
-        ))
-    );
+public OrdAuthenticationManager kymaTlsAuthenticator(
+        AccessStrategiesResolver accessStrategiesResolver) {
+    return new KymaTLSAuthenticator(accessStrategiesResolver)
+        .configure(
+            AccessStrategy.BAH_MTLS,
+            Set.of(new TrustedCertificate(
+                "CN=trusted-issuer,O=MyOrg",
+                "CN=trusted-client,O=MyOrg"
+            ))
+        );
 }
 ```
 
-**Custom** — implement `TLSAuthenticator` directly:
+Both implementations support calling `.configure(...)` multiple times to register different certificate sets per access strategy. Certificate DNs are Base64-encoded in the headers and compared order-insensitively (token multiset equality). Use `"*"` as issuer or subject to accept any value.
+
+**Custom** — implement `OrdAuthenticationManager` directly. It receives the raw `HttpServletRequest` and returns `true` to grant access:
 
 ```java
 @Bean
-public TLSAuthenticator tlsAuthenticator() {
+public OrdAuthenticationManager myCustomAuthenticator() {
     return request -> {
-        X509Certificate[] certs =
-            (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-        return certs != null && myTrustStore.isTrusted(certs[0]);
+        String token = request.getHeader("X-Internal-Token");
+        return token != null && myTokenValidator.isValid(token);
     };
 }
 ```
 
-`TLSAuthenticator` is a `@FunctionalInterface`, so a lambda is sufficient for simple cases.
+`OrdAuthenticationManager` is a `@FunctionalInterface`.
 
 ### Replace the authorization manager
 
-To change how access decisions are made for the documents endpoint — for example to add IP allow-listing or a custom claims-based check — provide a bean of type `OrdAuthorizationManager`:
+To change how access decisions are made — for example to add IP allow-listing or a custom claims-based check — provide a bean of type `OrdAuthorizationManager`:
 
 ```java
 import org.openresourcediscovery.core.security.OrdAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationDecision;
 
 @Bean
-public OrdAuthorizationManager ordAuthorizationManager(
-        DocumentSchemaRegistry registry,
-        TLSAuthenticator tlsAuthenticator) {
+public OrdAuthorizationManager ordAuthorizationManager() {
     return (authentication, context) -> {
         // your custom logic here
         boolean granted = /* ... */;
@@ -189,27 +208,23 @@ public OrdAuthorizationManager ordAuthorizationManager(
 
 `OrdAuthorizationManager` extends `AuthorizationManager<RequestAuthorizationContext>` and is a functional interface.
 
-### Replace the authentication manager
+### Replace the authentication manager (Basic Auth)
 
-`OrdAuthenticationManager` is used by the controllers to determine the caller's authenticated state for visibility filtering (not for access control — that is `OrdAuthorizationManager`). Replace it when you need custom authenticated-vs-anonymous semantics:
+The default Basic Auth authenticator (`ordBasicAuthenticator`) is guarded by `@ConditionalOnMissingBean(name = "ordBasicAuthenticator")`. Override it by declaring a bean with that exact name:
 
 ```java
-import org.openresourcediscovery.core.security.OrdAuthenticationManager;
-
-@Bean
-public OrdAuthenticationManager ordAuthenticationManager() {
+@Bean(name = "ordBasicAuthenticator")
+public OrdAuthenticationManager ordBasicAuthenticator() {
     return request -> {
-        // return true if the caller should receive internal/private entities
+        // custom Basic Auth logic
         return request.getHeader("X-Internal-Token") != null;
     };
 }
 ```
 
-`OrdAuthenticationManager` is a `@FunctionalInterface`.
-
 ### Replace a filter chain
 
-Both filter chains are guarded by `@ConditionalOnMissingBean(name = "...")`. Declare a bean with the exact name to suppress the default and take full control of that chain:
+All three filter chains are guarded by `@ConditionalOnMissingBean(name = "...")`. Declare a bean with the exact name to suppress the default and take full control of that chain:
 
 ```java
 import org.springframework.core.Ordered;
@@ -233,19 +248,15 @@ public SecurityFilterChain ordDocumentsSecurityFilterChain(HttpSecurity http) th
 
 Keep the `@Order` value the same as the default — changing it relative to other ORD chains can cause the wrong chain to match first.
 
-### Use separate credentials per document
-
-The default `UserDetailsService` applies the same credential store to all documents. If you need per-document credentials, replace `OrdAuthorizationManager` and `OrdAuthenticationManager` together with a custom implementation that reads credentials from a document-specific source.
-
 ---
 
 ## Interaction with the host application's security
 
-The ORD filter chains use `@Order(HIGHEST_PRECEDENCE + 10/20)` so they match before any application-defined chains. A typical application chain at default order (`Integer.MAX_VALUE`) or lower explicitly-set order will not see requests for ORD paths at all.
+The ORD filter chains use `@Order(HIGHEST_PRECEDENCE + 10/20/30)` so they match before any application-defined chains. A typical application chain at default order (`Integer.MAX_VALUE`) or lower explicitly-set order will not see requests for ORD paths at all.
 
-The `ordUserDetailsService` and `ordAuthenticationTrustResolver` beans are registered with `defaultCandidate = false` and qualified names. They are invisible to Spring Boot's `UserDetailsServiceAutoConfiguration` and to any `@Autowired AuthenticationTrustResolver` field in the host application — they cannot cause interference.
+The `ordUserDetailsService` bean is registered with `defaultCandidate = false` and a qualified name. It is invisible to Spring Boot's `UserDetailsServiceAutoConfiguration` and to any `@Autowired UserDetailsService` field in the host application — it cannot cause interference.
 
-If the host application already defines a `SecurityFilterChain` that matches `/**` at a higher precedence than `HIGHEST_PRECEDENCE + 10`, it will shadow the ORD chains. Set the host chain's `@Order` to a value higher than `HIGHEST_PRECEDENCE + 20` (i.e. numerically greater) to let the ORD chains take precedence.
+If the host application already defines a `SecurityFilterChain` that matches `/**` at a higher precedence than `HIGHEST_PRECEDENCE + 10`, it will shadow the ORD chains. Set the host chain's `@Order` to a value higher than `HIGHEST_PRECEDENCE + 30` (i.e. numerically greater) to let the ORD chains take precedence.
 
 ---
 

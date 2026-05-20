@@ -1,206 +1,268 @@
 package org.openresourcediscovery.core.security.impl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static java.util.Base64.getEncoder;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
+import static org.openresourcediscovery.core.security.OrdAuthenticationManager.AccessStrategy.BAH_MTLS;
+import static org.openresourcediscovery.core.security.OrdAuthenticationManager.AccessStrategy.CMP_MTLS;
+import static org.openresourcediscovery.core.security.OrdAuthenticationManager.AccessStrategy.OPEN;
 
-import java.util.Base64;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.openresourcediscovery.core.security.TLSAuthenticator.TrustedCertificate;
-import org.springframework.mock.web.MockHttpServletRequest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.openresourcediscovery.core.security.AccessStrategiesResolver;
+import org.openresourcediscovery.core.security.OrdAuthenticationManager.TrustedCertificate;
 
+@ExtendWith(MockitoExtension.class)
 class CloudFoundryTLSAuthenticatorTest {
 
-  // Comma-separated DNs (Base64-encoded as CloudFoundry sends them)
-  private static final String ROOT_CA_DN = "CN=root-ca,O=ACME,C=US";
   private static final String ISSUER_DN = "CN=issuer,O=ACME,C=US";
   private static final String SUBJECT_DN = "CN=client,O=ACME,C=US";
+  private static final String ROOT_CA_DN = "CN=root-ca,O=ACME,C=US";
+  private static final String ISSUER_HEADER = getEncoder().encodeToString(ISSUER_DN.getBytes(UTF_8));
+  private static final String ROOT_CA_HEADER = getEncoder().encodeToString(ROOT_CA_DN.getBytes(UTF_8));
+  private static final String SUBJECT_HEADER = getEncoder().encodeToString(SUBJECT_DN.getBytes(UTF_8));
 
-  private static final String ROOT_CA_DN_B64 = b64(ROOT_CA_DN);
-  private static final String ISSUER_DN_B64 = b64(ISSUER_DN);
-  private static final String SUBJECT_DN_B64 = b64(SUBJECT_DN);
+  @Mock
+  private HttpServletRequest request;
 
-  private static final TrustedCertificate TRUSTED_CERT = new TrustedCertificate(ISSUER_DN, SUBJECT_DN);
-  private static final TrustedCertificate WILDCARD_CERT = new TrustedCertificate("*", "*");
+  @Mock
+  private AccessStrategiesResolver accessStrategiesResolver;
 
   private CloudFoundryTLSAuthenticator classUnderTest;
 
   @BeforeEach
   void setUp() {
-    classUnderTest = new CloudFoundryTLSAuthenticator(Set.of(TRUSTED_CERT), Set.of(ROOT_CA_DN));
+    classUnderTest = new CloudFoundryTLSAuthenticator(accessStrategiesResolver)
+        .configure(CMP_MTLS, Set.of(ROOT_CA_DN), Set.of(new TrustedCertificate(ISSUER_DN, SUBJECT_DN)));
+
+    lenient().when(request.getHeader("X-SSL-Client")).thenReturn("1");
+    lenient().when(request.getHeader("X-SSL-Client-Verify")).thenReturn("0");
+    lenient().when(request.getHeader("X-Forwarded-Client-Cert")).thenReturn("cert-value");
+    lenient().when(request.getHeader("X-SSL-Client-Issuer-DN")).thenReturn(ISSUER_HEADER);
+    lenient().when(request.getHeader("X-SSL-Client-Root-CA-DN")).thenReturn(ROOT_CA_HEADER);
+    lenient().when(request.getHeader("X-SSL-Client-Subject-DN")).thenReturn(SUBJECT_HEADER);
   }
 
-  // ── isXfccProxyVerified – missing / wrong XFCC headers ─────────────────────
+  // ── happy path ───────────────────────────────────────────────────────────────
 
   @Test
-  void givenMissingXfccHeader_whenIsAuthenticatedIsCalled_thenFalseIsReturned() {
-    MockHttpServletRequest request = validRequest();
-    request.removeHeader("X-Forwarded-Client-Cert");
+  void givenAllConditionsMet_whenIsAuthenticated_thenReturnsTrue() {
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
 
-    assertFalse(classUnderTest.isAuthenticated(request));
+    assertThat(classUnderTest.isAuthenticated(request)).isTrue();
   }
 
-  @Test
-  void givenWrongXSslClientHeader_whenIsAuthenticatedIsCalled_thenFalseIsReturned() {
-    MockHttpServletRequest request = validRequest();
-    request.removeHeader("X-SSL-Client");
-    request.addHeader("X-SSL-Client", "0");
-
-    assertFalse(classUnderTest.isAuthenticated(request));
-  }
+  // ── XFCC proxy verification ──────────────────────────────────────────────────
 
   @Test
-  void givenWrongXSslClientVerifyHeader_whenIsAuthenticatedIsCalled_thenFalseIsReturned() {
-    MockHttpServletRequest request = validRequest();
-    request.removeHeader("X-SSL-Client-Verify");
-    request.addHeader("X-SSL-Client-Verify", "1");
+  void givenMissingXForwardedClientCert_whenIsAuthenticated_thenReturnsFalse() {
+    when(request.getHeader("X-Forwarded-Client-Cert")).thenReturn(null);
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
+    // X-SSL-Client and X-SSL-Client-Verify are not read after nonNull() short-circuits
 
-    assertFalse(classUnderTest.isAuthenticated(request));
-  }
-
-  // ── isTrustedRootCertificateAuthorityDN ────────────────────────────────────
-
-  @Test
-  void givenMissingRootCaDnHeader_whenIsAuthenticatedIsCalled_thenFalseIsReturned() {
-    MockHttpServletRequest request = validRequest();
-    request.removeHeader("X-SSL-Client-Root-CA-DN");
-
-    assertFalse(classUnderTest.isAuthenticated(request));
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
   }
 
   @Test
-  void givenUntrustedRootCaDn_whenIsAuthenticatedIsCalled_thenFalseIsReturned() {
-    MockHttpServletRequest request = validRequest();
-    request.removeHeader("X-SSL-Client-Root-CA-DN");
-    request.addHeader("X-SSL-Client-Root-CA-DN", b64("CN=untrusted,O=Other,C=DE"));
+  void givenXSslClientNotOne_whenIsAuthenticated_thenReturnsFalse() {
+    when(request.getHeader("X-SSL-Client")).thenReturn("0");
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
 
-    assertFalse(classUnderTest.isAuthenticated(request));
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
   }
 
   @Test
-  void givenSlashSeparatedRootCaDnMatchingTrustedEntry_whenIsAuthenticatedIsCalled_thenTrueIsReturned() {
-    String slashDn = "/C=US/O=ACME/CN=root-ca";
-    classUnderTest = new CloudFoundryTLSAuthenticator(Set.of(TRUSTED_CERT), Set.of(slashDn));
-    MockHttpServletRequest request = validRequest();
-    request.removeHeader("X-SSL-Client-Root-CA-DN");
-    request.addHeader("X-SSL-Client-Root-CA-DN", b64(slashDn));
+  void givenXSslClientVerifyNotZero_whenIsAuthenticated_thenReturnsFalse() {
+    when(request.getHeader("X-SSL-Client-Verify")).thenReturn("1");
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
 
-    assertTrue(classUnderTest.isAuthenticated(request));
-  }
-
-  // ── isTrustedCertificate ────────────────────────────────────────────────────
-
-  @Test
-  void givenMissingIssuerDnHeader_whenIsAuthenticatedIsCalled_thenFalseIsReturned() {
-    MockHttpServletRequest request = validRequest();
-    request.removeHeader("X-SSL-Client-Issuer-DN");
-
-    assertFalse(classUnderTest.isAuthenticated(request));
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
   }
 
   @Test
-  void givenMissingSubjectDnHeader_whenIsAuthenticatedIsCalled_thenFalseIsReturned() {
-    MockHttpServletRequest request = validRequest();
-    request.removeHeader("X-SSL-Client-Subject-DN");
+  void givenNullXSslClient_whenIsAuthenticated_thenReturnsFalse() {
+    when(request.getHeader("X-SSL-Client")).thenReturn(null);
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
 
-    assertFalse(classUnderTest.isAuthenticated(request));
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
   }
 
   @Test
-  void givenUntrustedIssuerDn_whenIsAuthenticatedIsCalled_thenFalseIsReturned() {
-    MockHttpServletRequest request = validRequest();
-    request.removeHeader("X-SSL-Client-Issuer-DN");
-    request.addHeader("X-SSL-Client-Issuer-DN", b64("CN=unknown-issuer,O=Other,C=DE"));
+  void givenNullXSslClientVerify_whenIsAuthenticated_thenReturnsFalse() {
+    when(request.getHeader("X-SSL-Client-Verify")).thenReturn(null);
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
 
-    assertFalse(classUnderTest.isAuthenticated(request));
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
+  }
+
+  // ── access-strategy matching ─────────────────────────────────────────────────
+
+  @Test
+  void givenNoMatchingAccessStrategy_whenIsAuthenticated_thenReturnsFalse() {
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(OPEN.getKey()));
+
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
   }
 
   @Test
-  void givenUntrustedSubjectDn_whenIsAuthenticatedIsCalled_thenFalseIsReturned() {
-    MockHttpServletRequest request = validRequest();
-    request.removeHeader("X-SSL-Client-Subject-DN");
-    request.addHeader("X-SSL-Client-Subject-DN", b64("CN=unknown-client,O=Other,C=DE"));
+  void givenEmptyAccessStrategies_whenIsAuthenticated_thenReturnsFalse() {
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of());
 
-    assertFalse(classUnderTest.isAuthenticated(request));
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
   }
 
   @Test
-  void givenWildcardIssuerAndWildcardSubject_whenIsAuthenticatedIsCalled_thenTrueIsReturned() {
-    classUnderTest = new CloudFoundryTLSAuthenticator(Set.of(WILDCARD_CERT), Set.of(ROOT_CA_DN));
+  void givenUnconfiguredStrategy_whenIsAuthenticated_thenReturnsFalse() {
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(BAH_MTLS.getKey()));
 
-    assertTrue(classUnderTest.isAuthenticated(validRequest()));
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
+  }
+
+  // ── root CA DN matching ───────────────────────────────────────────────────────
+
+  @Test
+  void givenRootCaDnMismatch_whenIsAuthenticated_thenReturnsFalse() {
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
+    when(request.getHeader("X-SSL-Client-Root-CA-DN"))
+        .thenReturn(getEncoder().encodeToString("CN=other-root,O=ACME,C=US".getBytes(UTF_8)));
+
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
   }
 
   @Test
-  void givenWildcardIssuerAndMatchingSubject_whenIsAuthenticatedIsCalled_thenTrueIsReturned() {
-    classUnderTest =
-        new CloudFoundryTLSAuthenticator(Set.of(new TrustedCertificate("*", SUBJECT_DN)), Set.of(ROOT_CA_DN));
+  void givenMissingRootCaDnHeader_whenIsAuthenticated_thenReturnsFalse() {
+    when(request.getHeader("X-SSL-Client-Root-CA-DN")).thenReturn(null);
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
 
-    assertTrue(classUnderTest.isAuthenticated(validRequest()));
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
   }
 
   @Test
-  void givenMatchingIssuerAndWildcardSubject_whenIsAuthenticatedIsCalled_thenTrueIsReturned() {
-    classUnderTest =
-        new CloudFoundryTLSAuthenticator(Set.of(new TrustedCertificate(ISSUER_DN, "*")), Set.of(ROOT_CA_DN));
+  void givenEmptyRootCaDnHeader_whenIsAuthenticated_thenReturnsFalse() {
+    when(request.getHeader("X-SSL-Client-Root-CA-DN")).thenReturn("");
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
 
-    assertTrue(classUnderTest.isAuthenticated(validRequest()));
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
   }
 
   @Test
-  void givenSlashSeparatedCertDnsMatchingTrustedEntry_whenIsAuthenticatedIsCalled_thenTrueIsReturned() {
-    String slashIssuer = "/C=US/O=ACME/CN=issuer";
-    String slashSubject = "/C=US/O=ACME/CN=client";
-    classUnderTest = new CloudFoundryTLSAuthenticator(
-        Set.of(new TrustedCertificate(slashIssuer, slashSubject)), Set.of(ROOT_CA_DN));
-    MockHttpServletRequest request = validRequest();
-    request.removeHeader("X-SSL-Client-Issuer-DN");
-    request.removeHeader("X-SSL-Client-Subject-DN");
-    request.addHeader("X-SSL-Client-Issuer-DN", b64(slashIssuer));
-    request.addHeader("X-SSL-Client-Subject-DN", b64(slashSubject));
+  void givenRootCaDnTokensInDifferentOrder_whenIsAuthenticated_thenReturnsTrue() {
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
+    when(request.getHeader("X-SSL-Client-Root-CA-DN"))
+        .thenReturn(getEncoder().encodeToString("O=ACME,CN=root-ca,C=US".getBytes(UTF_8)));
 
-    assertTrue(classUnderTest.isAuthenticated(request));
+    assertThat(classUnderTest.isAuthenticated(request)).isTrue();
+  }
+
+  // ── issuer / subject cert matching ───────────────────────────────────────────
+
+  @Test
+  void givenIssuerDnMismatch_whenIsAuthenticated_thenReturnsFalse() {
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
+    when(request.getHeader("X-SSL-Client-Issuer-DN"))
+        .thenReturn(getEncoder().encodeToString("CN=other-issuer,O=ACME,C=US".getBytes(UTF_8)));
+
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
   }
 
   @Test
-  void givenMultipleTrustedCertificatesAndOneMatches_whenIsAuthenticatedIsCalled_thenTrueIsReturned() {
-    classUnderTest = new CloudFoundryTLSAuthenticator(
-        Set.of(new TrustedCertificate("CN=other,O=Other,C=DE", "CN=other,O=Other,C=DE"), TRUSTED_CERT),
-        Set.of(ROOT_CA_DN));
+  void givenSubjectDnMismatch_whenIsAuthenticated_thenReturnsFalse() {
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
+    when(request.getHeader("X-SSL-Client-Subject-DN"))
+        .thenReturn(getEncoder().encodeToString("CN=other-client,O=ACME,C=US".getBytes(UTF_8)));
 
-    assertTrue(classUnderTest.isAuthenticated(validRequest()));
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
   }
 
   @Test
-  void givenNoTrustedCertificates_whenIsAuthenticatedIsCalled_thenFalseIsReturned() {
-    classUnderTest = new CloudFoundryTLSAuthenticator(Set.of(), Set.of(ROOT_CA_DN));
+  void givenMissingIssuerDnHeader_whenIsAuthenticated_thenReturnsFalse() {
+    when(request.getHeader("X-SSL-Client-Issuer-DN")).thenReturn(null);
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
 
-    assertFalse(classUnderTest.isAuthenticated(validRequest()));
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
   }
-
-  // ── full happy path ─────────────────────────────────────────────────────────
 
   @Test
-  void givenAllHeadersValidAndCertificateTrusted_whenIsAuthenticatedIsCalled_thenTrueIsReturned() {
-    assertTrue(classUnderTest.isAuthenticated(validRequest()));
+  void givenMissingSubjectDnHeader_whenIsAuthenticated_thenReturnsFalse() {
+    when(request.getHeader("X-SSL-Client-Subject-DN")).thenReturn(null);
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
+
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
   }
 
-  // ── helpers ─────────────────────────────────────────────────────────────────
+  // ── wildcard certificate matching ─────────────────────────────────────────────
 
-  private static MockHttpServletRequest validRequest() {
-    MockHttpServletRequest request = new MockHttpServletRequest();
-    request.addHeader("X-Forwarded-Client-Cert", "present");
-    request.addHeader("X-SSL-Client", "1");
-    request.addHeader("X-SSL-Client-Verify", "0");
-    request.addHeader("X-SSL-Client-Root-CA-DN", ROOT_CA_DN_B64);
-    request.addHeader("X-SSL-Client-Issuer-DN", ISSUER_DN_B64);
-    request.addHeader("X-SSL-Client-Subject-DN", SUBJECT_DN_B64);
-    return request;
+  @Test
+  void givenWildcardIssuerAndMatchingSubject_whenIsAuthenticated_thenReturnsTrue() {
+    classUnderTest = new CloudFoundryTLSAuthenticator(accessStrategiesResolver)
+        .configure(CMP_MTLS, Set.of(ROOT_CA_DN), Set.of(new TrustedCertificate("*", SUBJECT_DN)));
+
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
+
+    assertThat(classUnderTest.isAuthenticated(request)).isTrue();
   }
 
-  private static String b64(String value) {
-    return Base64.getEncoder().encodeToString(value.getBytes(UTF_8));
+  @Test
+  void givenMatchingIssuerAndWildcardSubject_whenIsAuthenticated_thenReturnsTrue() {
+    classUnderTest = new CloudFoundryTLSAuthenticator(accessStrategiesResolver)
+        .configure(CMP_MTLS, Set.of(ROOT_CA_DN), Set.of(new TrustedCertificate(ISSUER_DN, "*")));
+
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
+
+    assertThat(classUnderTest.isAuthenticated(request)).isTrue();
+  }
+
+  @Test
+  void givenFullWildcardCertificate_whenIsAuthenticated_thenReturnsTrue() {
+    classUnderTest = new CloudFoundryTLSAuthenticator(accessStrategiesResolver)
+        .configure(CMP_MTLS, Set.of(ROOT_CA_DN), Set.of(new TrustedCertificate("*", "*")));
+
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
+
+    assertThat(classUnderTest.isAuthenticated(request)).isTrue();
+  }
+
+  // ── multi-strategy / multi-cert configuration ─────────────────────────────────
+
+  @Test
+  void givenMultipleTrustedCertsAndSecondMatches_whenIsAuthenticated_thenReturnsTrue() {
+    classUnderTest = new CloudFoundryTLSAuthenticator(accessStrategiesResolver)
+        .configure(
+            CMP_MTLS,
+            Set.of(ROOT_CA_DN),
+            Set.of(
+                new TrustedCertificate(ISSUER_DN, SUBJECT_DN),
+                new TrustedCertificate("CN=other-issuer,O=ACME,C=US", "CN=other-client,O=ACME,C=US")));
+
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
+
+    assertThat(classUnderTest.isAuthenticated(request)).isTrue();
+  }
+
+  @Test
+  void givenMultipleStrategiesConfiguredAndMatchingOne_whenIsAuthenticated_thenReturnsTrue() {
+    classUnderTest = new CloudFoundryTLSAuthenticator(accessStrategiesResolver)
+        .configure(CMP_MTLS, Set.of(ROOT_CA_DN), Set.of(new TrustedCertificate(ISSUER_DN, SUBJECT_DN)))
+        .configure(BAH_MTLS, Set.of("CN=other-root,O=ACME,C=US"), Set.of(new TrustedCertificate("*", "*")));
+
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
+
+    assertThat(classUnderTest.isAuthenticated(request)).isTrue();
+  }
+
+  @Test
+  void givenNoStrategiesConfigured_whenIsAuthenticated_thenReturnsFalse() {
+    classUnderTest = new CloudFoundryTLSAuthenticator(accessStrategiesResolver);
+
+    when(accessStrategiesResolver.resolve(request)).thenReturn(Set.of(CMP_MTLS.getKey()));
+
+    assertThat(classUnderTest.isAuthenticated(request)).isFalse();
   }
 }
