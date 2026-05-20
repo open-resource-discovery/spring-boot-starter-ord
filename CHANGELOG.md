@@ -9,6 +9,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [[0.4.0](https://github.com/open-resource-discovery/spring-boot-starter-ord/releases/tag/v0.4.0)] - 2026-05-20
 
+Add support for Business Accelerator Hub mTLS authentication 
+Update to ORD spec 1.15.0
 
 ## [[0.3.0](https://github.com/open-resource-discovery/spring-boot-starter-ord/releases/tag/v0.3.0)] - 2026-05-11
 
