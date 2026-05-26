@@ -18,6 +18,10 @@ on:
         required: false
         type: string
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
 
   determine-target-release-version:
@@ -148,9 +152,9 @@ jobs:
         run: mvn versions:set -DgenerateBackupPoms=false -DnewVersion="${TARGET_SNAPSHOT_VERSION}"
 
       - name: Update project SNAPSHOT version in repository
-        uses: devops-infra/action-commit-push@v1.1.0
+        uses: peter-evans/create-pull-request@v8
         with:
-          target_branch: main
-          commit_prefix: "[AUTO]"
-          github_token: "${{ secrets.GH_TOKEN }}"
-          commit_message: This PR automatically updates the project version to ${{ env.TARGET_SNAPSHOT_VERSION }}
+          branch: auto/update-snapshot-version-${{ env.TARGET_SNAPSHOT_VERSION }}
+          body: Update the project version to ${{ env.TARGET_SNAPSHOT_VERSION }}
+          title: [AUTO] Updates project version to ${{ env.TARGET_SNAPSHOT_VERSION }}
+          commit-message: [AUTO] Updates project version to ${{ env.TARGET_SNAPSHOT_VERSION }}
