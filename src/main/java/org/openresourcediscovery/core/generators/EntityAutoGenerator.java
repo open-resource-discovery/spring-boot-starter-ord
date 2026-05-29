@@ -1,6 +1,7 @@
 package org.openresourcediscovery.core.generators;
 
 import static java.util.Objects.isNull;
+import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
 import static org.apache.commons.lang3.ClassUtils.primitiveToWrapper;
 import static org.apache.commons.lang3.StringUtils.capitalize;
 import static org.apache.commons.lang3.StringUtils.uncapitalize;
@@ -40,7 +41,8 @@ public class EntityAutoGenerator<A extends Annotation, E> extends EntityGenerato
     processAnnotations(context, entity, required);
     processAnnotationArrays(context, entity, required);
 
-    return entity;
+    return emptyIfNull(customizers).stream()
+        .reduce(entity, (e, customizer) -> customizer.customize(context, e), (l, r) -> l);
   }
 
   protected Object tryGenerateDefault(Context<A> context, String field) {
