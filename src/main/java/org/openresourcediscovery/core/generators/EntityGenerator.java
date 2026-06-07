@@ -1,7 +1,10 @@
 package org.openresourcediscovery.core.generators;
 
+import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
+
 import jakarta.annotation.Resource;
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Value;
@@ -13,6 +16,11 @@ import org.openresourcediscovery.model.DocumentSchema;
 @NoArgsConstructor
 @Setter(onMethod = @__({@Resource}))
 public abstract class EntityGenerator<A extends Annotation, E> {
+
+  public interface Customizer<A extends Annotation, E> {
+
+    E customize(Context<A> context, E entity);
+  }
 
   @Value
   @Accessors(fluent = true)
@@ -29,7 +37,13 @@ public abstract class EntityGenerator<A extends Annotation, E> {
   }
 
   protected OrdProperties ordProperties;
+  protected Collection<Customizer<A, E>> customizers;
   protected EntityGeneratorFactory entityGeneratorFactory;
 
   public abstract E generate(Context<A> context);
+
+  protected E customize(Context<A> context, E entity) {
+    return emptyIfNull(customizers).stream()
+        .reduce(entity, (e, customizer) -> customizer.customize(context, e), (l, r) -> l);
+  }
 }

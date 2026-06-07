@@ -40,7 +40,7 @@ public class EntityAutoGenerator<A extends Annotation, E> extends EntityGenerato
     processAnnotations(context, entity, required);
     processAnnotationArrays(context, entity, required);
 
-    return entity;
+    return customize(context, entity);
   }
 
   protected Object tryGenerateDefault(Context<A> context, String field) {

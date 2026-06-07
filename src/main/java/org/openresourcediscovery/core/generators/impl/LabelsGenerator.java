@@ -19,10 +19,12 @@ public class LabelsGenerator extends EntityGenerator<Ord.Labels, Labels> {
   public Labels generate(Context<Ord.Labels> context) {
     return isEmpty(context.annotation().value())
         ? null
-        : Stream.of(context.annotation().value())
-            .reduce(
-                new Labels(),
-                (l, a) -> l.withAdditionalProperty(a.key(), asList((a.values()))),
-                (l, r) -> l);
+        : customize(
+            context,
+            Stream.of(context.annotation().value())
+                .reduce(
+                    new Labels(),
+                    (l, a) -> l.withAdditionalProperty(a.key(), asList((a.values()))),
+                    (l, r) -> l));
   }
 }

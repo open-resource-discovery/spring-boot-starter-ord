@@ -16,13 +16,17 @@ public class ApiModelSelectorODataGenerator extends EntityGenerator<Ord.ApiModel
 
   @Override
   public Object generate(Context<Ord.ApiModelSelectorOData> context) {
-    return Map.ofEntries(
-        /// Mandatory
-        Map.entry(
-            "type",
-            requireNonNull(firstNonBlank(context.annotation().type()))),
-        Map.entry(
-            "entitySetName",
-            requireNonNull(firstNonBlank(context.annotation().entitySetName()))));
+    return customize(
+        context,
+        Map.ofEntries(
+            /// Mandatory
+            Map.entry(
+                "type",
+                requireNonNull(
+                    firstNonBlank(context.annotation().type()))),
+            Map.entry(
+                "entitySetName",
+                requireNonNull(
+                    firstNonBlank(context.annotation().entitySetName())))));
   }
 }

@@ -19,10 +19,12 @@ public class DocumentationLabelsGenerator extends EntityGenerator<Ord.Documentat
   public DocumentationLabels generate(Context<Ord.DocumentationLabels> context) {
     return isEmpty(context.annotation().value())
         ? null
-        : Stream.of(context.annotation().value())
-            .reduce(
-                new DocumentationLabels(),
-                (l, a) -> l.withAdditionalProperty(a.key(), List.of(a.values())),
-                (l, r) -> l);
+        : customize(
+            context,
+            Stream.of(context.annotation().value())
+                .reduce(
+                    new DocumentationLabels(),
+                    (l, a) -> l.withAdditionalProperty(a.key(), List.of(a.values())),
+                    (l, r) -> l));
   }
 }

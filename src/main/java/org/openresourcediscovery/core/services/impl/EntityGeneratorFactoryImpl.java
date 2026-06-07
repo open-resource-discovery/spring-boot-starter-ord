@@ -2,6 +2,7 @@ package org.openresourcediscovery.core.services.impl;
 
 import static java.util.Map.entry;
 import static java.util.Objects.requireNonNull;
+import static org.openresourcediscovery.model.DocumentSchema.OpenResourceDiscovery._1_14;
 import static org.springframework.beans.factory.config.AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE;
 
 import java.lang.annotation.Annotation;
@@ -17,7 +18,6 @@ import org.openresourcediscovery.core.generators.impl.ApiResourceGenerator;
 import org.openresourcediscovery.core.generators.impl.CapabilityGenerator;
 import org.openresourcediscovery.core.generators.impl.ConsumptionBundleGenerator;
 import org.openresourcediscovery.core.generators.impl.DataProductGenerator;
-import org.openresourcediscovery.core.generators.impl.DocumentSchemaGenerator;
 import org.openresourcediscovery.core.generators.impl.DocumentationLabelsGenerator;
 import org.openresourcediscovery.core.generators.impl.EntityTypeGenerator;
 import org.openresourcediscovery.core.generators.impl.EntityTypeOrdIdTargetGenerator;
@@ -50,6 +50,7 @@ import org.openresourcediscovery.model.CredentialExchangeStrategy;
 import org.openresourcediscovery.model.DataProductInputPort;
 import org.openresourcediscovery.model.DataProductLink;
 import org.openresourcediscovery.model.DataProductOutputPort;
+import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.EntityTypeDefinition;
 import org.openresourcediscovery.model.EntityTypeMapping;
 import org.openresourcediscovery.model.EventCompatibility;
@@ -106,6 +107,9 @@ public class EntityGeneratorFactoryImpl implements EntityGeneratorFactory {
       }
     };
   }
+
+  private static final String DOCUMENT_SCHEMA_URL =
+      "https://open-resource-discovery.github.io/specification/spec-v1/interfaces/Document.schema.json";
 
   private static final Map<Class<? extends Annotation>, Supplier<EntityGenerator<? extends Annotation, ?>>>
       DEFAULT_SUPPLIERS =
@@ -178,7 +182,12 @@ public class EntityGeneratorFactoryImpl implements EntityGeneratorFactory {
                   () -> new EntityAutoGenerator<Ord.DataProductOutputPort, DataProductOutputPort>(
                       DataProductOutputPort::new)),
               entry(Ord.DocumentationLabels.class, DocumentationLabelsGenerator::new),
-              entry(Ord.Document.class, DocumentSchemaGenerator::new),
+              entry(
+                  Ord.Document.class,
+                  () -> new EntityAutoGenerator<Ord.Document, DocumentSchema>(
+                      () -> new DocumentSchema()
+                          .with$schema(DOCUMENT_SCHEMA_URL)
+                          .withOpenResourceDiscovery(_1_14))),
               entry(Ord.EntityType.class, EntityTypeGenerator::new),
               entry(
                   Ord.EntityTypeDefinition.class,
