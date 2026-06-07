@@ -3,6 +3,7 @@ package org.openresourcediscovery.core.processors.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
@@ -17,17 +18,25 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.generators.EntityGenerator;
 import org.openresourcediscovery.core.generators.EntityGenerator.Context;
+import org.openresourcediscovery.core.processors.AnnotationProcessor;
 import org.openresourcediscovery.core.services.DocumentSchemaDetector.DetectionResult;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner.ScanResult;
 import org.openresourcediscovery.model.Agent;
 import org.openresourcediscovery.model.DocumentSchema;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class AgentAnnotationProcessorTest {
 
   private static final String DOCUMENT_NAME = "doc-1";
+
+  @Mock
+  private Ord.Agent agentAnnotation;
+
+  @Mock
+  private Ord.DocumentReference documentReference;
 
   @Mock
   private OrdAnnotationsScanner ordAnnotationsScanner;
@@ -39,18 +48,17 @@ class AgentAnnotationProcessorTest {
   private EntityGenerator<Ord.Agent, Agent> entityGenerator;
 
   @Mock
-  private Ord.Agent agentAnnotation;
-
-  @Mock
-  private Ord.DocumentReference documentReference;
+  private AnnotationProcessor.Customizer<Ord.Agent> customizer;
 
   private AgentAnnotationProcessor classUnderTest;
 
   @BeforeEach
   void setUp() {
     classUnderTest = new AgentAnnotationProcessor();
+
     classUnderTest.setOrdAnnotationsScanner(ordAnnotationsScanner);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
   }
 
   @Test
@@ -69,6 +77,9 @@ class AgentAnnotationProcessorTest {
     classUnderTest.process(Map.of(DOCUMENT_NAME, new DetectionResult(document, Set.of("open"))));
 
     assertThat(document.getAgents()).containsExactly(generatedAgent);
+
+    verify(customizer).customize(agentAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -92,6 +103,9 @@ class AgentAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getAgents()).containsExactly(existingAgent, newAgent);
+
+    verify(customizer).customize(agentAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -107,7 +121,9 @@ class AgentAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getAgents()).isNullOrEmpty();
+
     verify(ordAnnotationsScanner).scan(Ord.Agent.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -123,6 +139,7 @@ class AgentAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     verify(ordAnnotationsScanner).scan(Ord.Agent.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -138,6 +155,7 @@ class AgentAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     verify(entityGeneratorFactory).create(Ord.Agent.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -168,5 +186,9 @@ class AgentAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getAgents()).containsExactly(firstAgent, secondAgent);
+
+    verify(customizer).customize(agentAnnotation, document);
+    verify(customizer).customize(secondAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 }

@@ -3,6 +3,7 @@ package org.openresourcediscovery.core.processors.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
@@ -16,12 +17,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.generators.EntityGenerator;
+import org.openresourcediscovery.core.processors.AnnotationProcessor;
 import org.openresourcediscovery.core.services.DocumentSchemaDetector.DetectionResult;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner.ScanResult;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.EventResource;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class EventResourceAnnotationProcessorTest {
@@ -43,6 +46,9 @@ class EventResourceAnnotationProcessorTest {
   @Mock
   private Ord.DocumentReference documentReference;
 
+  @Mock
+  private AnnotationProcessor.Customizer<Ord.EventResource> customizer;
+
   private EventResourceAnnotationProcessor classUnderTest;
 
   @BeforeEach
@@ -50,6 +56,7 @@ class EventResourceAnnotationProcessorTest {
     classUnderTest = new EventResourceAnnotationProcessor();
     classUnderTest.setOrdAnnotationsScanner(ordAnnotationsScanner);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
   }
 
   @Test
@@ -72,6 +79,9 @@ class EventResourceAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getEventResources()).containsExactly(generatedEventResource);
+
+    verify(customizer).customize(eventResourceAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -96,6 +106,9 @@ class EventResourceAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getEventResources()).containsExactly(existingEventResource, newEventResource);
+
+    verify(customizer).customize(eventResourceAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -113,6 +126,7 @@ class EventResourceAnnotationProcessorTest {
 
     assertThat(document.getEventResources()).isNullOrEmpty();
     verify(ordAnnotationsScanner).scan(Ord.EventResource.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -129,6 +143,7 @@ class EventResourceAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     verify(ordAnnotationsScanner).scan(Ord.EventResource.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -145,6 +160,7 @@ class EventResourceAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     verify(entityGeneratorFactory).create(Ord.EventResource.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -176,5 +192,9 @@ class EventResourceAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getEventResources()).containsExactly(firstEventResource, secondEventResource);
+
+    verify(customizer).customize(eventResourceAnnotation, document);
+    verify(customizer).customize(secondAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 }

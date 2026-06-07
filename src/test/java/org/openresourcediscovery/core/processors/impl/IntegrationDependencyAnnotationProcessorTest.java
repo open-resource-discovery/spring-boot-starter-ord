@@ -3,6 +3,7 @@ package org.openresourcediscovery.core.processors.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
@@ -16,12 +17,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.generators.EntityGenerator;
+import org.openresourcediscovery.core.processors.AnnotationProcessor;
 import org.openresourcediscovery.core.services.DocumentSchemaDetector.DetectionResult;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner.ScanResult;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.IntegrationDependency;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class IntegrationDependencyAnnotationProcessorTest {
@@ -43,6 +46,9 @@ class IntegrationDependencyAnnotationProcessorTest {
   @Mock
   private Ord.DocumentReference documentReference;
 
+  @Mock
+  private AnnotationProcessor.Customizer<Ord.IntegrationDependency> customizer;
+
   private IntegrationDependencyAnnotationProcessor classUnderTest;
 
   @BeforeEach
@@ -50,6 +56,7 @@ class IntegrationDependencyAnnotationProcessorTest {
     classUnderTest = new IntegrationDependencyAnnotationProcessor();
     classUnderTest.setOrdAnnotationsScanner(ordAnnotationsScanner);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
   }
 
   @Test
@@ -74,6 +81,9 @@ class IntegrationDependencyAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getIntegrationDependencies()).containsExactly(generatedDependency);
+
+    verify(customizer).customize(integrationDependencyAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -100,6 +110,9 @@ class IntegrationDependencyAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getIntegrationDependencies()).containsExactly(existingDependency, newDependency);
+
+    verify(customizer).customize(integrationDependencyAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -118,6 +131,7 @@ class IntegrationDependencyAnnotationProcessorTest {
 
     assertThat(document.getIntegrationDependencies()).isNullOrEmpty();
     verify(ordAnnotationsScanner).scan(Ord.IntegrationDependency.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -135,6 +149,7 @@ class IntegrationDependencyAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     verify(ordAnnotationsScanner).scan(Ord.IntegrationDependency.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -152,6 +167,7 @@ class IntegrationDependencyAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     verify(entityGeneratorFactory).create(Ord.IntegrationDependency.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -185,5 +201,9 @@ class IntegrationDependencyAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getIntegrationDependencies()).containsExactly(firstDependency, secondDependency);
+
+    verify(customizer).customize(integrationDependencyAnnotation, document);
+    verify(customizer).customize(secondAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 }

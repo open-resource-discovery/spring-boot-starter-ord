@@ -4,6 +4,8 @@ import static java.util.Objects.nonNull;
 
 import jakarta.annotation.Resource;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.Setter;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.generators.EntityGenerator;
@@ -14,12 +16,14 @@ import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.SystemVersion;
+import org.springframework.beans.factory.ObjectProvider;
 
 @Setter(onMethod = @__({@Resource}))
 public class SystemVersionAnnotationProcessor implements AnnotationProcessor<Ord.SystemVersion, SystemVersion> {
 
   private OrdAnnotationsScanner ordAnnotationsScanner;
   private EntityGeneratorFactory entityGeneratorFactory;
+  private ObjectProvider<Customizer<Ord.SystemVersion>> customizers;
 
   @Override
   public void process(Map<String, DetectionResult> documents) {
@@ -36,6 +40,11 @@ public class SystemVersionAnnotationProcessor implements AnnotationProcessor<Ord
 
       document.setDescribedSystemVersion(
           entityGenerator.generate(Context.of(sv.annotation(), sv.annotated(), document)));
+
+      Optional.ofNullable(customizers)
+          .map(ObjectProvider::orderedStream)
+          .orElse(Stream.empty())
+          .forEach(customizer -> customizer.customize(sv.annotation(), document));
     });
   }
 }
