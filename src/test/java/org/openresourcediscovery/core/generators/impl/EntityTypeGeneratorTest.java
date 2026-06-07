@@ -18,10 +18,12 @@ import org.openresourcediscovery.core.generators.EntityAutoGenerator;
 import org.openresourcediscovery.core.generators.EntityGenerator;
 import org.openresourcediscovery.core.generators.EntityGenerator.Context;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory;
+import org.openresourcediscovery.model.AccessStrategy;
 import org.openresourcediscovery.model.ChangelogEntry;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.DocumentationLabels;
 import org.openresourcediscovery.model.EntityType;
+import org.openresourcediscovery.model.EntityTypeDefinition;
 import org.openresourcediscovery.model.Extensible;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.model.Link;
@@ -56,14 +58,17 @@ class EntityTypeGeneratorTest {
     prepareEntityGeneratorFactoryMock(Ord.Extensible.class, new ExtensibleGenerator());
     prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new));
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
+    prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new));
     prepareEntityGeneratorFactoryMock(Ord.ChangelogEntry.class, new EntityAutoGenerator<>(ChangelogEntry::new));
+    prepareEntityGeneratorFactoryMock(
+        Ord.EntityTypeDefinition.class, new EntityAutoGenerator<>(EntityTypeDefinition::new));
     prepareEntityGeneratorFactoryMock(
         Ord.RelatedEntityType.class, new EntityAutoGenerator<>(RelatedEntityType::new));
   }
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(30, Ord.EntityType.class.getDeclaredMethods().length);
+    assertEquals(32, Ord.EntityType.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -106,6 +111,7 @@ class EntityTypeGeneratorTest {
     Ord.EntityType annotation = Annotations.mock(
         Ord.EntityType.class,
         Map.ofEntries(
+            Map.entry("aiHint", "aiHint"),
             Map.entry("version", "2.0.0"),
             Map.entry("title", "CustomTitle"),
             Map.entry("releaseStatus", "beta"),
@@ -134,11 +140,15 @@ class EntityTypeGeneratorTest {
             Map.entry("policyLevels", new String[] {"test-policy-level-1", "test-policy-level-2"}),
             Map.entry("changelogEntries", new Ord.ChangelogEntry[] {createChangelogEntryAnnotationMock()}),
             Map.entry(
+                "definitions",
+                new Ord.EntityTypeDefinition[] {createEntityTypeDefinitionAnnotationMock()}),
+            Map.entry(
                 "relatedEntityTypes",
                 new Ord.RelatedEntityType[] {createRelatedEntityTypeAnnotationMock()})));
 
     assertEquals(
         new EntityType()
+            .withAiHint("aiHint")
             .withVersion("2.0.0")
             .withTitle("CustomTitle")
             .withReleaseStatus("beta")
@@ -181,7 +191,16 @@ class EntityTypeGeneratorTest {
                 .withDate("2025-01-01")
                 .withReleaseStatus("active")
                 .withDescription("test-changelog-description")
-                .withUrl(URI.create("https://test-changelog.dummy.nowhere.org")))),
+                .withUrl(URI.create("https://test-changelog.dummy.nowhere.org"))))
+            .withDefinitions(List.of(new EntityTypeDefinition()
+                .withType("test-type")
+                .withVisibility("internal")
+                .withMediaType("application/json")
+                .withUrl("http://localhost:8080/ord/v1/entityTypes/definition-1.json")
+                .withAccessStrategies(List.of(new AccessStrategy()
+                    .withType("open")
+                    .withCustomType("test-access-strategy-custom-type")
+                    .withCustomDescription("test-access-strategy-custom-description"))))),
         classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
   }
 
@@ -218,6 +237,15 @@ class EntityTypeGeneratorTest {
         Map.ofEntries(Map.entry("supported", "manual"), Map.entry("description", "test-description")));
   }
 
+  private static Ord.AccessStrategy createAccessStrategyAnnotationMock() {
+    return Annotations.mock(
+        Ord.AccessStrategy.class,
+        Map.ofEntries(
+            Map.entry("type", "open"),
+            Map.entry("customType", "test-access-strategy-custom-type"),
+            Map.entry("customDescription", "test-access-strategy-custom-description")));
+  }
+
   private static Ord.ChangelogEntry createChangelogEntryAnnotationMock() {
     return Annotations.mock(
         Ord.ChangelogEntry.class,
@@ -244,5 +272,17 @@ class EntityTypeGeneratorTest {
               Map.entry("key", "test-doc-label-key"),
               Map.entry("values", new String[] {"test-doc-label-value-1", "test-doc-label-value-2"})))
     }));
+  }
+
+  private static Ord.EntityTypeDefinition createEntityTypeDefinitionAnnotationMock() {
+    return Annotations.mock(
+        Ord.EntityTypeDefinition.class,
+        Map.ofEntries(
+            Map.entry("type", "test-type"),
+            Map.entry("visibility", "internal"),
+            Map.entry("mediaType", "application/json"),
+            Map.entry("url", "http://localhost:8080/ord/v1/entityTypes/definition-1.json"),
+            Map.entry(
+                "accessStrategies", new Ord.AccessStrategy[] {createAccessStrategyAnnotationMock()})));
   }
 }

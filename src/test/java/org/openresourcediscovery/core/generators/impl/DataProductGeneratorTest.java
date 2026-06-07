@@ -68,7 +68,7 @@ class DataProductGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(41, Ord.DataProduct.class.getDeclaredMethods().length);
+    assertEquals(42, Ord.DataProduct.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -142,6 +142,7 @@ class DataProductGeneratorTest {
             Map.entry("disabled", true),
             Map.entry("_abstract", true),
             Map.entry("type", "derived"),
+            Map.entry("aiHint", "aiHint"),
             Map.entry("version", "2.0.0"),
             Map.entry("title", "CustomTitle"),
             Map.entry("visibility", "internal"),
@@ -188,6 +189,7 @@ class DataProductGeneratorTest {
         new DataProduct()
             .withDisabled(true)
             .withType("derived")
+            .withAiHint("aiHint")
             .withVersion("2.0.0")
             .withTitle("CustomTitle")
             .withVisibility("internal")

@@ -88,7 +88,7 @@ class EventResourceGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(47, Ord.EventResource.class.getDeclaredMethods().length);
+    assertEquals(48, Ord.EventResource.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -137,6 +137,7 @@ class EventResourceGeneratorTest {
         Map.ofEntries(
             Map.entry("disabled", true),
             Map.entry("_abstract", true),
+            Map.entry("aiHint", "aiHint"),
             Map.entry("version", "2.0.0"),
             Map.entry("title", "CustomTitle"),
             Map.entry("releaseStatus", "beta"),
@@ -201,6 +202,7 @@ class EventResourceGeneratorTest {
         new EventResource()
             .withDisabled(true)
             .withVersion("2.0.0")
+            .withAiHint("aiHint")
             .withTitle("CustomTitle")
             .withReleaseStatus("beta")
             .withVisibility("internal")

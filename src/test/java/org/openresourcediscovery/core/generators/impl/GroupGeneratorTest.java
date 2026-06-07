@@ -47,7 +47,7 @@ class GroupGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(9, Ord.Group.class.getDeclaredMethods().length);
+    assertEquals(10, Ord.Group.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -88,6 +88,7 @@ class GroupGeneratorTest {
         Ord.Group.class,
         Map.ofEntries(
             Map.entry("title", "My Group"),
+            Map.entry("visibility", "internal"),
             Map.entry("labels", createLabelsAnnotationMock()),
             Map.entry("groupTypeId", NAMESPACE + ":mygroup"),
             Map.entry("description", "My group description"),
@@ -98,6 +99,7 @@ class GroupGeneratorTest {
     assertEquals(
         new Group()
             .withTitle("My Group")
+            .withVisibility("internal")
             .withGroupTypeId(NAMESPACE + ":mygroup")
             .withDescription("My group description")
             .withGroupId(NAMESPACE + ":mygroup:" + NAMESPACE + ":MyGroup")

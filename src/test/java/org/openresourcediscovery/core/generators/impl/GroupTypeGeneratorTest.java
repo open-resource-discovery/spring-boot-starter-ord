@@ -47,7 +47,7 @@ class GroupTypeGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(8, Ord.GroupType.class.getDeclaredMethods().length);
+    assertEquals(9, Ord.GroupType.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -67,6 +67,7 @@ class GroupTypeGeneratorTest {
         Ord.GroupType.class,
         Map.ofEntries(
             Map.entry("title", "My Group Type"),
+            Map.entry("visibility", "internal"),
             Map.entry("labels", createLabelsAnnotationMock()),
             Map.entry("groupTypeId", NAMESPACE + ":mygrouptype"),
             Map.entry("description", "My group type description"),
@@ -76,6 +77,7 @@ class GroupTypeGeneratorTest {
     assertEquals(
         new GroupType()
             .withTitle("My Group Type")
+            .withVisibility("internal")
             .withGroupTypeId(NAMESPACE + ":mygrouptype")
             .withDescription("My group type description")
             .withCorrelationIds(List.of("correlation-id-1", "correlation-id-2"))

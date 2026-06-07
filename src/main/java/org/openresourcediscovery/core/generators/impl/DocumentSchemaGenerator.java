@@ -21,6 +21,6 @@ public class DocumentSchemaGenerator extends EntityAutoGenerator<Ord.Document, D
   public DocumentSchema generate(Context<Ord.Document> context) {
     return super.generate(context)
         .with$schema(DOCUMENT_SCHEMA_URL)
-        .withOpenResourceDiscovery(OpenResourceDiscovery._1_14);
+        .withOpenResourceDiscovery(OpenResourceDiscovery._1_16);
   }
 }

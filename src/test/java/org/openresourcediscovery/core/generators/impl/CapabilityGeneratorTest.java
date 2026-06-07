@@ -70,7 +70,7 @@ class CapabilityGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(28, Ord.Capability.class.getDeclaredMethods().length);
+    assertEquals(29, Ord.Capability.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -112,6 +112,7 @@ class CapabilityGeneratorTest {
         Ord.Capability.class,
         Map.ofEntries(
             Map.entry("disabled", true),
+            Map.entry("aiHint", "aiHint"),
             Map.entry("version", "2.0.0"),
             Map.entry("type", "test-type"),
             Map.entry("title", "MyCapability"),
@@ -149,6 +150,7 @@ class CapabilityGeneratorTest {
     assertEquals(
         new Capability()
             .withDisabled(true)
+            .withAiHint("aiHint")
             .withVersion("2.0.0")
             .withType("test-type")
             .withTitle("MyCapability")

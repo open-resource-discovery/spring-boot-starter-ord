@@ -50,6 +50,7 @@ import org.openresourcediscovery.model.CredentialExchangeStrategy;
 import org.openresourcediscovery.model.DataProductInputPort;
 import org.openresourcediscovery.model.DataProductLink;
 import org.openresourcediscovery.model.DataProductOutputPort;
+import org.openresourcediscovery.model.EntityTypeDefinition;
 import org.openresourcediscovery.model.EntityTypeMapping;
 import org.openresourcediscovery.model.EventCompatibility;
 import org.openresourcediscovery.model.EventResourceDefinition;
@@ -179,6 +180,10 @@ public class EntityGeneratorFactoryImpl implements EntityGeneratorFactory {
               entry(Ord.DocumentationLabels.class, DocumentationLabelsGenerator::new),
               entry(Ord.Document.class, DocumentSchemaGenerator::new),
               entry(Ord.EntityType.class, EntityTypeGenerator::new),
+              entry(
+                  Ord.EntityTypeDefinition.class,
+                  () -> new EntityAutoGenerator<Ord.EntityTypeDefinition, EntityTypeDefinition>(
+                      EntityTypeDefinition::new)),
               entry(
                   Ord.EntityTypeMapping.class,
                   () -> new EntityAutoGenerator<Ord.EntityTypeMapping, EntityTypeMapping>(
