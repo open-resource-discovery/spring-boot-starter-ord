@@ -60,7 +60,7 @@ class AgentGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(33, Ord.Agent.class.getDeclaredMethods().length);
+    assertEquals(34, Ord.Agent.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -100,6 +100,7 @@ class AgentGeneratorTest {
         Ord.Agent.class,
         Map.ofEntries(
             Map.entry("disabled", true),
+            Map.entry("aiHint", "aiHint"),
             Map.entry("version", "2.0.0"),
             Map.entry("title", "CustomTitle"),
             Map.entry("visibility", "private"),
@@ -137,6 +138,7 @@ class AgentGeneratorTest {
     assertEquals(
         new Agent()
             .withDisabled(true)
+            .withAiHint("aiHint")
             .withVersion("2.0.0")
             .withTitle("CustomTitle")
             .withVisibility("private")

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.lenient;
 
 import java.lang.annotation.Annotation;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,7 +71,7 @@ class DocumentSchemaGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(15, Ord.Document.class.getDeclaredMethods().length);
+    assertEquals(16, Ord.Document.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -79,7 +80,7 @@ class DocumentSchemaGeneratorTest {
         new DocumentSchema()
             .with$schema(DOCUMENT_SCHEMA_URL)
             .withPerspective("system-instance")
-            .withOpenResourceDiscovery(OpenResourceDiscovery._1_14),
+            .withOpenResourceDiscovery(OpenResourceDiscovery._1_16),
         classUnderTest.generate(
             Context.of(Annotations.mock(Ord.Document.class), getClass(), new DocumentSchema())));
   }
@@ -89,6 +90,7 @@ class DocumentSchemaGeneratorTest {
     Ord.Document annotation = Annotations.mock(
         Ord.Document.class,
         Map.ofEntries(
+            Map.entry("baseUrl", "http://localhost:8080"),
             Map.entry("groups", new Ord.Group[] {createGroupAnnotationMock()}),
             Map.entry("describedSystemType", createSystemTypeAnnotationMock()),
             Map.entry("vendors", new Ord.Vendor[] {createVendorAnnotationMock()}),
@@ -106,7 +108,8 @@ class DocumentSchemaGeneratorTest {
         new DocumentSchema()
             .with$schema(DOCUMENT_SCHEMA_URL)
             .withPerspective("system-instance")
-            .withOpenResourceDiscovery(OpenResourceDiscovery._1_14)
+            .withBaseUrl(URI.create("http://localhost:8080"))
+            .withOpenResourceDiscovery(OpenResourceDiscovery._1_16)
             .withDescribedSystemType(new SystemType().withSystemNamespace(NAMESPACE))
             .withDescribedSystemVersion(
                 new SystemVersion().withVersion("1.0.0").withTitle("Test Version"))

@@ -87,7 +87,7 @@ class ApiResourceGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(52, Ord.ApiResource.class.getDeclaredMethods().length);
+    assertEquals(53, Ord.ApiResource.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -138,6 +138,7 @@ class ApiResourceGeneratorTest {
         Map.ofEntries(
             Map.entry("disabled", true),
             Map.entry("_abstract", true),
+            Map.entry("aiHint", "aiHint"),
             Map.entry("version", "2.0.0"),
             Map.entry("usage", "external"),
             Map.entry("title", "CustomTitle"),
@@ -205,6 +206,7 @@ class ApiResourceGeneratorTest {
     assertEquals(
         new ApiResource()
             .withDisabled(true)
+            .withAiHint("aiHint")
             .withVersion("2.0.0")
             .withUsage("external")
             .withTitle("CustomTitle")
