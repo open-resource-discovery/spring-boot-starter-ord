@@ -21,6 +21,7 @@ import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.model.ApiResourceIntegrationAspect;
 import org.openresourcediscovery.model.ApiResourceIntegrationAspectSubset;
 import org.openresourcediscovery.model.DocumentSchema;
+import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.testutils.Annotations;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +44,7 @@ class ApiResourceIntegrationAspectGeneratorTest {
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
 
+    prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(
         Ord.ApiResourceIntegrationAspectSubset.class,
         new EntityAutoGenerator<>(ApiResourceIntegrationAspectSubset::new));
@@ -50,7 +52,7 @@ class ApiResourceIntegrationAspectGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(4, Ord.ApiResourceIntegrationAspect.class.getDeclaredMethods().length);
+    assertEquals(5, Ord.ApiResourceIntegrationAspect.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -78,6 +80,7 @@ class ApiResourceIntegrationAspectGeneratorTest {
         Ord.ApiResourceIntegrationAspect.class,
         Map.ofEntries(
             Map.entry("minVersion", "1.0.0"),
+            Map.entry("labels", createLabelsAnnotationMock()),
             Map.entry("ordId", NAMESPACE + ":apiResource:Test:v1"),
             Map.entry("subset", new Ord.ApiResourceIntegrationAspectSubset[] {createSubsetAnnotationMock()
             })));
@@ -87,7 +90,10 @@ class ApiResourceIntegrationAspectGeneratorTest {
             .withMinVersion("1.0.0")
             .withOrdId(NAMESPACE + ":apiResource:Test:v1")
             .withSubset(
-                List.of(new ApiResourceIntegrationAspectSubset().withOperationId("test-operation-id"))),
+                List.of(new ApiResourceIntegrationAspectSubset().withOperationId("test-operation-id")))
+            .withLabels(new Labels()
+                .withAdditionalProperty(
+                    "test-label-key", List.of("test-label-value-1", "test-label-value-2"))),
         classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
   }
 
@@ -97,6 +103,16 @@ class ApiResourceIntegrationAspectGeneratorTest {
     generator.setEntityGeneratorFactory(entityGeneratorFactory);
 
     lenient().doReturn(generator).when(entityGeneratorFactory).create(annotation);
+  }
+
+  private static Ord.Labels createLabelsAnnotationMock() {
+    return Annotations.mock(Ord.Labels.class, Map.of("value", new Ord.LabelsEntry[] {
+      Annotations.mock(
+          Ord.LabelsEntry.class,
+          Map.ofEntries(
+              Map.entry("key", "test-label-key"),
+              Map.entry("values", new String[] {"test-label-value-1", "test-label-value-2"})))
+    }));
   }
 
   private static Ord.ApiResourceIntegrationAspectSubset createSubsetAnnotationMock() {
