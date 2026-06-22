@@ -33,7 +33,7 @@ public class OpenResourceDiscoveryController {
   private final StaticResourceRegistry staticResourceRegistry;
   private final Optional<OrdAuthenticationManager> ordAuthenticationManager;
 
-  @GetMapping("${ord.documentsPath:/ord/v1/documents}/{name}")
+  @GetMapping("${ord.documents-path:/ord/v1/documents}/{name}")
   public ResponseEntity<DocumentSchema> getOrdDocument(
       HttpServletRequest request, @PathVariable("name") String name) {
     return ResponseEntity.ok()
@@ -46,7 +46,7 @@ public class OpenResourceDiscoveryController {
   }
 
   @SneakyThrows
-  @GetMapping("${ord.resourcesPath:/ord/v1/resources}/{name}")
+  @GetMapping("${ord.resources-path:/ord/v1/resources}/{name}")
   public ResponseEntity<Resource> getOrdResource(@PathVariable("name") String name) {
     StaticResource staticResource = staticResourceRegistry
         .lookupStaticResource(name)

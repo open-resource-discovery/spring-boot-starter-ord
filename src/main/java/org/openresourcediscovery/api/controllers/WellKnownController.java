@@ -23,7 +23,7 @@ public class WellKnownController {
   private final OrdProperties ordProperties;
   private final DocumentSchemaRegistry documentSchemaRegistry;
 
-  @GetMapping("${ord.wellKnownPath:/.well-known/open-resource-discovery}")
+  @GetMapping("${ord.well-known-path:/.well-known/open-resource-discovery}")
   public ResponseEntity<Map<String, Object>> getWellKnownDiscovery() {
     return ResponseEntity.ok()
         .cacheControl(noCache().mustRevalidate())
