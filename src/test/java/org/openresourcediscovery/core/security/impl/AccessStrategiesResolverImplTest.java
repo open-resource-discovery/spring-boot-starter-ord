@@ -2,6 +2,7 @@ package org.openresourcediscovery.core.security.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,11 +14,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.openresourcediscovery.core.configurations.properties.OrdProperties;
 import org.openresourcediscovery.core.services.DocumentSchemaRegistry;
 import org.openresourcediscovery.core.services.StaticResourceRegistry;
 
 @ExtendWith(MockitoExtension.class)
 class AccessStrategiesResolverImplTest {
+
+  @Mock
+  private OrdProperties ordProperties;
 
   @Mock
   private HttpServletRequest request;
@@ -32,7 +37,11 @@ class AccessStrategiesResolverImplTest {
 
   @BeforeEach
   void setUp() {
-    classUnderTest = new AccessStrategiesResolverImpl(documentSchemaRegistry, staticResourceRegistry);
+    classUnderTest =
+        new AccessStrategiesResolverImpl(ordProperties, documentSchemaRegistry, staticResourceRegistry);
+
+    lenient().doReturn("/ord/v1/documents").when(ordProperties).getApiBasePathDocuments();
+    lenient().doReturn("/ord/v1/resources").when(ordProperties).getApiBasePathResources();
   }
 
   @Test

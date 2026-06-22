@@ -51,6 +51,15 @@ public class OrdProperties {
   private boolean autoconfigure = true;
 
   @Builder.Default
+  private String apiBasePathDocuments = "/ord/v1/documents";
+
+  @Builder.Default
+  private String apiBasePathResources = "/ord/v1/resources";
+
+  @Builder.Default
+  private String apiBasePathWellKnown = "/.well-known/open-resource-discovery";
+
+  @Builder.Default
   private String application = "";
 
   @Builder.Default
