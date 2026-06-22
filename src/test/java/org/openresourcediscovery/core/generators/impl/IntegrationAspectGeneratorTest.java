@@ -138,7 +138,7 @@ class IntegrationAspectGeneratorTest {
                 .withAdditionalProperty(
                     "test-label-key", List.of("test-label-value-1", "test-label-value-2"))),
         classUnderTest.generate(context));
-    
+
     verify(customizer).customize(eq(context), any());
     verifyNoMoreInteractions(customizer);
   }
