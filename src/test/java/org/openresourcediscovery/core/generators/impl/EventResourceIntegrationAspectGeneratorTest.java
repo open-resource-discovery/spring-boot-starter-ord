@@ -25,6 +25,7 @@ import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.EventResourceIntegrationAspect;
 import org.openresourcediscovery.model.EventResourceIntegrationAspectSubset;
+import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.testutils.Annotations;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,6 +54,7 @@ class EventResourceIntegrationAspectGeneratorTest {
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
+    prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(
         Ord.EventResourceIntegrationAspectSubset.class,
         new EntityAutoGenerator<>(EventResourceIntegrationAspectSubset::new));
@@ -60,7 +62,7 @@ class EventResourceIntegrationAspectGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(5, Ord.EventResourceIntegrationAspect.class.getDeclaredMethods().length);
+    assertEquals(6, Ord.EventResourceIntegrationAspect.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -92,6 +94,7 @@ class EventResourceIntegrationAspectGeneratorTest {
         Ord.EventResourceIntegrationAspect.class,
         Map.ofEntries(
             Map.entry("minVersion", "1.0.0"),
+            Map.entry("labels", createLabelsAnnotationMock()),
             Map.entry("ordId", NAMESPACE + ":eventResource:Test:v1"),
             Map.entry("systemTypeRestriction", new String[] {"test-1", "test-2"}),
             Map.entry("subset", new Ord.EventResourceIntegrationAspectSubset[] {createSubsetAnnotationMock()
@@ -104,7 +107,10 @@ class EventResourceIntegrationAspectGeneratorTest {
             .withOrdId(NAMESPACE + ":eventResource:Test:v1")
             .withSystemTypeRestriction(List.of("test-1", "test-2"))
             .withSubset(
-                List.of(new EventResourceIntegrationAspectSubset().withEventType("test-event-type"))),
+                List.of(new EventResourceIntegrationAspectSubset().withEventType("test-event-type")))
+            .withLabels(new Labels()
+                .withAdditionalProperty(
+                    "test-label-key", List.of("test-label-value-1", "test-label-value-2"))),
         classUnderTest.generate(context));
 
     verify(customizer).customize(eq(context), any());
@@ -117,6 +123,16 @@ class EventResourceIntegrationAspectGeneratorTest {
     generator.setEntityGeneratorFactory(entityGeneratorFactory);
 
     lenient().doReturn(generator).when(entityGeneratorFactory).create(annotation);
+  }
+
+  private static Ord.Labels createLabelsAnnotationMock() {
+    return Annotations.mock(Ord.Labels.class, Map.of("value", new Ord.LabelsEntry[] {
+      Annotations.mock(
+          Ord.LabelsEntry.class,
+          Map.ofEntries(
+              Map.entry("key", "test-label-key"),
+              Map.entry("values", new String[] {"test-label-value-1", "test-label-value-2"})))
+    }));
   }
 
   private static Ord.EventResourceIntegrationAspectSubset createSubsetAnnotationMock() {
