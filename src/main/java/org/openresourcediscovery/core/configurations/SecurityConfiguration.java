@@ -34,15 +34,13 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
-  private static final String PATTERN_ORD_DOCUMENTS = "/ord/v1/documents/*";
-  private static final String PATTERN_ORD_RESOURCES = "/ord/v1/resources/*";
-  private static final String PATTERN_WELL_KNOWN = "/.well-known/open-resource-discovery";
-
   @Bean
   @ConditionalOnMissingBean
   public AccessStrategiesResolver accessStrategiesResolver(
-      DocumentSchemaRegistry documentSchemaRegistry, StaticResourceRegistry staticResourceRegistry) {
-    return new AccessStrategiesResolverImpl(documentSchemaRegistry, staticResourceRegistry);
+      OrdProperties ordProperties,
+      DocumentSchemaRegistry documentSchemaRegistry,
+      StaticResourceRegistry staticResourceRegistry) {
+    return new AccessStrategiesResolverImpl(ordProperties, documentSchemaRegistry, staticResourceRegistry);
   }
 
   @Bean
@@ -72,12 +70,14 @@ public class SecurityConfiguration {
   @Order(Ordered.HIGHEST_PRECEDENCE + 10)
   @ConditionalOnMissingBean(name = "ordWellKnownSecurityFilterChain")
   public SecurityFilterChain ordWellKnownSecurityFilterChain(
-      HttpSecurity http, @Qualifier("ordUserDetailsService") UserDetailsService userDetailsService) {
+      HttpSecurity http,
+      OrdProperties ordProperties,
+      @Qualifier("ordUserDetailsService") UserDetailsService userDetailsService) {
     return http //
-        .securityMatcher(PATTERN_WELL_KNOWN)
+        .securityMatcher(ordProperties.getWellKnownPath())
         .csrf(AbstractHttpConfigurer::disable)
         .userDetailsService(userDetailsService)
-        .authorizeHttpRequests(auth -> auth.requestMatchers(GET, PATTERN_WELL_KNOWN)
+        .authorizeHttpRequests(auth -> auth.requestMatchers(GET, ordProperties.getWellKnownPath())
             .anonymous()
             .anyRequest()
             .denyAll())
@@ -90,17 +90,19 @@ public class SecurityConfiguration {
   @ConditionalOnMissingBean(name = "ordDocumentsSecurityFilterChain")
   public SecurityFilterChain ordDocumentsSecurityFilterChain(
       HttpSecurity http,
+      OrdProperties ordProperties,
       OrdAuthorizationManager ordAuthorizationManager,
       @Qualifier("ordUserDetailsService") UserDetailsService userDetailsService) {
     return http //
         .httpBasic(withDefaults())
-        .securityMatcher(PATTERN_ORD_DOCUMENTS)
+        .securityMatcher(asWildcardPattern(ordProperties.getDocumentsPath()))
         .csrf(AbstractHttpConfigurer::disable)
         .userDetailsService(userDetailsService)
-        .authorizeHttpRequests(auth -> auth.requestMatchers(GET, PATTERN_ORD_DOCUMENTS)
-            .access(ordAuthorizationManager)
-            .anyRequest()
-            .denyAll())
+        .authorizeHttpRequests(
+            auth -> auth.requestMatchers(GET, asWildcardPattern(ordProperties.getDocumentsPath()))
+                .access(ordAuthorizationManager)
+                .anyRequest()
+                .denyAll())
         .build();
   }
 
@@ -110,17 +112,23 @@ public class SecurityConfiguration {
   @ConditionalOnMissingBean(name = "ordResourceSecurityFilterChain")
   public SecurityFilterChain ordResourcesSecurityFilterChain(
       HttpSecurity http,
+      OrdProperties ordProperties,
       OrdAuthorizationManager ordAuthorizationManager,
       @Qualifier("ordUserDetailsService") UserDetailsService userDetailsService) {
     return http //
         .httpBasic(withDefaults())
-        .securityMatcher(PATTERN_ORD_RESOURCES)
+        .securityMatcher(asWildcardPattern(ordProperties.getResourcesPath()))
         .csrf(AbstractHttpConfigurer::disable)
         .userDetailsService(userDetailsService)
-        .authorizeHttpRequests(auth -> auth.requestMatchers(GET, PATTERN_ORD_RESOURCES)
-            .access(ordAuthorizationManager)
-            .anyRequest()
-            .denyAll())
+        .authorizeHttpRequests(
+            auth -> auth.requestMatchers(GET, asWildcardPattern(ordProperties.getResourcesPath()))
+                .access(ordAuthorizationManager)
+                .anyRequest()
+                .denyAll())
         .build();
+  }
+
+  private static String asWildcardPattern(String path) {
+    return "%s/*".formatted(path);
   }
 }

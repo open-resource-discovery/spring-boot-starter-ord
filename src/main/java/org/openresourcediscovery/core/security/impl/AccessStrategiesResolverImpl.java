@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.openresourcediscovery.core.configurations.properties.OrdProperties;
 import org.openresourcediscovery.core.security.AccessStrategiesResolver;
 import org.openresourcediscovery.core.services.DocumentSchemaRegistry;
 import org.openresourcediscovery.core.services.StaticResourceRegistry;
@@ -17,11 +18,11 @@ import org.springframework.web.util.pattern.PathPatternRouteMatcher;
 
 @RequiredArgsConstructor
 public class AccessStrategiesResolverImpl implements AccessStrategiesResolver {
-  private static final String PATH_PATTERN_ORD_DOCUMENT = "/ord/v1/documents/{name}";
-  private static final String PATH_PATTERN_ORD_RESOURCE = "/ord/v1/resources/{name}";
+
   private static final PathPatternRouteMatcher PATH_PATTERN_ROUTE_MATCHER =
       new PathPatternRouteMatcher(new PathPatternParser());
 
+  private final OrdProperties ordProperties;
   private final DocumentSchemaRegistry documentSchemaRegistry;
   private final StaticResourceRegistry staticResourceRegistry;
 
@@ -30,11 +31,11 @@ public class AccessStrategiesResolverImpl implements AccessStrategiesResolver {
     String path = defaultString(firstNonBlank(request.getPathInfo(), request.getServletPath()));
     RouteMatcher.Route route = PATH_PATTERN_ROUTE_MATCHER.parseRoute(path);
 
-    if (PATH_PATTERN_ROUTE_MATCHER.match(PATH_PATTERN_ORD_DOCUMENT, route)) {
+    if (PATH_PATTERN_ROUTE_MATCHER.match("%s/{name}".formatted(ordProperties.getDocumentsPath()), route)) {
       return extractDocumentAccessStrategies(route);
     }
 
-    if (PATH_PATTERN_ROUTE_MATCHER.match(PATH_PATTERN_ORD_RESOURCE, route)) {
+    if (PATH_PATTERN_ROUTE_MATCHER.match("%s/{name}".formatted(ordProperties.getResourcesPath()), route)) {
       return extractStaticResourceAccessStrategies(route);
     }
 
@@ -42,14 +43,16 @@ public class AccessStrategiesResolverImpl implements AccessStrategiesResolver {
   }
 
   private Set<String> extractDocumentAccessStrategies(RouteMatcher.Route route) {
-    return Optional.ofNullable(PATH_PATTERN_ROUTE_MATCHER.matchAndExtract(PATH_PATTERN_ORD_DOCUMENT, route))
+    return Optional.ofNullable(PATH_PATTERN_ROUTE_MATCHER.matchAndExtract(
+            "%s/{name}".formatted(ordProperties.getDocumentsPath()), route))
         .map(p -> p.get("name"))
         .map(documentSchemaRegistry::lookupAccessStrategies)
         .orElse(Set.of());
   }
 
   private Set<String> extractStaticResourceAccessStrategies(RouteMatcher.Route route) {
-    return Optional.ofNullable(PATH_PATTERN_ROUTE_MATCHER.matchAndExtract(PATH_PATTERN_ORD_RESOURCE, route))
+    return Optional.ofNullable(PATH_PATTERN_ROUTE_MATCHER.matchAndExtract(
+            "%s/{name}".formatted(ordProperties.getResourcesPath()), route))
         .map(p -> p.get("name"))
         .map(staticResourceRegistry::lookupAccessStrategies)
         .orElse(Set.of());
