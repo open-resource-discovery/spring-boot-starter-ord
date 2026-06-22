@@ -8,6 +8,7 @@ import static org.springframework.http.CacheControl.noCache;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.openresourcediscovery.core.configurations.properties.OrdProperties;
 import org.openresourcediscovery.core.services.DocumentSchemaRegistry;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,9 +20,10 @@ public class WellKnownController {
 
   private static final String DEFAULT_PERSPECTIVE = "system-instance";
 
+  private final OrdProperties ordProperties;
   private final DocumentSchemaRegistry documentSchemaRegistry;
 
-  @GetMapping("/.well-known/open-resource-discovery")
+  @GetMapping("${ord.api-base-path-well-known:/.well-known/open-resource-discovery}")
   public ResponseEntity<Map<String, Object>> getWellKnownDiscovery() {
     return ResponseEntity.ok()
         .cacheControl(noCache().mustRevalidate())
@@ -32,7 +34,7 @@ public class WellKnownController {
   private List<Map<String, Object>> asDocuments() {
     return documentSchemaRegistry.getAllDocumentSchemas().entrySet().stream()
         .map(e -> ofEntries(
-            entry("url", "/ord/v1/documents/%s".formatted(e.getKey())),
+            entry("url", "%s/%s".formatted(ordProperties.getApiBasePathDocuments(), e.getKey())),
             entry("perspective", firstNonBlank(e.getValue().getPerspective(), DEFAULT_PERSPECTIVE)),
             entry(
                 "accessStrategies",

@@ -27,6 +27,27 @@
       "defaultValue": true
     },
     {
+      "name": "ord.api-base-path-documents",
+      "type": "java.lang.String",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
+      "description": "Base path for serving ORD documents.",
+      "defaultValue": "/ord/v1/documents"
+    },
+    {
+      "name": "ord.api-base-path-resources",
+      "type": "java.lang.String",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
+      "description": "Base path for serving ORD API resources.",
+      "defaultValue": "/ord/v1/resources"
+    },
+    {
+      "name": "ord.api-base-path-well-known",
+      "type": "java.lang.String",
+      "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
+      "description": "Path for the ORD well-known endpoint.",
+      "defaultValue": "/.well-known/open-resource-discovery"
+    },
+    {
       "name": "ord.application",
       "type": "java.lang.String",
       "sourceType": "org.openresourcediscovery.core.configurations.properties.OrdProperties",
