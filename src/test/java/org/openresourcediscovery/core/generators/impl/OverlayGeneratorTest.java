@@ -1,7 +1,11 @@
 package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -33,6 +37,9 @@ class OverlayGeneratorTest {
   private static final String NAMESPACE = "customer.test.namespace";
 
   @Mock
+  private EntityGenerator.Customizer<Ord.Overlay, Overlay> customizer;
+
+  @Mock
   private OrdProperties ordProperties;
 
   @Mock
@@ -46,6 +53,9 @@ class OverlayGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(List.of(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
 
@@ -66,6 +76,9 @@ class OverlayGeneratorTest {
 
   @Test
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
+    Context<Ord.Overlay> context =
+        Context.of(Annotations.mock(Ord.Overlay.class), getClass(), new DocumentSchema());
+
     assertEquals(
         new Overlay()
             .withVersion("1.0.0")
@@ -73,8 +86,10 @@ class OverlayGeneratorTest {
             .withReleaseStatus("active")
             .withOrdId("%s:overlay:%s:v1"
                 .formatted(NAMESPACE, getClass().getSimpleName())),
-        classUnderTest.generate(
-            Context.of(Annotations.mock(Ord.Overlay.class), getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -98,6 +113,7 @@ class OverlayGeneratorTest {
             Map.entry(
                 "relatedEventResources",
                 new Ord.RelatedEventResource[] {createRelatedEventResourceAnnotationMock()})));
+    Context<Ord.Overlay> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new Overlay()
@@ -128,7 +144,10 @@ class OverlayGeneratorTest {
             .withRelatedEventResources(List.of(new RelatedEventResource()
                 .withOrdId("test-related-event-resource-ord-id")
                 .withRelationType("test-relation-type"))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

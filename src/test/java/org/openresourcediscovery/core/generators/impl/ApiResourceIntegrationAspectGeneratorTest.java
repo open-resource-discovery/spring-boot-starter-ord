@@ -2,7 +2,11 @@ package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -29,6 +33,9 @@ class ApiResourceIntegrationAspectGeneratorTest {
   private static final String NAMESPACE = "customer.test.namespace";
 
   @Mock
+  private EntityGenerator.Customizer<Ord.ApiResourceIntegrationAspect, ApiResourceIntegrationAspect> customizer;
+
+  @Mock
   private OrdProperties ordProperties;
 
   @Mock
@@ -42,6 +49,9 @@ class ApiResourceIntegrationAspectGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(List.of(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     prepareEntityGeneratorFactoryMock(
         Ord.ApiResourceIntegrationAspectSubset.class,
@@ -66,10 +76,14 @@ class ApiResourceIntegrationAspectGeneratorTest {
     Ord.ApiResourceIntegrationAspect annotation = Annotations.mock(
         Ord.ApiResourceIntegrationAspect.class,
         Map.ofEntries(Map.entry("ordId", NAMESPACE + ":apiResource:Test:v1")));
+    Context<Ord.ApiResourceIntegrationAspect> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new ApiResourceIntegrationAspect().withOrdId(NAMESPACE + ":apiResource:Test:v1"),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -81,6 +95,7 @@ class ApiResourceIntegrationAspectGeneratorTest {
             Map.entry("ordId", NAMESPACE + ":apiResource:Test:v1"),
             Map.entry("subset", new Ord.ApiResourceIntegrationAspectSubset[] {createSubsetAnnotationMock()
             })));
+    Context<Ord.ApiResourceIntegrationAspect> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new ApiResourceIntegrationAspect()
@@ -88,7 +103,10 @@ class ApiResourceIntegrationAspectGeneratorTest {
             .withOrdId(NAMESPACE + ":apiResource:Test:v1")
             .withSubset(
                 List.of(new ApiResourceIntegrationAspectSubset().withOperationId("test-operation-id"))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

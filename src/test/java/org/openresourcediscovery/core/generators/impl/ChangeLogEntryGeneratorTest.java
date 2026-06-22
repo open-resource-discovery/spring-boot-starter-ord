@@ -2,25 +2,43 @@ package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.generators.EntityAutoGenerator;
+import org.openresourcediscovery.core.generators.EntityGenerator;
 import org.openresourcediscovery.core.generators.EntityGenerator.Context;
 import org.openresourcediscovery.model.ChangelogEntry;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.testutils.Annotations;
 
+@ExtendWith(MockitoExtension.class)
 class ChangeLogEntryGeneratorTest {
+
+  @Mock
+  private EntityGenerator.Customizer<Ord.ChangelogEntry, ChangelogEntry> customizer;
 
   private EntityAutoGenerator<Ord.ChangelogEntry, ChangelogEntry> classUnderTest;
 
   @BeforeEach
   void setUp() {
     classUnderTest = new EntityAutoGenerator<>(ChangelogEntry::new);
+
+    classUnderTest.setCustomizers(List.of(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
   }
 
   @Test
@@ -69,13 +87,17 @@ class ChangeLogEntryGeneratorTest {
             Map.entry("version", "1.0.0"),
             Map.entry("releaseStatus", "active"),
             Map.entry("date", "2025-03-25T14:30:00Z")));
+    Context<Ord.ChangelogEntry> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new ChangelogEntry()
             .withVersion("1.0.0")
             .withReleaseStatus("active")
             .withDate("2025-03-25T14:30:00Z"),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -88,6 +110,7 @@ class ChangeLogEntryGeneratorTest {
             Map.entry("date", "2025-03-25T14:30:00Z"),
             Map.entry("description", "test-description"),
             Map.entry("url", "https://test-link.dummy.nowhere.org")));
+    Context<Ord.ChangelogEntry> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new ChangelogEntry()
@@ -96,6 +119,9 @@ class ChangeLogEntryGeneratorTest {
             .withDate("2025-03-25T14:30:00Z")
             .withDescription("test-description")
             .withUrl(URI.create("https://test-link.dummy.nowhere.org")),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 }

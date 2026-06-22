@@ -1,7 +1,11 @@
 package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -38,6 +42,9 @@ class IntegrationDependencyGeneratorTest {
   private static final String NAMESPACE = "customer.test.namespace";
 
   @Mock
+  private EntityGenerator.Customizer<Ord.IntegrationDependency, IntegrationDependency> customizer;
+
+  @Mock
   private OrdProperties ordProperties;
 
   @Mock
@@ -51,6 +58,10 @@ class IntegrationDependencyGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+
+    classUnderTest.setCustomizers(List.of(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
 
@@ -78,6 +89,9 @@ class IntegrationDependencyGeneratorTest {
 
   @Test
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
+    Context<Ord.IntegrationDependency> context =
+        Context.of(Annotations.mock(Ord.IntegrationDependency.class), getClass(), new DocumentSchema());
+
     assertEquals(
         new IntegrationDependency()
             .withVersion("1.0.0")
@@ -88,12 +102,20 @@ class IntegrationDependencyGeneratorTest {
             .withPartOfPackage(NAMESPACE + ":package:default:v1")
             .withOrdId(NAMESPACE + ":integrationDependency:"
                 + getClass().getSimpleName() + ":v1"),
-        classUnderTest.generate(Context.of(
-            Annotations.mock(Ord.IntegrationDependency.class), getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
   void givenSinglePackageInDocument_whenGenerateIsCalled_thenPackageOrdIdIsUsed() {
+    Context<Ord.IntegrationDependency> context = Context.of(
+        Annotations.mock(Ord.IntegrationDependency.class),
+        getClass(),
+        new DocumentSchema()
+            .withPackages(List.of(new Package().withOrdId(NAMESPACE + ":package:myPackage:v1"))));
+
     assertEquals(
         new IntegrationDependency()
             .withVersion("1.0.0")
@@ -104,11 +126,10 @@ class IntegrationDependencyGeneratorTest {
             .withPartOfPackage(NAMESPACE + ":package:myPackage:v1")
             .withOrdId(NAMESPACE + ":integrationDependency:"
                 + getClass().getSimpleName() + ":v1"),
-        classUnderTest.generate(Context.of(
-            Annotations.mock(Ord.IntegrationDependency.class),
-            getClass(),
-            new DocumentSchema()
-                .withPackages(List.of(new Package().withOrdId(NAMESPACE + ":package:myPackage:v1"))))));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -137,6 +158,8 @@ class IntegrationDependencyGeneratorTest {
             Map.entry("aspects", new Ord.IntegrationAspect[] {createAspectAnnotationMock()}),
             Map.entry("correlationIds", new String[] {"correlation-id-1", "correlation-id-2"}),
             Map.entry("relatedIntegrationDependencies", new String[] {"related-dep-1", "related-dep-2"})));
+
+    Context<Ord.IntegrationDependency> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new IntegrationDependency()
@@ -185,7 +208,10 @@ class IntegrationDependencyGeneratorTest {
                         "test-system-type-restriction-1", "test-system-type-restriction-2"))
                     .withSubset(List.of(new EventResourceIntegrationAspectSubset()
                         .withEventType("test-event-type"))))))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

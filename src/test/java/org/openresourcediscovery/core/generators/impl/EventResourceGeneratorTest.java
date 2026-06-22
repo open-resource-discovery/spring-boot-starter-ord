@@ -1,7 +1,11 @@
 package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -44,6 +48,9 @@ class EventResourceGeneratorTest {
   private static final String NAMESPACE = "customer.test.namespace";
 
   @Mock
+  private EntityGenerator.Customizer<Ord.EventResource, EventResource> customizer;
+
+  @Mock
   private OrdProperties ordProperties;
 
   @Mock
@@ -57,6 +64,10 @@ class EventResourceGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+
+    classUnderTest.setCustomizers(List.of(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
 
@@ -93,6 +104,9 @@ class EventResourceGeneratorTest {
 
   @Test
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
+    Context<Ord.EventResource> context =
+        Context.of(Annotations.mock(Ord.EventResource.class), getClass(), new DocumentSchema());
+
     assertEquals(
         new EventResource()
             .withVersion("1.0.0")
@@ -105,12 +119,20 @@ class EventResourceGeneratorTest {
                 "Auto-generated description for " + getClass().getSimpleName())
             .withShortDescription("Auto-generated short description for "
                 + getClass().getSimpleName()),
-        classUnderTest.generate(
-            Context.of(Annotations.mock(Ord.EventResource.class), getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
   void givenSinglePackageInDocument_whenGenerateIsCalled_thenPackageOrdIdIsUsed() {
+    Context<Ord.EventResource> context = Context.of(
+        Annotations.mock(Ord.EventResource.class),
+        getClass(),
+        new DocumentSchema()
+            .withPackages(List.of(new Package().withOrdId(NAMESPACE + ":package:myPackage:v1"))));
+
     assertEquals(
         new EventResource()
             .withVersion("1.0.0")
@@ -123,11 +145,10 @@ class EventResourceGeneratorTest {
                 "Auto-generated description for " + getClass().getSimpleName())
             .withShortDescription("Auto-generated short description for "
                 + getClass().getSimpleName()),
-        classUnderTest.generate(Context.of(
-            Annotations.mock(Ord.EventResource.class),
-            getClass(),
-            new DocumentSchema()
-                .withPackages(List.of(new Package().withOrdId(NAMESPACE + ":package:myPackage:v1"))))));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -197,6 +218,8 @@ class EventResourceGeneratorTest {
             Map.entry(
                 "relatedEventResources",
                 new Ord.RelatedEventResource[] {createRelatedEventResourceAnnotationMock()})));
+
+    Context<Ord.EventResource> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new EventResource()
@@ -285,7 +308,10 @@ class EventResourceGeneratorTest {
             .withRelatedEventResources(List.of(new RelatedEventResource()
                 .withOrdId("test-related-event-resource-ord-id")
                 .withRelationType("test-relation-type"))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

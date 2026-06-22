@@ -2,7 +2,11 @@ package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -15,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.configurations.properties.OrdProperties;
 import org.openresourcediscovery.core.generators.EntityGenerator;
+import org.openresourcediscovery.core.generators.EntityGenerator.Context;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.DocumentationLabels;
@@ -24,6 +29,9 @@ import org.openresourcediscovery.testutils.Annotations;
 
 @ExtendWith(MockitoExtension.class)
 class SystemVersionGeneratorTest {
+
+  @Mock
+  private EntityGenerator.Customizer<Ord.SystemVersion, SystemVersion> customizer;
 
   @Mock
   private OrdProperties ordProperties;
@@ -39,6 +47,9 @@ class SystemVersionGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(List.of(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
@@ -66,6 +77,7 @@ class SystemVersionGeneratorTest {
             Map.entry("tags", new String[] {"test-tag-1", "test-tag-2"}),
             Map.entry("documentationLabels", createDocumentationLabelsAnnotationMock()),
             Map.entry("correlationIds", new String[] {"test-correlation-id-1", "test-correlation-id-2"})));
+    Context<Ord.SystemVersion> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new SystemVersion()
@@ -80,7 +92,10 @@ class SystemVersionGeneratorTest {
                 .withAdditionalProperty(
                     "test-document-label-key",
                     List.of("test-document-label-value-1", "test-document-label-value-2"))),
-        classUnderTest.generate(EntityGenerator.Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

@@ -1,7 +1,11 @@
 package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -30,6 +34,9 @@ import org.openresourcediscovery.testutils.Annotations;
 class IntegrationAspectGeneratorTest {
 
   @Mock
+  private EntityGenerator.Customizer<Ord.IntegrationAspect, IntegrationAspect> customizer;
+
+  @Mock
   private OrdProperties ordProperties;
 
   @Mock
@@ -43,6 +50,10 @@ class IntegrationAspectGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+
+    classUnderTest.setCustomizers(List.of(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     prepareEntityGeneratorFactoryMock(
         Ord.ApiResourceIntegrationAspect.class, new EntityAutoGenerator<>(ApiResourceIntegrationAspect::new));
@@ -66,13 +77,18 @@ class IntegrationAspectGeneratorTest {
 
   @Test
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
+    Context<Ord.IntegrationAspect> context =
+        Context.of(Annotations.mock(Ord.IntegrationAspect.class), getClass(), new DocumentSchema());
+
     assertEquals(
         new IntegrationAspect()
             .withMandatory(false)
             .withSupportMultipleProviders(false)
             .withTitle(getClass().getSimpleName()),
-        classUnderTest.generate(
-            Context.of(Annotations.mock(Ord.IntegrationAspect.class), getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -93,6 +109,7 @@ class IntegrationAspectGeneratorTest {
             Map.entry("capabilities", new Ord.CapabilityIntegrationAspect[] {
               createCapabilityIntegrationAspectAnnotationMock()
             })));
+    Context<Ord.IntegrationAspect> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new IntegrationAspect()
@@ -115,7 +132,10 @@ class IntegrationAspectGeneratorTest {
             .withCapabilities(List.of(new CapabilityIntegrationAspect()
                 .withOrdId("test-capability-ord-id")
                 .withMinVersion("1.0.0"))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

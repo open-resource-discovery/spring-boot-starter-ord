@@ -2,25 +2,43 @@ package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.generators.EntityAutoGenerator;
+import org.openresourcediscovery.core.generators.EntityGenerator;
 import org.openresourcediscovery.core.generators.EntityGenerator.Context;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.Link;
 import org.openresourcediscovery.testutils.Annotations;
 
+@ExtendWith(MockitoExtension.class)
 class LinkGeneratorTest {
+
+  @Mock
+  private EntityGenerator.Customizer<Ord.Link, Link> customizer;
 
   private EntityAutoGenerator<Ord.Link, Link> classUnderTest;
 
   @BeforeEach
   void setUp() {
     classUnderTest = new EntityAutoGenerator<>(Link::new);
+
+    classUnderTest.setCustomizers(List.of(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
   }
 
   @Test
@@ -54,10 +72,14 @@ class LinkGeneratorTest {
         Map.ofEntries(
             Map.entry("title", "test-link-title"),
             Map.entry("url", "https://test-link.dummy.nowhere.org")));
+    Context<Ord.Link> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new Link().withTitle("test-link-title").withUrl(URI.create("https://test-link.dummy.nowhere.org")),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -68,12 +90,16 @@ class LinkGeneratorTest {
             Map.entry("title", "test-link-title"),
             Map.entry("description", "test-link-description"),
             Map.entry("url", "https://test-link.dummy.nowhere.org")));
+    Context<Ord.Link> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new Link()
             .withTitle("test-link-title")
             .withDescription("test-link-description")
             .withUrl(URI.create("https://test-link.dummy.nowhere.org")),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 }

@@ -2,7 +2,11 @@ package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -29,6 +33,9 @@ class EventResourceIntegrationAspectGeneratorTest {
   private static final String NAMESPACE = "customer.test.namespace";
 
   @Mock
+  private EntityGenerator.Customizer<Ord.EventResourceIntegrationAspect, EventResourceIntegrationAspect> customizer;
+
+  @Mock
   private OrdProperties ordProperties;
 
   @Mock
@@ -42,6 +49,9 @@ class EventResourceIntegrationAspectGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(List.of(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     prepareEntityGeneratorFactoryMock(
         Ord.EventResourceIntegrationAspectSubset.class,
@@ -66,10 +76,14 @@ class EventResourceIntegrationAspectGeneratorTest {
     Ord.EventResourceIntegrationAspect annotation = Annotations.mock(
         Ord.EventResourceIntegrationAspect.class,
         Map.ofEntries(Map.entry("ordId", NAMESPACE + ":eventResource:Test:v1")));
+    Context<Ord.EventResourceIntegrationAspect> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new EventResourceIntegrationAspect().withOrdId(NAMESPACE + ":eventResource:Test:v1"),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -82,6 +96,7 @@ class EventResourceIntegrationAspectGeneratorTest {
             Map.entry("systemTypeRestriction", new String[] {"test-1", "test-2"}),
             Map.entry("subset", new Ord.EventResourceIntegrationAspectSubset[] {createSubsetAnnotationMock()
             })));
+    Context<Ord.EventResourceIntegrationAspect> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new EventResourceIntegrationAspect()
@@ -90,7 +105,10 @@ class EventResourceIntegrationAspectGeneratorTest {
             .withSystemTypeRestriction(List.of("test-1", "test-2"))
             .withSubset(
                 List.of(new EventResourceIntegrationAspectSubset().withEventType("test-event-type"))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

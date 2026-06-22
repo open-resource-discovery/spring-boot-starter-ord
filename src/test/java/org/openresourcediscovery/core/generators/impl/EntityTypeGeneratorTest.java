@@ -1,7 +1,11 @@
 package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -38,6 +42,9 @@ class EntityTypeGeneratorTest {
   private static final String NAMESPACE = "customer.test.namespace";
 
   @Mock
+  private EntityGenerator.Customizer<Ord.EntityType, EntityType> customizer;
+
+  @Mock
   private OrdProperties ordProperties;
 
   @Mock
@@ -51,6 +58,10 @@ class EntityTypeGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+
+    classUnderTest.setCustomizers(List.of(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
 
@@ -73,6 +84,9 @@ class EntityTypeGeneratorTest {
 
   @Test
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
+    Context<Ord.EntityType> context =
+        Context.of(Annotations.mock(Ord.EntityType.class), getClass(), new DocumentSchema());
+
     assertEquals(
         new EntityType()
             .withVersion("1.0.0")
@@ -83,12 +97,20 @@ class EntityTypeGeneratorTest {
             .withPartOfPackage(NAMESPACE + ":package:default:v1")
             .withLocalId(getClass().getSimpleName().toLowerCase())
             .withOrdId(NAMESPACE + ":entityType:" + getClass().getSimpleName() + ":v1"),
-        classUnderTest.generate(
-            Context.of(Annotations.mock(Ord.EntityType.class), getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
   void givenSinglePackageInDocument_whenGenerateIsCalled_thenPackageOrdIdIsUsed() {
+    Context<Ord.EntityType> context = Context.of(
+        Annotations.mock(Ord.EntityType.class),
+        getClass(),
+        new DocumentSchema()
+            .withPackages(List.of(new Package().withOrdId(NAMESPACE + ":package:myPackage:v1"))));
+
     assertEquals(
         new EntityType()
             .withVersion("1.0.0")
@@ -99,11 +121,10 @@ class EntityTypeGeneratorTest {
             .withLocalId(getClass().getSimpleName().toLowerCase())
             .withPartOfPackage(NAMESPACE + ":package:myPackage:v1")
             .withOrdId(NAMESPACE + ":entityType:" + getClass().getSimpleName() + ":v1"),
-        classUnderTest.generate(Context.of(
-            Annotations.mock(Ord.EntityType.class),
-            getClass(),
-            new DocumentSchema()
-                .withPackages(List.of(new Package().withOrdId(NAMESPACE + ":package:myPackage:v1"))))));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -145,6 +166,7 @@ class EntityTypeGeneratorTest {
             Map.entry(
                 "relatedEntityTypes",
                 new Ord.RelatedEntityType[] {createRelatedEntityTypeAnnotationMock()})));
+    Context<Ord.EntityType> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new EntityType()
@@ -201,7 +223,10 @@ class EntityTypeGeneratorTest {
                     .withType("open")
                     .withCustomType("test-access-strategy-custom-type")
                     .withCustomDescription("test-access-strategy-custom-description"))))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

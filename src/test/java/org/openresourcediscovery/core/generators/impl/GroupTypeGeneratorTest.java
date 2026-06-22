@@ -1,7 +1,11 @@
 package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -27,6 +31,9 @@ class GroupTypeGeneratorTest {
   private static final String NAMESPACE = "customer.test.namespace";
 
   @Mock
+  private EntityGenerator.Customizer<Ord.GroupType, GroupType> customizer;
+
+  @Mock
   private OrdProperties ordProperties;
 
   @Mock
@@ -40,7 +47,9 @@ class GroupTypeGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(List.of(customizer));
 
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
   }
@@ -52,13 +61,18 @@ class GroupTypeGeneratorTest {
 
   @Test
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
+    Context<Ord.GroupType> context =
+        Context.of(Annotations.mock(Ord.GroupType.class), getClass(), new DocumentSchema());
+
     assertEquals(
         new GroupType()
             .withTitle(getClass().getSimpleName())
             .withGroupTypeId(
                 NAMESPACE + ":" + getClass().getSimpleName().toLowerCase()),
-        classUnderTest.generate(
-            Context.of(Annotations.mock(Ord.GroupType.class), getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -73,6 +87,7 @@ class GroupTypeGeneratorTest {
             Map.entry("description", "My group type description"),
             Map.entry("correlationIds", new String[] {"correlation-id-1", "correlation-id-2"}),
             Map.entry("partOfGroupTypes", new String[] {"parent-group-type-1", "parent-group-type-2"})));
+    Context<Ord.GroupType> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new GroupType()
@@ -85,7 +100,10 @@ class GroupTypeGeneratorTest {
             .withLabels(new Labels()
                 .withAdditionalProperty(
                     "test-label-key", List.of("test-label-value-1", "test-label-value-2"))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

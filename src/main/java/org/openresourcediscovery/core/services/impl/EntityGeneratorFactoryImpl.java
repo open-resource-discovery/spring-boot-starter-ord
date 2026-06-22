@@ -2,7 +2,7 @@ package org.openresourcediscovery.core.services.impl;
 
 import static java.util.Map.entry;
 import static java.util.Objects.requireNonNull;
-import static org.openresourcediscovery.model.DocumentSchema.OpenResourceDiscovery._1_14;
+import static org.openresourcediscovery.model.DocumentSchema.OpenResourceDiscovery._1_16;
 import static org.springframework.beans.factory.config.AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE;
 
 import java.lang.annotation.Annotation;
@@ -187,7 +187,7 @@ public class EntityGeneratorFactoryImpl implements EntityGeneratorFactory {
                   () -> new EntityAutoGenerator<Ord.Document, DocumentSchema>(
                       () -> new DocumentSchema()
                           .with$schema(DOCUMENT_SCHEMA_URL)
-                          .withOpenResourceDiscovery(_1_14))),
+                          .withOpenResourceDiscovery(_1_16))),
               entry(Ord.EntityType.class, EntityTypeGenerator::new),
               entry(
                   Ord.EntityTypeDefinition.class,

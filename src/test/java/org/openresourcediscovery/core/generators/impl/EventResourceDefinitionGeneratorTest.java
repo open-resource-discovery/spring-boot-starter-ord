@@ -2,7 +2,11 @@ package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -27,6 +31,9 @@ import org.openresourcediscovery.testutils.Annotations;
 class EventResourceDefinitionGeneratorTest {
 
   @Mock
+  private EntityGenerator.Customizer<Ord.EventResourceDefinition, EventResourceDefinition> customizer;
+
+  @Mock
   private OrdProperties ordProperties;
 
   @Mock
@@ -40,6 +47,9 @@ class EventResourceDefinitionGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(List.of(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new));
   }
@@ -94,6 +104,7 @@ class EventResourceDefinitionGeneratorTest {
             Map.entry("type", "asyncapi-v2"),
             Map.entry("mediaType", "application/json"),
             Map.entry("url", "https://test-definition.dummy.nowhere.org")));
+    Context<Ord.EventResourceDefinition> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new EventResourceDefinition()
@@ -101,7 +112,10 @@ class EventResourceDefinitionGeneratorTest {
             .withMediaType("application/json")
             .withUrl("https://test-definition.dummy.nowhere.org")
             .withAccessStrategies(null),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -117,6 +131,7 @@ class EventResourceDefinitionGeneratorTest {
             Map.entry("url", "https://test-definition.dummy.nowhere.org"),
             Map.entry(
                 "accessStrategies", new Ord.AccessStrategy[] {createAccessStrategyAnnotationMock()})));
+    Context<Ord.EventResourceDefinition> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new EventResourceDefinition()
@@ -130,7 +145,10 @@ class EventResourceDefinitionGeneratorTest {
                 .withType("open")
                 .withCustomType("test-access-strategy-custom-type")
                 .withCustomDescription("test-access-strategy-custom-description"))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

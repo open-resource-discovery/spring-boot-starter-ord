@@ -1,7 +1,11 @@
 package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -28,6 +32,9 @@ class VendorGeneratorTest {
   private static final String NAMESPACE = "customer.test.namespace";
 
   @Mock
+  private EntityGenerator.Customizer<Ord.Vendor, Vendor> customizer;
+
+  @Mock
   private OrdProperties ordProperties;
 
   @Mock
@@ -41,7 +48,9 @@ class VendorGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(List.of(customizer));
 
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
@@ -54,12 +63,16 @@ class VendorGeneratorTest {
 
   @Test
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
+    Context<Ord.Vendor> context = Context.of(Annotations.mock(Ord.Vendor.class), getClass(), new DocumentSchema());
+
     assertEquals(
         new Vendor()
             .withTitle(getClass().getSimpleName())
             .withOrdId(NAMESPACE + ":vendor:" + getClass().getSimpleName() + ":v1"),
-        classUnderTest.generate(
-            Context.of(Annotations.mock(Ord.Vendor.class), getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -73,6 +86,7 @@ class VendorGeneratorTest {
             Map.entry("tags", new String[] {"test-label-1", "test-label-2"}),
             Map.entry("partners", new String[] {"Road Runner", "Willie E. Coyote"}),
             Map.entry("documentationLabels", createDocumentationLabelsAnnotationMock())));
+    Context<Ord.Vendor> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new Vendor()
@@ -87,7 +101,10 @@ class VendorGeneratorTest {
                 .withAdditionalProperty(
                     "test-document-label-key",
                     List.of("test-document-label-value-1", "test-document-label-value-2"))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

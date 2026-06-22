@@ -2,7 +2,11 @@ package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -28,6 +32,9 @@ class EntityTypeMappingGeneratorTest {
   private static final String NAMESPACE = "customer.test.namespace";
 
   @Mock
+  private EntityGenerator.Customizer<Ord.EntityTypeMapping, EntityTypeMapping> customizer;
+
+  @Mock
   private OrdProperties ordProperties;
 
   @Mock
@@ -41,6 +48,9 @@ class EntityTypeMappingGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(List.of(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     prepareEntityGeneratorFactoryMock(Ord.ApiModelSelectorOData.class, new ApiModelSelectorODataGenerator());
     prepareEntityGeneratorFactoryMock(Ord.EntityTypeOrdIdTarget.class, new EntityTypeOrdIdTargetGenerator());
@@ -66,12 +76,16 @@ class EntityTypeMappingGeneratorTest {
         Map.ofEntries(Map.entry(
             "entityTypeTargets",
             new Ord.EntityTypeOrdIdTarget[] {createEntityTypeOrdIdTargetAnnotationMock()})));
+    Context<Ord.EntityTypeMapping> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new EntityTypeMapping()
             .withApiModelSelectors(null)
             .withEntityTypeTargets(List.of(Map.of("ordId", NAMESPACE + ":entityType:Test:v1"))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -85,12 +99,16 @@ class EntityTypeMappingGeneratorTest {
             Map.entry(
                 "apiModelSelectors",
                 new Ord.ApiModelSelectorOData[] {createApiModelSelectorODataAnnotationMock()})));
+    Context<Ord.EntityTypeMapping> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new EntityTypeMapping()
             .withEntityTypeTargets(List.of(Map.of("ordId", NAMESPACE + ":entityType:Test:v1")))
             .withApiModelSelectors(List.of(Map.of("type", "odata", "entitySetName", "TestEntitySet"))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(
