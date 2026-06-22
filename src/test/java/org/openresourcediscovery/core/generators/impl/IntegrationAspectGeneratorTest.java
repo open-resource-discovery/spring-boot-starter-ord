@@ -24,6 +24,7 @@ import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.EventResourceIntegrationAspect;
 import org.openresourcediscovery.model.EventResourceIntegrationAspectSubset;
 import org.openresourcediscovery.model.IntegrationAspect;
+import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.testutils.Annotations;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +45,7 @@ class IntegrationAspectGeneratorTest {
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
 
+    prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(
         Ord.ApiResourceIntegrationAspect.class, new EntityAutoGenerator<>(ApiResourceIntegrationAspect::new));
     prepareEntityGeneratorFactoryMock(
@@ -61,7 +63,7 @@ class IntegrationAspectGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(8, Ord.IntegrationAspect.class.getDeclaredMethods().length);
+    assertEquals(9, Ord.IntegrationAspect.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -83,6 +85,7 @@ class IntegrationAspectGeneratorTest {
             Map.entry("mandatory", true),
             Map.entry("title", "test-aspect-title"),
             Map.entry("supportMultipleProviders", true),
+            Map.entry("labels", createLabelsAnnotationMock()),
             Map.entry("description", "test-aspect-description"),
             Map.entry("apiResources", new Ord.ApiResourceIntegrationAspect[] {
               createApiResourceIntegrationAspectAnnotationMock()
@@ -114,7 +117,10 @@ class IntegrationAspectGeneratorTest {
                     new EventResourceIntegrationAspectSubset().withEventType("test-event-type")))))
             .withCapabilities(List.of(new CapabilityIntegrationAspect()
                 .withOrdId("test-capability-ord-id")
-                .withMinVersion("1.0.0"))),
+                .withMinVersion("1.0.0")))
+            .withLabels(new Labels()
+                .withAdditionalProperty(
+                    "test-label-key", List.of("test-label-value-1", "test-label-value-2"))),
         classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
   }
 
@@ -124,6 +130,16 @@ class IntegrationAspectGeneratorTest {
     generator.setEntityGeneratorFactory(entityGeneratorFactory);
 
     lenient().doReturn(generator).when(entityGeneratorFactory).create(annotation);
+  }
+
+  private static Ord.Labels createLabelsAnnotationMock() {
+    return Annotations.mock(Ord.Labels.class, Map.of("value", new Ord.LabelsEntry[] {
+      Annotations.mock(
+          Ord.LabelsEntry.class,
+          Map.ofEntries(
+              Map.entry("key", "test-label-key"),
+              Map.entry("values", new String[] {"test-label-value-1", "test-label-value-2"})))
+    }));
   }
 
   private static Ord.ApiResourceIntegrationAspect createApiResourceIntegrationAspectAnnotationMock() {
