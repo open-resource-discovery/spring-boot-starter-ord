@@ -31,11 +31,11 @@ public class AccessStrategiesResolverImpl implements AccessStrategiesResolver {
     String path = defaultString(firstNonBlank(request.getPathInfo(), request.getServletPath()));
     RouteMatcher.Route route = PATH_PATTERN_ROUTE_MATCHER.parseRoute(path);
 
-    if (PATH_PATTERN_ROUTE_MATCHER.match("%s/{name}".formatted(ordProperties.getDocumentsPath()), route)) {
+    if (PATH_PATTERN_ROUTE_MATCHER.match("%s/{name}".formatted(ordProperties.getApiBasePathDocuments()), route)) {
       return extractDocumentAccessStrategies(route);
     }
 
-    if (PATH_PATTERN_ROUTE_MATCHER.match("%s/{name}".formatted(ordProperties.getResourcesPath()), route)) {
+    if (PATH_PATTERN_ROUTE_MATCHER.match("%s/{name}".formatted(ordProperties.getApiBasePathResources()), route)) {
       return extractStaticResourceAccessStrategies(route);
     }
 
@@ -44,7 +44,7 @@ public class AccessStrategiesResolverImpl implements AccessStrategiesResolver {
 
   private Set<String> extractDocumentAccessStrategies(RouteMatcher.Route route) {
     return Optional.ofNullable(PATH_PATTERN_ROUTE_MATCHER.matchAndExtract(
-            "%s/{name}".formatted(ordProperties.getDocumentsPath()), route))
+            "%s/{name}".formatted(ordProperties.getApiBasePathDocuments()), route))
         .map(p -> p.get("name"))
         .map(documentSchemaRegistry::lookupAccessStrategies)
         .orElse(Set.of());
@@ -52,7 +52,7 @@ public class AccessStrategiesResolverImpl implements AccessStrategiesResolver {
 
   private Set<String> extractStaticResourceAccessStrategies(RouteMatcher.Route route) {
     return Optional.ofNullable(PATH_PATTERN_ROUTE_MATCHER.matchAndExtract(
-            "%s/{name}".formatted(ordProperties.getResourcesPath()), route))
+            "%s/{name}".formatted(ordProperties.getApiBasePathResources()), route))
         .map(p -> p.get("name"))
         .map(staticResourceRegistry::lookupAccessStrategies)
         .orElse(Set.of());

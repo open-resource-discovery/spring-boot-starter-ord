@@ -74,10 +74,10 @@ public class SecurityConfiguration {
       OrdProperties ordProperties,
       @Qualifier("ordUserDetailsService") UserDetailsService userDetailsService) {
     return http //
-        .securityMatcher(ordProperties.getWellKnownPath())
+        .securityMatcher(ordProperties.getApiBasePathWellKnown())
         .csrf(AbstractHttpConfigurer::disable)
         .userDetailsService(userDetailsService)
-        .authorizeHttpRequests(auth -> auth.requestMatchers(GET, ordProperties.getWellKnownPath())
+        .authorizeHttpRequests(auth -> auth.requestMatchers(GET, ordProperties.getApiBasePathWellKnown())
             .anonymous()
             .anyRequest()
             .denyAll())
@@ -95,11 +95,11 @@ public class SecurityConfiguration {
       @Qualifier("ordUserDetailsService") UserDetailsService userDetailsService) {
     return http //
         .httpBasic(withDefaults())
-        .securityMatcher(asWildcardPattern(ordProperties.getDocumentsPath()))
+        .securityMatcher(asWildcardPattern(ordProperties.getApiBasePathDocuments()))
         .csrf(AbstractHttpConfigurer::disable)
         .userDetailsService(userDetailsService)
         .authorizeHttpRequests(
-            auth -> auth.requestMatchers(GET, asWildcardPattern(ordProperties.getDocumentsPath()))
+            auth -> auth.requestMatchers(GET, asWildcardPattern(ordProperties.getApiBasePathDocuments()))
                 .access(ordAuthorizationManager)
                 .anyRequest()
                 .denyAll())
@@ -117,11 +117,11 @@ public class SecurityConfiguration {
       @Qualifier("ordUserDetailsService") UserDetailsService userDetailsService) {
     return http //
         .httpBasic(withDefaults())
-        .securityMatcher(asWildcardPattern(ordProperties.getResourcesPath()))
+        .securityMatcher(asWildcardPattern(ordProperties.getApiBasePathResources()))
         .csrf(AbstractHttpConfigurer::disable)
         .userDetailsService(userDetailsService)
         .authorizeHttpRequests(
-            auth -> auth.requestMatchers(GET, asWildcardPattern(ordProperties.getResourcesPath()))
+            auth -> auth.requestMatchers(GET, asWildcardPattern(ordProperties.getApiBasePathResources()))
                 .access(ordAuthorizationManager)
                 .anyRequest()
                 .denyAll())

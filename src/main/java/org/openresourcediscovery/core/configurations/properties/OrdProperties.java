@@ -51,13 +51,13 @@ public class OrdProperties {
   private boolean autoconfigure = true;
 
   @Builder.Default
-  private String documentsPath = "/ord/v1/documents";
+  private String apiBasePathDocuments = "/ord/v1/documents";
 
   @Builder.Default
-  private String resourcesPath = "/ord/v1/resources";
+  private String apiBasePathResources = "/ord/v1/resources";
 
   @Builder.Default
-  private String wellKnownPath = "/.well-known/open-resource-discovery";
+  private String apiBasePathWellKnown = "/.well-known/open-resource-discovery";
 
   @Builder.Default
   private String application = "";

@@ -40,8 +40,8 @@ class AccessStrategiesResolverImplTest {
     classUnderTest =
         new AccessStrategiesResolverImpl(ordProperties, documentSchemaRegistry, staticResourceRegistry);
 
-    lenient().doReturn("/ord/v1/documents").when(ordProperties).getDocumentsPath();
-    lenient().doReturn("/ord/v1/resources").when(ordProperties).getResourcesPath();
+    lenient().doReturn("/ord/v1/documents").when(ordProperties).getApiBasePathDocuments();
+    lenient().doReturn("/ord/v1/resources").when(ordProperties).getApiBasePathResources();
   }
 
   @Test

@@ -23,7 +23,7 @@ public class WellKnownController {
   private final OrdProperties ordProperties;
   private final DocumentSchemaRegistry documentSchemaRegistry;
 
-  @GetMapping("${ord.well-known-path:/.well-known/open-resource-discovery}")
+  @GetMapping("${ord.api-base-path-well-known:/.well-known/open-resource-discovery}")
   public ResponseEntity<Map<String, Object>> getWellKnownDiscovery() {
     return ResponseEntity.ok()
         .cacheControl(noCache().mustRevalidate())
@@ -34,7 +34,7 @@ public class WellKnownController {
   private List<Map<String, Object>> asDocuments() {
     return documentSchemaRegistry.getAllDocumentSchemas().entrySet().stream()
         .map(e -> ofEntries(
-            entry("url", "%s/%s".formatted(ordProperties.getDocumentsPath(), e.getKey())),
+            entry("url", "%s/%s".formatted(ordProperties.getApiBasePathDocuments(), e.getKey())),
             entry("perspective", firstNonBlank(e.getValue().getPerspective(), DEFAULT_PERSPECTIVE)),
             entry(
                 "accessStrategies",
