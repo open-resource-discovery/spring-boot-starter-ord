@@ -1,7 +1,11 @@
 package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -29,6 +33,7 @@ import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.model.Link;
 import org.openresourcediscovery.model.Package;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 import org.openresourcediscovery.utils.Commons;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +41,9 @@ class DataProductGeneratorTest {
 
   private static final String NAMESPACE = "customer.test.namespace";
   private static final String APPLICATION = "my-app";
+
+  @Mock
+  private EntityGenerator.Customizer<Ord.DataProduct, DataProduct> customizer;
 
   @Mock
   private OrdProperties ordProperties;
@@ -52,18 +60,23 @@ class DataProductGeneratorTest {
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
 
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
+
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
     lenient().doReturn(APPLICATION).when(ordProperties).getApplication();
 
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new));
+    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new) {});
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.ChangelogEntry.class, new EntityAutoGenerator<>(ChangelogEntry::new));
-    prepareEntityGeneratorFactoryMock(Ord.DataProductLink.class, new EntityAutoGenerator<>(DataProductLink::new));
+    prepareEntityGeneratorFactoryMock(Ord.ChangelogEntry.class, new EntityAutoGenerator<>(ChangelogEntry::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.DataProductInputPort.class, new EntityAutoGenerator<>(DataProductInputPort::new));
+        Ord.DataProductLink.class, new EntityAutoGenerator<>(DataProductLink::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.DataProductOutputPort.class, new EntityAutoGenerator<>(DataProductOutputPort::new));
+        Ord.DataProductInputPort.class, new EntityAutoGenerator<>(DataProductInputPort::new) {});
+    prepareEntityGeneratorFactoryMock(
+        Ord.DataProductOutputPort.class, new EntityAutoGenerator<>(DataProductOutputPort::new) {});
   }
 
   @Test
@@ -75,6 +88,9 @@ class DataProductGeneratorTest {
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
     String expectedApplication = APPLICATION.replaceAll("[^A-Za-z0-9._\\-/]", "");
     String expectedNamespace = NAMESPACE.toLowerCase().replaceAll("[^a-z0-9.]", "");
+
+    Context<Ord.DataProduct> context =
+        Context.of(Annotations.mock(Ord.DataProduct.class), getClass(), new DocumentSchema());
 
     assertEquals(
         new DataProduct()
@@ -97,14 +113,22 @@ class DataProductGeneratorTest {
                     + ":apiResource:"
                     + getClass().getSimpleName()
                     + ":v1"))),
-        classUnderTest.generate(
-            Context.of(Annotations.mock(Ord.DataProduct.class), getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
   void givenSinglePackageInDocument_whenGenerateIsCalled_thenPackageOrdIdIsUsed() {
     String expectedApplication = APPLICATION.replaceAll("[^A-Za-z0-9._\\-/]", "");
     String expectedNamespace = NAMESPACE.toLowerCase().replaceAll("[^a-z0-9.]", "");
+
+    Context<Ord.DataProduct> context = Context.of(
+        Annotations.mock(Ord.DataProduct.class),
+        getClass(),
+        new DocumentSchema()
+            .withPackages(List.of(new Package().withOrdId(NAMESPACE + ":package:myPackage:v1"))));
 
     assertEquals(
         new DataProduct()
@@ -127,11 +151,10 @@ class DataProductGeneratorTest {
                     + ":apiResource:"
                     + getClass().getSimpleName()
                     + ":v1"))),
-        classUnderTest.generate(Context.of(
-            Annotations.mock(Ord.DataProduct.class),
-            getClass(),
-            new DocumentSchema()
-                .withPackages(List.of(new Package().withOrdId(NAMESPACE + ":package:myPackage:v1"))))));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -184,6 +207,8 @@ class DataProductGeneratorTest {
             Map.entry(
                 "outputPorts",
                 new Ord.DataProductOutputPort[] {createDataProductOutputPortAnnotationMock()})));
+
+    Context<Ord.DataProduct> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new DataProduct()
@@ -245,7 +270,10 @@ class DataProductGeneratorTest {
                 .withReleaseStatus("active")
                 .withDescription("test-changelog-description")
                 .withUrl(URI.create("https://test-changelog.dummy.nowhere.org")))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

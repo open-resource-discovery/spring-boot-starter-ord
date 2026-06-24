@@ -127,7 +127,7 @@ class EntityAutoGeneratorTest {
 
   @Test
   void givenAnnotationWithUrlField_whenGenerateIsCalled_thenUriFieldIsSet() {
-    EntityAutoGenerator<Ord.Link, Link> generator = new EntityAutoGenerator<>(Link::new);
+    EntityAutoGenerator<Ord.Link, Link> generator = new EntityAutoGenerator<>(Link::new) {};
     generator.setOrdProperties(ordProperties);
     generator.setEntityGeneratorFactory(entityGeneratorFactory);
 
@@ -162,7 +162,7 @@ class EntityAutoGeneratorTest {
   @Test
   void givenAnnotationWithSupportedField_whenGenerateIsCalled_thenSupportedEnumIsSet() {
     EntityAutoGenerator<Ord.Extensible, org.openresourcediscovery.model.Extensible> generator =
-        new EntityAutoGenerator<>(org.openresourcediscovery.model.Extensible::new);
+        new EntityAutoGenerator<>(org.openresourcediscovery.model.Extensible::new) {};
     generator.setOrdProperties(ordProperties);
     generator.setEntityGeneratorFactory(entityGeneratorFactory);
 
@@ -240,20 +240,20 @@ class EntityAutoGeneratorTest {
 
   @Test
   void givenAnnotationWithAnnotationArray_whenGenerateIsCalled_thenListOfSubEntitiesIsSet() {
-    EntityAutoGenerator<Ord.Package, Package> packageGenerator = new EntityAutoGenerator<>(Package::new);
+    EntityAutoGenerator<Ord.Package, Package> packageGenerator = new EntityAutoGenerator<>(Package::new) {};
     packageGenerator.setOrdProperties(ordProperties);
     packageGenerator.setEntityGeneratorFactory(entityGeneratorFactory);
 
     EntityAutoGenerator<Ord.PackageLink, PackageLink> packageLinkGenerator =
-        new EntityAutoGenerator<>(PackageLink::new);
+        new EntityAutoGenerator<>(PackageLink::new) {};
     packageLinkGenerator.setOrdProperties(ordProperties);
     packageLinkGenerator.setEntityGeneratorFactory(entityGeneratorFactory);
 
-    EntityAutoGenerator<Ord.Link, Link> linkGenerator = new EntityAutoGenerator<>(Link::new);
+    EntityAutoGenerator<Ord.Link, Link> linkGenerator = new EntityAutoGenerator<>(Link::new) {};
     linkGenerator.setOrdProperties(ordProperties);
     linkGenerator.setEntityGeneratorFactory(entityGeneratorFactory);
 
-    EntityAutoGenerator<Ord.File, File> fileGenerator = new EntityAutoGenerator<>(File::new);
+    EntityAutoGenerator<Ord.File, File> fileGenerator = new EntityAutoGenerator<>(File::new) {};
     fileGenerator.setOrdProperties(ordProperties);
     fileGenerator.setEntityGeneratorFactory(entityGeneratorFactory);
 
@@ -277,20 +277,20 @@ class EntityAutoGeneratorTest {
 
   @Test
   void givenAnnotationWithEmptyAnnotationArray_whenGenerateIsCalled_thenListFieldIsNull() {
-    EntityAutoGenerator<Ord.Package, Package> packageGenerator = new EntityAutoGenerator<>(Package::new);
+    EntityAutoGenerator<Ord.Package, Package> packageGenerator = new EntityAutoGenerator<>(Package::new) {};
     packageGenerator.setOrdProperties(ordProperties);
     packageGenerator.setEntityGeneratorFactory(entityGeneratorFactory);
 
     EntityAutoGenerator<Ord.PackageLink, PackageLink> packageLinkGenerator =
-        new EntityAutoGenerator<>(PackageLink::new);
+        new EntityAutoGenerator<>(PackageLink::new) {};
     packageLinkGenerator.setOrdProperties(ordProperties);
     packageLinkGenerator.setEntityGeneratorFactory(entityGeneratorFactory);
 
-    EntityAutoGenerator<Ord.Link, Link> linkGenerator = new EntityAutoGenerator<>(Link::new);
+    EntityAutoGenerator<Ord.Link, Link> linkGenerator = new EntityAutoGenerator<>(Link::new) {};
     linkGenerator.setOrdProperties(ordProperties);
     linkGenerator.setEntityGeneratorFactory(entityGeneratorFactory);
 
-    EntityAutoGenerator<Ord.File, File> fileGenerator = new EntityAutoGenerator<>(File::new);
+    EntityAutoGenerator<Ord.File, File> fileGenerator = new EntityAutoGenerator<>(File::new) {};
     fileGenerator.setOrdProperties(ordProperties);
     fileGenerator.setEntityGeneratorFactory(entityGeneratorFactory);
 

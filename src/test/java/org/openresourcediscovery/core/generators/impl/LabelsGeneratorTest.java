@@ -2,25 +2,43 @@ package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
+import org.openresourcediscovery.core.generators.EntityGenerator;
 import org.openresourcediscovery.core.generators.EntityGenerator.Context;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
+@ExtendWith(MockitoExtension.class)
 class LabelsGeneratorTest {
+
+  @Mock
+  private EntityGenerator.Customizer<Ord.Labels, Labels> customizer;
 
   private LabelsGenerator classUnderTest;
 
   @BeforeEach
   void setUp() {
     classUnderTest = new LabelsGenerator();
+
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
   }
 
   @Test
@@ -30,18 +48,24 @@ class LabelsGeneratorTest {
 
   @Test
   void givenEmptyAnnotationValues_whenGenerateIsCalled_thenNullIsReturned() {
-    assertNull(classUnderTest.generate(Context.of(mock(Ord.Labels.class), getClass(), new DocumentSchema())));
+    Context<Ord.Labels> context = Context.of(mock(Ord.Labels.class), getClass(), new DocumentSchema());
+
+    assertNull(classUnderTest.generate(context));
   }
 
   @Test
   void whenGenerateIsCalled_thenCorrectResultIsReturned() {
     Ord.Labels annotation = Annotations.mock(
         Ord.Labels.class, Map.of("value", new Ord.LabelsEntry[] {createLabelsEntryAnnotationMock()}));
+    Context<Ord.Labels> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new Labels()
             .withAdditionalProperty("test-label-key", List.of("test-label-value-1", "test-label-value-2")),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private static Ord.LabelsEntry createLabelsEntryAnnotationMock() {

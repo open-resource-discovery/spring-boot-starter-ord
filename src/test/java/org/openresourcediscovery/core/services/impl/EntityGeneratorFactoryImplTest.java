@@ -20,7 +20,6 @@ import org.openresourcediscovery.core.generators.impl.ApiResourceGenerator;
 import org.openresourcediscovery.core.generators.impl.CapabilityGenerator;
 import org.openresourcediscovery.core.generators.impl.ConsumptionBundleGenerator;
 import org.openresourcediscovery.core.generators.impl.DataProductGenerator;
-import org.openresourcediscovery.core.generators.impl.DocumentSchemaGenerator;
 import org.openresourcediscovery.core.generators.impl.DocumentationLabelsGenerator;
 import org.openresourcediscovery.core.generators.impl.EntityTypeGenerator;
 import org.openresourcediscovery.core.generators.impl.EntityTypeOrdIdTargetGenerator;
@@ -252,7 +251,7 @@ class EntityGeneratorFactoryImplTest {
 
   @Test
   void givenDocumentAnnotation_whenCreateIsCalled_thenDocumentSchemaGeneratorIsReturned() {
-    assertInstanceOf(DocumentSchemaGenerator.class, classUnderTest.create(Ord.Document.class));
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.Document.class));
   }
 
   @Test

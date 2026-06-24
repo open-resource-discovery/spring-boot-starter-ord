@@ -1,7 +1,11 @@
 package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -20,11 +24,15 @@ import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.Group;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class GroupGeneratorTest {
 
   private static final String NAMESPACE = "customer.test.namespace";
+
+  @Mock
+  private EntityGenerator.Customizer<Ord.Group, Group> customizer;
 
   @Mock
   private OrdProperties ordProperties;
@@ -40,7 +48,9 @@ class GroupGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
   }
@@ -52,6 +62,8 @@ class GroupGeneratorTest {
 
   @Test
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
+    Context<Ord.Group> context = Context.of(Annotations.mock(Ord.Group.class), getClass(), new DocumentSchema());
+
     assertEquals(
         new Group()
             .withTitle(getClass().getSimpleName())
@@ -64,14 +76,17 @@ class GroupGeneratorTest {
                 + NAMESPACE
                 + ":"
                 + getClass().getSimpleName()),
-        classUnderTest.generate(
-            Context.of(Annotations.mock(Ord.Group.class), getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
   void givenCustomGroupTypeId_whenGenerateIsCalled_thenGroupIdUsesCustomGroupTypeId() {
     Ord.Group annotation =
         Annotations.mock(Ord.Group.class, Map.ofEntries(Map.entry("groupTypeId", "custom:grouptype")));
+    Context<Ord.Group> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new Group()
@@ -79,7 +94,10 @@ class GroupGeneratorTest {
             .withTitle(getClass().getSimpleName())
             .withGroupId("custom:grouptype:" + NAMESPACE + ":"
                 + getClass().getSimpleName()),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -95,6 +113,7 @@ class GroupGeneratorTest {
             Map.entry("groupId", NAMESPACE + ":mygroup:" + NAMESPACE + ":MyGroup"),
             Map.entry("partOfGroups", new String[] {"parent-group-1", "parent-group-2"}),
             Map.entry("correlationIds", new String[] {"correlation-id-1", "correlation-id-2"})));
+    Context<Ord.Group> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new Group()
@@ -108,7 +127,10 @@ class GroupGeneratorTest {
             .withLabels(new Labels()
                 .withAdditionalProperty(
                     "test-label-key", List.of("test-label-value-1", "test-label-value-2"))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

@@ -1,7 +1,11 @@
 package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -26,9 +30,13 @@ import org.openresourcediscovery.model.EventResourceIntegrationAspectSubset;
 import org.openresourcediscovery.model.IntegrationAspect;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class IntegrationAspectGeneratorTest {
+
+  @Mock
+  private EntityGenerator.Customizer<Ord.IntegrationAspect, IntegrationAspect> customizer;
 
   @Mock
   private OrdProperties ordProperties;
@@ -44,21 +52,25 @@ class IntegrationAspectGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(
-        Ord.ApiResourceIntegrationAspect.class, new EntityAutoGenerator<>(ApiResourceIntegrationAspect::new));
+        Ord.ApiResourceIntegrationAspect.class,
+        new EntityAutoGenerator<>(ApiResourceIntegrationAspect::new) {});
     prepareEntityGeneratorFactoryMock(
         Ord.EventResourceIntegrationAspect.class,
-        new EntityAutoGenerator<>(EventResourceIntegrationAspect::new));
+        new EntityAutoGenerator<>(EventResourceIntegrationAspect::new) {});
     prepareEntityGeneratorFactoryMock(
         Ord.ApiResourceIntegrationAspectSubset.class,
-        new EntityAutoGenerator<>(ApiResourceIntegrationAspectSubset::new));
+        new EntityAutoGenerator<>(ApiResourceIntegrationAspectSubset::new) {});
     prepareEntityGeneratorFactoryMock(
         Ord.EventResourceIntegrationAspectSubset.class,
-        new EntityAutoGenerator<>(EventResourceIntegrationAspectSubset::new));
+        new EntityAutoGenerator<>(EventResourceIntegrationAspectSubset::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.CapabilityIntegrationAspect.class, new EntityAutoGenerator<>(CapabilityIntegrationAspect::new));
+        Ord.CapabilityIntegrationAspect.class, new EntityAutoGenerator<>(CapabilityIntegrationAspect::new) {});
   }
 
   @Test
@@ -68,13 +80,18 @@ class IntegrationAspectGeneratorTest {
 
   @Test
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
+    Context<Ord.IntegrationAspect> context =
+        Context.of(Annotations.mock(Ord.IntegrationAspect.class), getClass(), new DocumentSchema());
+
     assertEquals(
         new IntegrationAspect()
             .withMandatory(false)
             .withSupportMultipleProviders(false)
             .withTitle(getClass().getSimpleName()),
-        classUnderTest.generate(
-            Context.of(Annotations.mock(Ord.IntegrationAspect.class), getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -96,6 +113,7 @@ class IntegrationAspectGeneratorTest {
             Map.entry("capabilities", new Ord.CapabilityIntegrationAspect[] {
               createCapabilityIntegrationAspectAnnotationMock()
             })));
+    Context<Ord.IntegrationAspect> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new IntegrationAspect()
@@ -121,7 +139,10 @@ class IntegrationAspectGeneratorTest {
             .withLabels(new Labels()
                 .withAdditionalProperty(
                     "test-label-key", List.of("test-label-value-1", "test-label-value-2"))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

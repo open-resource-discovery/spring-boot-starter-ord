@@ -1,7 +1,11 @@
 package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -36,12 +40,16 @@ import org.openresourcediscovery.model.Package;
 import org.openresourcediscovery.model.RelatedApiResource;
 import org.openresourcediscovery.model.RelatedEventResource;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 import org.openresourcediscovery.utils.Commons;
 
 @ExtendWith(MockitoExtension.class)
 class ApiResourceGeneratorTest {
 
   private static final String NAMESPACE = "customer.test.namespace";
+
+  @Mock
+  private EntityGenerator.Customizer<Ord.ApiResource, ApiResource> customizer;
 
   @Mock
   private OrdProperties ordProperties;
@@ -57,32 +65,36 @@ class ApiResourceGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
 
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(Ord.Extensible.class, new ExtensibleGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new));
+    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new) {});
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
     prepareEntityGeneratorFactoryMock(Ord.ApiModelSelectorOData.class, new ApiModelSelectorODataGenerator());
     prepareEntityGeneratorFactoryMock(Ord.EntityTypeOrdIdTarget.class, new EntityTypeOrdIdTargetGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.ChangelogEntry.class, new EntityAutoGenerator<>(ChangelogEntry::new));
-    prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new));
-    prepareEntityGeneratorFactoryMock(Ord.ApiCompatibility.class, new EntityAutoGenerator<>(ApiCompatibility::new));
+    prepareEntityGeneratorFactoryMock(Ord.ChangelogEntry.class, new EntityAutoGenerator<>(ChangelogEntry::new) {});
+    prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.EntityTypeMapping.class, new EntityAutoGenerator<>(EntityTypeMapping::new));
+        Ord.ApiCompatibility.class, new EntityAutoGenerator<>(ApiCompatibility::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.ExposedEntityType.class, new EntityAutoGenerator<>(ExposedEntityType::new));
+        Ord.EntityTypeMapping.class, new EntityAutoGenerator<>(EntityTypeMapping::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.APIEventResourceLink.class, new EntityAutoGenerator<>(APIEventResourceLink::new));
+        Ord.ExposedEntityType.class, new EntityAutoGenerator<>(ExposedEntityType::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.ApiResourceDefinition.class, new EntityAutoGenerator<>(ApiResourceDefinition::new));
+        Ord.APIEventResourceLink.class, new EntityAutoGenerator<>(APIEventResourceLink::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.ConsumptionBundleReference.class, new EntityAutoGenerator<>(ConsumptionBundleReference::new));
+        Ord.ApiResourceDefinition.class, new EntityAutoGenerator<>(ApiResourceDefinition::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.RelatedApiResource.class, new EntityAutoGenerator<>(RelatedApiResource::new));
+        Ord.ConsumptionBundleReference.class, new EntityAutoGenerator<>(ConsumptionBundleReference::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.RelatedEventResource.class, new EntityAutoGenerator<>(RelatedEventResource::new));
+        Ord.RelatedApiResource.class, new EntityAutoGenerator<>(RelatedApiResource::new) {});
+    prepareEntityGeneratorFactoryMock(
+        Ord.RelatedEventResource.class, new EntityAutoGenerator<>(RelatedEventResource::new) {});
   }
 
   @Test
@@ -92,6 +104,9 @@ class ApiResourceGeneratorTest {
 
   @Test
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
+    Context<Ord.ApiResource> context =
+        Context.of(Annotations.mock(Ord.ApiResource.class), getClass(), new DocumentSchema());
+
     assertEquals(
         new ApiResource()
             .withVersion("1.0.0")
@@ -105,12 +120,20 @@ class ApiResourceGeneratorTest {
                 "Auto-generated description for " + getClass().getSimpleName())
             .withShortDescription("Auto-generated short description for "
                 + getClass().getSimpleName()),
-        classUnderTest.generate(
-            Context.of(Annotations.mock(Ord.ApiResource.class), getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
   void givenSinglePackageInDocument_whenGenerateIsCalled_thenPackageOrdIdIsUsed() {
+    Context<Ord.ApiResource> context = Context.of(
+        Annotations.mock(Ord.ApiResource.class),
+        getClass(),
+        new DocumentSchema()
+            .withPackages(List.of(new Package().withOrdId(NAMESPACE + ":package:myPackage:v1"))));
+
     assertEquals(
         new ApiResource()
             .withVersion("1.0.0")
@@ -124,11 +147,10 @@ class ApiResourceGeneratorTest {
                 "Auto-generated description for " + getClass().getSimpleName())
             .withShortDescription("Auto-generated short description for "
                 + getClass().getSimpleName()),
-        classUnderTest.generate(Context.of(
-            Annotations.mock(Ord.ApiResource.class),
-            getClass(),
-            new DocumentSchema()
-                .withPackages(List.of(new Package().withOrdId(NAMESPACE + ":package:myPackage:v1"))))));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -202,6 +224,8 @@ class ApiResourceGeneratorTest {
             Map.entry(
                 "relatedEventResources",
                 new Ord.RelatedEventResource[] {createRelatedEventResourceAnnotationMock()})));
+
+    Context<Ord.ApiResource> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new ApiResource()
@@ -295,7 +319,10 @@ class ApiResourceGeneratorTest {
             .withRelatedEventResources(List.of(new RelatedEventResource()
                 .withOrdId("test-related-event-resource-ord-id")
                 .withRelationType("test-relation-type"))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

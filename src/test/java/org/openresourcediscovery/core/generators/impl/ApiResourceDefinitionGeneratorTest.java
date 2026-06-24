@@ -2,7 +2,11 @@ package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -22,9 +26,13 @@ import org.openresourcediscovery.model.AccessStrategy;
 import org.openresourcediscovery.model.ApiResourceDefinition;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class ApiResourceDefinitionGeneratorTest {
+
+  @Mock
+  private EntityGenerator.Customizer<Ord.ApiResourceDefinition, ApiResourceDefinition> customizer;
 
   @Mock
   private OrdProperties ordProperties;
@@ -36,11 +44,14 @@ class ApiResourceDefinitionGeneratorTest {
 
   @BeforeEach
   void setUp() {
-    classUnderTest = new EntityAutoGenerator<>(ApiResourceDefinition::new);
+    classUnderTest = new EntityAutoGenerator<>(ApiResourceDefinition::new) {};
 
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
-    prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new));
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
+
+    prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new) {});
   }
 
   @Test
@@ -93,13 +104,17 @@ class ApiResourceDefinitionGeneratorTest {
             Map.entry("type", "openapi-v3"),
             Map.entry("mediaType", "application/json"),
             Map.entry("url", "https://test-definition.dummy.nowhere.org")));
+    Context<Ord.ApiResourceDefinition> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new ApiResourceDefinition()
             .withType("openapi-v3")
             .withMediaType("application/json")
             .withUrl("https://test-definition.dummy.nowhere.org"),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -115,6 +130,7 @@ class ApiResourceDefinitionGeneratorTest {
             Map.entry("purpose", "ord:ai-enrichment"),
             Map.entry(
                 "accessStrategies", new Ord.AccessStrategy[] {createAccessStrategyAnnotationMock()})));
+    Context<Ord.ApiResourceDefinition> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new ApiResourceDefinition()
@@ -128,7 +144,10 @@ class ApiResourceDefinitionGeneratorTest {
                 .withType("open")
                 .withCustomType("test-access-strategy-custom-type")
                 .withCustomDescription("test-access-strategy-custom-description"))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

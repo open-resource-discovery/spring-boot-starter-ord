@@ -1,7 +1,11 @@
 package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -16,6 +20,7 @@ import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.configurations.properties.OrdProperties;
 import org.openresourcediscovery.core.generators.EntityAutoGenerator;
 import org.openresourcediscovery.core.generators.EntityGenerator;
+import org.openresourcediscovery.core.generators.EntityGenerator.Context;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.DocumentationLabels;
@@ -25,11 +30,15 @@ import org.openresourcediscovery.model.Link;
 import org.openresourcediscovery.model.Package;
 import org.openresourcediscovery.model.PackageLink;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class PackageGeneratorTest {
 
   private static final String NAMESPACE = "customer.test.namespace";
+
+  @Mock
+  private EntityGenerator.Customizer<Ord.Package, Package> customizer;
 
   @Mock
   private OrdProperties ordProperties;
@@ -45,13 +54,15 @@ class PackageGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new));
-    prepareEntityGeneratorFactoryMock(Ord.File.class, new EntityAutoGenerator<>(File::new));
+    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new) {});
+    prepareEntityGeneratorFactoryMock(Ord.File.class, new EntityAutoGenerator<>(File::new) {});
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.PackageLink.class, new EntityAutoGenerator<>(PackageLink::new));
+    prepareEntityGeneratorFactoryMock(Ord.PackageLink.class, new EntityAutoGenerator<>(PackageLink::new) {});
   }
 
   @Test
@@ -61,6 +72,9 @@ class PackageGeneratorTest {
 
   @Test
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
+    Context<Ord.Package> context =
+        Context.of(Annotations.mock(Ord.Package.class), getClass(), new DocumentSchema());
+
     assertEquals(
         new Package()
             .withVersion("1.0.0")
@@ -72,8 +86,10 @@ class PackageGeneratorTest {
                 "Auto-generated description for " + getClass().getSimpleName())
             .withShortDescription("Auto-generated short description for "
                 + getClass().getSimpleName()),
-        classUnderTest.generate(EntityGenerator.Context.of(
-            Annotations.mock(Ord.Package.class), getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -105,6 +121,7 @@ class PackageGeneratorTest {
             Map.entry("packageLinks", new Ord.PackageLink[] {createPackageLinkAnnotationMock()}),
             Map.entry("policyLevels", new String[] {"test-policy-level-1", "test-policy-level-2"}),
             Map.entry("files", new Ord.File[] {createFileAnnotationMock()})));
+    Context<Ord.Package> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new Package()
@@ -147,7 +164,10 @@ class PackageGeneratorTest {
                 .withUrl("https://test-file.dummy.nowhere.org")
                 .withDescription("test-file-description")
                 .withMediaType("application/pdf"))),
-        classUnderTest.generate(EntityGenerator.Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

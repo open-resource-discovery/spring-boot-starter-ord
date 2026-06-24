@@ -1,7 +1,11 @@
 package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -25,12 +29,16 @@ import org.openresourcediscovery.model.DocumentationLabels;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.model.Link;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 import org.openresourcediscovery.utils.Commons;
 
 @ExtendWith(MockitoExtension.class)
 class ConsumptionBundleGeneratorTest {
 
   private static final String NAMESPACE = "customer.test.namespace";
+
+  @Mock
+  private EntityGenerator.Customizer<Ord.ConsumptionBundle, ConsumptionBundle> customizer;
 
   @Mock
   private OrdProperties ordProperties;
@@ -46,14 +54,17 @@ class ConsumptionBundleGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
 
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new));
+    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new) {});
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
     prepareEntityGeneratorFactoryMock(
-        Ord.CredentialExchangeStrategy.class, new EntityAutoGenerator<>(CredentialExchangeStrategy::new));
+        Ord.CredentialExchangeStrategy.class, new EntityAutoGenerator<>(CredentialExchangeStrategy::new) {});
   }
 
   @Test
@@ -63,13 +74,18 @@ class ConsumptionBundleGeneratorTest {
 
   @Test
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
+    Context<Ord.ConsumptionBundle> context =
+        Context.of(Annotations.mock(Ord.ConsumptionBundle.class), getClass(), new DocumentSchema());
+
     assertEquals(
         new ConsumptionBundle()
             .withTitle(getClass().getSimpleName())
             .withOrdId(
                 NAMESPACE + ":consumptionBundle:" + getClass().getSimpleName() + ":v1"),
-        classUnderTest.generate(
-            Context.of(Annotations.mock(Ord.ConsumptionBundle.class), getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -93,6 +109,7 @@ class ConsumptionBundleGeneratorTest {
             Map.entry("credentialExchangeStrategies", new Ord.CredentialExchangeStrategy[] {
               createCredentialExchangeStrategyAnnotationMock()
             })));
+    Context<Ord.ConsumptionBundle> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new ConsumptionBundle()
@@ -122,7 +139,10 @@ class ConsumptionBundleGeneratorTest {
                 .withCustomType("test-custom-type")
                 .withCustomDescription("test-custom-description")
                 .withCallbackUrl(URI.create("https://test-callback.dummy.nowhere.org")))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

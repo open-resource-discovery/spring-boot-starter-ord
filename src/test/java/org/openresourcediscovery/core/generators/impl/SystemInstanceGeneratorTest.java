@@ -2,7 +2,11 @@ package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -15,15 +19,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.configurations.properties.OrdProperties;
 import org.openresourcediscovery.core.generators.EntityGenerator;
+import org.openresourcediscovery.core.generators.EntityGenerator.Context;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.DocumentationLabels;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.model.SystemInstance;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class SystemInstanceGeneratorTest {
+
+  @Mock
+  private EntityGenerator.Customizer<Ord.SystemInstance, SystemInstance> customizer;
 
   @Mock
   private OrdProperties ordProperties;
@@ -39,6 +48,9 @@ class SystemInstanceGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
@@ -51,8 +63,10 @@ class SystemInstanceGeneratorTest {
 
   @Test
   void givenEmptyAnnotation_whenGenerateIsCalled_thenNullIsReturned() {
-    assertNull(classUnderTest.generate(EntityGenerator.Context.of(
-        Annotations.mock(Ord.SystemInstance.class), getClass(), new DocumentSchema())));
+    Context<Ord.SystemInstance> context =
+        Context.of(Annotations.mock(Ord.SystemInstance.class), getClass(), new DocumentSchema());
+
+    assertNull(classUnderTest.generate(context));
   }
 
   @Test
@@ -66,6 +80,7 @@ class SystemInstanceGeneratorTest {
             Map.entry("tags", new String[] {"test-tag-1", "test-tag-2"}),
             Map.entry("documentationLabels", createDocumentationLabelsAnnotationMock()),
             Map.entry("correlationIds", new String[] {"test-correlation-id-1", "test-correlation-id-2"})));
+    Context<Ord.SystemInstance> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new SystemInstance()
@@ -80,7 +95,10 @@ class SystemInstanceGeneratorTest {
                 .withAdditionalProperty(
                     "test-document-label-key",
                     List.of("test-document-label-value-1", "test-document-label-value-2"))),
-        classUnderTest.generate(EntityGenerator.Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

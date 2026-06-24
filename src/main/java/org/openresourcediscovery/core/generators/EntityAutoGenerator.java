@@ -25,7 +25,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.openresourcediscovery.utils.Commons;
 
 @RequiredArgsConstructor
-public class EntityAutoGenerator<A extends Annotation, E> extends EntityGenerator<A, E> {
+public abstract class EntityAutoGenerator<A extends Annotation, E> extends EntityGenerator<A, E> {
 
   private final Supplier<E> supplier;
 
@@ -40,7 +40,7 @@ public class EntityAutoGenerator<A extends Annotation, E> extends EntityGenerato
     processAnnotations(context, entity, required);
     processAnnotationArrays(context, entity, required);
 
-    return entity;
+    return customize(context, entity);
   }
 
   protected Object tryGenerateDefault(Context<A> context, String field) {

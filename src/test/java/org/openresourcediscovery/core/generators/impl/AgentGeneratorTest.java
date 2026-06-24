@@ -1,7 +1,11 @@
 package org.openresourcediscovery.core.generators.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -27,12 +31,16 @@ import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.model.Link;
 import org.openresourcediscovery.model.Package;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 import org.openresourcediscovery.utils.Commons;
 
 @ExtendWith(MockitoExtension.class)
 class AgentGeneratorTest {
 
   private static final String NAMESPACE = "customer.test.namespace";
+
+  @Mock
+  private EntityGenerator.Customizer<Ord.Agent, Agent> customizer;
 
   @Mock
   private OrdProperties ordProperties;
@@ -49,13 +57,17 @@ class AgentGeneratorTest {
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
 
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
+
+    lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
+
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new));
+    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new) {});
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.ChangelogEntry.class, new EntityAutoGenerator<>(ChangelogEntry::new));
+    prepareEntityGeneratorFactoryMock(Ord.ChangelogEntry.class, new EntityAutoGenerator<>(ChangelogEntry::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.ExposedApiResourcesTarget.class, new EntityAutoGenerator<>(ExposedApiResourcesTarget::new));
+        Ord.ExposedApiResourcesTarget.class, new EntityAutoGenerator<>(ExposedApiResourcesTarget::new) {});
   }
 
   @Test
@@ -65,6 +77,8 @@ class AgentGeneratorTest {
 
   @Test
   void givenNoAnnotationValues_whenGenerateIsCalled_thenDefaultsAreApplied() {
+    Context<Ord.Agent> context = Context.of(Annotations.mock(Ord.Agent.class), getClass(), new DocumentSchema());
+
     assertEquals(
         new Agent()
             .withVersion("1.0.0")
@@ -73,12 +87,20 @@ class AgentGeneratorTest {
             .withTitle(getClass().getSimpleName())
             .withPartOfPackage(NAMESPACE + ":package:default:v1")
             .withOrdId(NAMESPACE + ":agent:" + getClass().getSimpleName() + ":v1"),
-        classUnderTest.generate(
-            Context.of(Annotations.mock(Ord.Agent.class), getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
   void givenSinglePackageInDocument_whenGenerateIsCalled_thenPackageOrdIdIsUsed() {
+    Context<Ord.Agent> context = Context.of(
+        Annotations.mock(Ord.Agent.class),
+        getClass(),
+        new DocumentSchema()
+            .withPackages(List.of(new Package().withOrdId(NAMESPACE + ":package:myPackage:v1"))));
+
     assertEquals(
         new Agent()
             .withVersion("1.0.0")
@@ -87,11 +109,10 @@ class AgentGeneratorTest {
             .withTitle(getClass().getSimpleName())
             .withPartOfPackage(NAMESPACE + ":package:myPackage:v1")
             .withOrdId(NAMESPACE + ":agent:" + getClass().getSimpleName() + ":v1"),
-        classUnderTest.generate(Context.of(
-            Annotations.mock(Ord.Agent.class),
-            getClass(),
-            new DocumentSchema()
-                .withPackages(List.of(new Package().withOrdId(NAMESPACE + ":package:myPackage:v1"))))));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -134,6 +155,8 @@ class AgentGeneratorTest {
             Map.entry("exposedApiResources", new Ord.ExposedApiResourcesTarget[] {
               createExposedApiResourcesTargetAnnotationMock()
             })));
+
+    Context<Ord.Agent> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new Agent()
@@ -183,7 +206,10 @@ class AgentGeneratorTest {
                 .withReleaseStatus("active")
                 .withDescription("test-changelog-description")
                 .withUrl(URI.create("https://test-changelog.dummy.nowhere.org")))),
-        classUnderTest.generate(Context.of(annotation, getClass(), new DocumentSchema())));
+        classUnderTest.generate(context));
+
+    verify(customizer).customize(eq(context), any());
+    verifyNoMoreInteractions(customizer);
   }
 
   private <T extends Annotation, E> void prepareEntityGeneratorFactoryMock(

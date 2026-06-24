@@ -16,10 +16,13 @@ public class EntityTypeOrdIdTargetGenerator extends EntityGenerator<Ord.EntityTy
 
   @Override
   public Object generate(Context<Ord.EntityTypeOrdIdTarget> context) {
-    return Map.ofEntries(
-        /// Mandatory
-        Map.entry(
-            "ordId",
-            requireNonNull(firstNonBlank(context.annotation().ordId()))));
+    return customize(
+        context,
+        Map.ofEntries(
+            /// Mandatory
+            Map.entry(
+                "ordId",
+                requireNonNull(
+                    firstNonBlank(context.annotation().ordId())))));
   }
 }
