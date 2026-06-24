@@ -3,6 +3,7 @@ package org.openresourcediscovery.core.processors.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
@@ -16,12 +17,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.generators.EntityGenerator;
+import org.openresourcediscovery.core.processors.AnnotationProcessor;
 import org.openresourcediscovery.core.services.DocumentSchemaDetector.DetectionResult;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner.ScanResult;
 import org.openresourcediscovery.model.Capability;
 import org.openresourcediscovery.model.DocumentSchema;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class CapabilityAnnotationProcessorTest {
@@ -43,6 +46,9 @@ class CapabilityAnnotationProcessorTest {
   @Mock
   private Ord.DocumentReference documentReference;
 
+  @Mock
+  private AnnotationProcessor.Customizer<Ord.Capability> customizer;
+
   private CapabilityAnnotationProcessor classUnderTest;
 
   @BeforeEach
@@ -50,6 +56,7 @@ class CapabilityAnnotationProcessorTest {
     classUnderTest = new CapabilityAnnotationProcessor();
     classUnderTest.setOrdAnnotationsScanner(ordAnnotationsScanner);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
   }
 
   @Test
@@ -72,6 +79,9 @@ class CapabilityAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getCapabilities()).containsExactly(generatedCapability);
+
+    verify(customizer).customize(capabilityAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -96,6 +106,9 @@ class CapabilityAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getCapabilities()).containsExactly(existingCapability, newCapability);
+
+    verify(customizer).customize(capabilityAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -113,6 +126,7 @@ class CapabilityAnnotationProcessorTest {
 
     assertThat(document.getCapabilities()).isNullOrEmpty();
     verify(ordAnnotationsScanner).scan(Ord.Capability.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -129,6 +143,7 @@ class CapabilityAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     verify(ordAnnotationsScanner).scan(Ord.Capability.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -145,6 +160,7 @@ class CapabilityAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     verify(entityGeneratorFactory).create(Ord.Capability.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -176,5 +192,9 @@ class CapabilityAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getCapabilities()).containsExactly(firstCapability, secondCapability);
+
+    verify(customizer).customize(capabilityAnnotation, document);
+    verify(customizer).customize(secondAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 }

@@ -3,6 +3,7 @@ package org.openresourcediscovery.core.processors.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
@@ -16,12 +17,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.generators.EntityGenerator;
+import org.openresourcediscovery.core.processors.AnnotationProcessor;
 import org.openresourcediscovery.core.services.DocumentSchemaDetector.DetectionResult;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner.ScanResult;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.Tombstone;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class TombstoneAnnotationProcessorTest {
@@ -43,6 +46,9 @@ class TombstoneAnnotationProcessorTest {
   @Mock
   private Ord.DocumentReference documentReference;
 
+  @Mock
+  private AnnotationProcessor.Customizer<Ord.Tombstone> customizer;
+
   private TombstoneAnnotationProcessor classUnderTest;
 
   @BeforeEach
@@ -50,6 +56,7 @@ class TombstoneAnnotationProcessorTest {
     classUnderTest = new TombstoneAnnotationProcessor();
     classUnderTest.setOrdAnnotationsScanner(ordAnnotationsScanner);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
   }
 
   @Test
@@ -72,6 +79,9 @@ class TombstoneAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getTombstones()).containsExactly(generatedTombstone);
+
+    verify(customizer).customize(tombstoneAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -96,6 +106,9 @@ class TombstoneAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getTombstones()).containsExactly(existingTombstone, newTombstone);
+
+    verify(customizer).customize(tombstoneAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -113,6 +126,7 @@ class TombstoneAnnotationProcessorTest {
 
     assertThat(document.getTombstones()).isNullOrEmpty();
     verify(ordAnnotationsScanner).scan(Ord.Tombstone.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -129,6 +143,7 @@ class TombstoneAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     verify(ordAnnotationsScanner).scan(Ord.Tombstone.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -145,6 +160,7 @@ class TombstoneAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     verify(entityGeneratorFactory).create(Ord.Tombstone.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -176,5 +192,9 @@ class TombstoneAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getTombstones()).containsExactly(firstTombstone, secondTombstone);
+
+    verify(customizer).customize(tombstoneAnnotation, document);
+    verify(customizer).customize(secondAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 }

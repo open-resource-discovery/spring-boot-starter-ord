@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
@@ -17,12 +18,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.generators.EntityGenerator;
+import org.openresourcediscovery.core.processors.AnnotationProcessor;
 import org.openresourcediscovery.core.services.DocumentSchemaDetector.DetectionResult;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner.ScanResult;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.SystemType;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class SystemTypeAnnotationProcessorTest {
@@ -44,6 +47,9 @@ class SystemTypeAnnotationProcessorTest {
   @Mock
   private Ord.DocumentReference documentReference;
 
+  @Mock
+  private AnnotationProcessor.Customizer<Ord.SystemType> customizer;
+
   private SystemTypeAnnotationProcessor classUnderTest;
 
   @BeforeEach
@@ -51,6 +57,7 @@ class SystemTypeAnnotationProcessorTest {
     classUnderTest = new SystemTypeAnnotationProcessor();
     classUnderTest.setOrdAnnotationsScanner(ordAnnotationsScanner);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
   }
 
   @Test
@@ -73,6 +80,9 @@ class SystemTypeAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getDescribedSystemType()).isSameAs(generatedSystemType);
+
+    verify(customizer).customize(systemTypeAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -90,6 +100,7 @@ class SystemTypeAnnotationProcessorTest {
 
     assertThat(document.getDescribedSystemType()).isNull();
     verify(ordAnnotationsScanner).scan(Ord.SystemType.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -106,6 +117,7 @@ class SystemTypeAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     verify(ordAnnotationsScanner).scan(Ord.SystemType.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -122,6 +134,7 @@ class SystemTypeAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     verify(entityGeneratorFactory).create(Ord.SystemType.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test

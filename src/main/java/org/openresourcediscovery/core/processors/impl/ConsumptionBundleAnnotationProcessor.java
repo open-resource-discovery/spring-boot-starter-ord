@@ -5,6 +5,8 @@ import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.Setter;
 import org.apache.commons.collections4.ListUtils;
 import org.openresourcediscovery.annotations.Ord;
@@ -16,6 +18,7 @@ import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner;
 import org.openresourcediscovery.model.ConsumptionBundle;
 import org.openresourcediscovery.model.DocumentSchema;
+import org.springframework.beans.factory.ObjectProvider;
 
 @Setter(onMethod = @__({@Resource}))
 public class ConsumptionBundleAnnotationProcessor
@@ -23,6 +26,7 @@ public class ConsumptionBundleAnnotationProcessor
 
   private OrdAnnotationsScanner ordAnnotationsScanner;
   private EntityGeneratorFactory entityGeneratorFactory;
+  private ObjectProvider<Customizer<Ord.ConsumptionBundle>> customizers;
 
   @Override
   public void process(Map<String, DetectionResult> documents) {
@@ -36,6 +40,11 @@ public class ConsumptionBundleAnnotationProcessor
       document.setConsumptionBundles(ListUtils.union(
           emptyIfNull(document.getConsumptionBundles()),
           List.of(entityGenerator.generate(Context.of(cb.annotation(), cb.annotated(), document)))));
+
+      Optional.ofNullable(customizers)
+          .map(ObjectProvider::orderedStream)
+          .orElse(Stream.empty())
+          .forEach(customizer -> customizer.customize(cb.annotation(), document));
     });
   }
 }

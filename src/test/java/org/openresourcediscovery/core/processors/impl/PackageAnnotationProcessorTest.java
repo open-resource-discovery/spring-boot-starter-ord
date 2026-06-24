@@ -3,6 +3,7 @@ package org.openresourcediscovery.core.processors.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
@@ -16,11 +17,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.generators.EntityGenerator;
+import org.openresourcediscovery.core.processors.AnnotationProcessor;
 import org.openresourcediscovery.core.services.DocumentSchemaDetector.DetectionResult;
 import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner;
 import org.openresourcediscovery.core.services.OrdAnnotationsScanner.ScanResult;
 import org.openresourcediscovery.model.DocumentSchema;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class PackageAnnotationProcessorTest {
@@ -42,6 +45,9 @@ class PackageAnnotationProcessorTest {
   @Mock
   private Ord.DocumentReference documentReference;
 
+  @Mock
+  private AnnotationProcessor.Customizer<Ord.Package> customizer;
+
   private PackageAnnotationProcessor classUnderTest;
 
   @BeforeEach
@@ -49,6 +55,7 @@ class PackageAnnotationProcessorTest {
     classUnderTest = new PackageAnnotationProcessor();
     classUnderTest.setOrdAnnotationsScanner(ordAnnotationsScanner);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
   }
 
   @Test
@@ -72,6 +79,9 @@ class PackageAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getPackages()).containsExactly(generatedPackage);
+
+    verify(customizer).customize(packageAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -98,6 +108,9 @@ class PackageAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getPackages()).containsExactly(existingPackage, newPackage);
+
+    verify(customizer).customize(packageAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -115,6 +128,7 @@ class PackageAnnotationProcessorTest {
 
     assertThat(document.getPackages()).isNullOrEmpty();
     verify(ordAnnotationsScanner).scan(Ord.Package.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -131,6 +145,7 @@ class PackageAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     verify(ordAnnotationsScanner).scan(Ord.Package.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -147,6 +162,7 @@ class PackageAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     verify(entityGeneratorFactory).create(Ord.Package.class);
+    verifyNoMoreInteractions(customizer);
   }
 
   @Test
@@ -180,5 +196,9 @@ class PackageAnnotationProcessorTest {
     classUnderTest.process(documents);
 
     assertThat(document.getPackages()).containsExactly(firstPackage, secondPackage);
+
+    verify(customizer).customize(packageAnnotation, document);
+    verify(customizer).customize(secondAnnotation, document);
+    verifyNoMoreInteractions(customizer);
   }
 }
