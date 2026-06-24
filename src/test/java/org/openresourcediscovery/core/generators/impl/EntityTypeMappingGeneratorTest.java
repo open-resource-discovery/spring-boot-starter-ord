@@ -25,6 +25,7 @@ import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.EntityTypeMapping;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class EntityTypeMappingGeneratorTest {
@@ -44,11 +45,11 @@ class EntityTypeMappingGeneratorTest {
 
   @BeforeEach
   void setUp() {
-    classUnderTest = new EntityAutoGenerator<>(EntityTypeMapping::new);
+    classUnderTest = new EntityAutoGenerator<>(EntityTypeMapping::new) {};
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
-    classUnderTest.setCustomizers(List.of(customizer));
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 

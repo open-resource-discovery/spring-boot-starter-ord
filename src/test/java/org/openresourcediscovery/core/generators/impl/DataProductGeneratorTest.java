@@ -33,6 +33,7 @@ import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.model.Link;
 import org.openresourcediscovery.model.Package;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 import org.openresourcediscovery.utils.Commons;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,7 +60,7 @@ class DataProductGeneratorTest {
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
 
-    classUnderTest.setCustomizers(List.of(customizer));
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
@@ -67,14 +68,15 @@ class DataProductGeneratorTest {
     lenient().doReturn(APPLICATION).when(ordProperties).getApplication();
 
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new));
+    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new) {});
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.ChangelogEntry.class, new EntityAutoGenerator<>(ChangelogEntry::new));
-    prepareEntityGeneratorFactoryMock(Ord.DataProductLink.class, new EntityAutoGenerator<>(DataProductLink::new));
+    prepareEntityGeneratorFactoryMock(Ord.ChangelogEntry.class, new EntityAutoGenerator<>(ChangelogEntry::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.DataProductInputPort.class, new EntityAutoGenerator<>(DataProductInputPort::new));
+        Ord.DataProductLink.class, new EntityAutoGenerator<>(DataProductLink::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.DataProductOutputPort.class, new EntityAutoGenerator<>(DataProductOutputPort::new));
+        Ord.DataProductInputPort.class, new EntityAutoGenerator<>(DataProductInputPort::new) {});
+    prepareEntityGeneratorFactoryMock(
+        Ord.DataProductOutputPort.class, new EntityAutoGenerator<>(DataProductOutputPort::new) {});
   }
 
   @Test

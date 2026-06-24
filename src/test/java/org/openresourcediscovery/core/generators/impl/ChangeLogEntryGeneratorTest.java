@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +22,7 @@ import org.openresourcediscovery.core.generators.EntityGenerator.Context;
 import org.openresourcediscovery.model.ChangelogEntry;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class ChangeLogEntryGeneratorTest {
@@ -34,9 +34,9 @@ class ChangeLogEntryGeneratorTest {
 
   @BeforeEach
   void setUp() {
-    classUnderTest = new EntityAutoGenerator<>(ChangelogEntry::new);
+    classUnderTest = new EntityAutoGenerator<>(ChangelogEntry::new) {};
 
-    classUnderTest.setCustomizers(List.of(customizer));
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
   }

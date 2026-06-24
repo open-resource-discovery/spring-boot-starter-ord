@@ -26,6 +26,7 @@ import org.openresourcediscovery.model.AccessStrategy;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.EventResourceDefinition;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class EventResourceDefinitionGeneratorTest {
@@ -43,15 +44,15 @@ class EventResourceDefinitionGeneratorTest {
 
   @BeforeEach
   void setUp() {
-    classUnderTest = new EntityAutoGenerator<>(EventResourceDefinition::new);
+    classUnderTest = new EntityAutoGenerator<>(EventResourceDefinition::new) {};
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
-    classUnderTest.setCustomizers(List.of(customizer));
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
-    prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new));
+    prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new) {});
   }
 
   @Test

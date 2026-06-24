@@ -24,6 +24,7 @@ import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.GroupType;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class GroupTypeGeneratorTest {
@@ -47,7 +48,7 @@ class GroupTypeGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
-    classUnderTest.setCustomizers(List.of(customizer));
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();

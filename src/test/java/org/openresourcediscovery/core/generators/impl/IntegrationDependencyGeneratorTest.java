@@ -34,6 +34,7 @@ import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.model.Link;
 import org.openresourcediscovery.model.Package;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 import org.openresourcediscovery.utils.Commons;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,28 +59,28 @@ class IntegrationDependencyGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
-
-    classUnderTest.setCustomizers(List.of(customizer));
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
 
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new));
+    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new) {});
     prepareEntityGeneratorFactoryMock(Ord.IntegrationAspect.class, new IntegrationAspectGenerator());
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
     prepareEntityGeneratorFactoryMock(
-        Ord.ApiResourceIntegrationAspect.class, new EntityAutoGenerator<>(ApiResourceIntegrationAspect::new));
+        Ord.ApiResourceIntegrationAspect.class,
+        new EntityAutoGenerator<>(ApiResourceIntegrationAspect::new) {});
     prepareEntityGeneratorFactoryMock(
         Ord.EventResourceIntegrationAspect.class,
-        new EntityAutoGenerator<>(EventResourceIntegrationAspect::new));
+        new EntityAutoGenerator<>(EventResourceIntegrationAspect::new) {});
     prepareEntityGeneratorFactoryMock(
         Ord.ApiResourceIntegrationAspectSubset.class,
-        new EntityAutoGenerator<>(ApiResourceIntegrationAspectSubset::new));
+        new EntityAutoGenerator<>(ApiResourceIntegrationAspectSubset::new) {});
     prepareEntityGeneratorFactoryMock(
         Ord.EventResourceIntegrationAspectSubset.class,
-        new EntityAutoGenerator<>(EventResourceIntegrationAspectSubset::new));
+        new EntityAutoGenerator<>(EventResourceIntegrationAspectSubset::new) {});
   }
 
   @Test

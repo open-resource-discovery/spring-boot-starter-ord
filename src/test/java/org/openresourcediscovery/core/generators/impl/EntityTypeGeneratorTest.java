@@ -34,6 +34,7 @@ import org.openresourcediscovery.model.Link;
 import org.openresourcediscovery.model.Package;
 import org.openresourcediscovery.model.RelatedEntityType;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 import org.openresourcediscovery.utils.Commons;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,8 +59,7 @@ class EntityTypeGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
-
-    classUnderTest.setCustomizers(List.of(customizer));
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
@@ -67,14 +67,14 @@ class EntityTypeGeneratorTest {
 
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(Ord.Extensible.class, new ExtensibleGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new));
+    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new) {});
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new));
-    prepareEntityGeneratorFactoryMock(Ord.ChangelogEntry.class, new EntityAutoGenerator<>(ChangelogEntry::new));
+    prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new) {});
+    prepareEntityGeneratorFactoryMock(Ord.ChangelogEntry.class, new EntityAutoGenerator<>(ChangelogEntry::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.EntityTypeDefinition.class, new EntityAutoGenerator<>(EntityTypeDefinition::new));
+        Ord.EntityTypeDefinition.class, new EntityAutoGenerator<>(EntityTypeDefinition::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.RelatedEntityType.class, new EntityAutoGenerator<>(RelatedEntityType::new));
+        Ord.RelatedEntityType.class, new EntityAutoGenerator<>(RelatedEntityType::new) {});
   }
 
   @Test

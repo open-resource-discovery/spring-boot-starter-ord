@@ -26,6 +26,7 @@ import org.openresourcediscovery.model.DocumentationLabels;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.model.SystemInstance;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class SystemInstanceGeneratorTest {
@@ -47,7 +48,7 @@ class SystemInstanceGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
-    classUnderTest.setCustomizers(List.of(customizer));
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 

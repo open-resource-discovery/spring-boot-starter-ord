@@ -117,156 +117,156 @@ public class EntityGeneratorFactoryImpl implements EntityGeneratorFactory {
               entry(
                   Ord.AccessStrategy.class,
                   () -> new EntityAutoGenerator<Ord.AccessStrategy, AccessStrategy>(
-                      AccessStrategy::new)),
+                      AccessStrategy::new) {}),
               entry(Ord.Agent.class, AgentGenerator::new),
               entry(
                   Ord.ApiCompatibility.class,
                   () -> new EntityAutoGenerator<Ord.ApiCompatibility, ApiCompatibility>(
-                      ApiCompatibility::new)),
+                      ApiCompatibility::new) {}),
               entry(
                   Ord.APIEventResourceLink.class,
                   () -> new EntityAutoGenerator<Ord.APIEventResourceLink, APIEventResourceLink>(
-                      APIEventResourceLink::new)),
+                      APIEventResourceLink::new) {}),
               entry(Ord.ApiModelSelectorOData.class, ApiModelSelectorODataGenerator::new),
               entry(
                   Ord.ApiResourceDefinition.class,
                   () -> new EntityAutoGenerator<Ord.ApiResourceDefinition, ApiResourceDefinition>(
-                      ApiResourceDefinition::new)),
+                      ApiResourceDefinition::new) {}),
               entry(Ord.ApiResource.class, ApiResourceGenerator::new),
               entry(
                   Ord.ApiResourceIntegrationAspect.class,
                   () -> new EntityAutoGenerator<
                       Ord.ApiResourceIntegrationAspect, ApiResourceIntegrationAspect>(
-                      ApiResourceIntegrationAspect::new)),
+                      ApiResourceIntegrationAspect::new) {}),
               entry(
                   Ord.ApiResourceIntegrationAspectSubset.class,
                   () -> new EntityAutoGenerator<
                       Ord.ApiResourceIntegrationAspectSubset, ApiResourceIntegrationAspectSubset>(
-                      ApiResourceIntegrationAspectSubset::new)),
+                      ApiResourceIntegrationAspectSubset::new) {}),
               entry(
                   Ord.CapabilityDefinition.class,
                   () -> new EntityAutoGenerator<Ord.CapabilityDefinition, CapabilityDefinition>(
-                      CapabilityDefinition::new)),
+                      CapabilityDefinition::new) {}),
               entry(Ord.Capability.class, CapabilityGenerator::new),
               entry(
                   Ord.CapabilityIntegrationAspect.class,
                   () -> new EntityAutoGenerator<
                       Ord.CapabilityIntegrationAspect, CapabilityIntegrationAspect>(
-                      CapabilityIntegrationAspect::new)),
+                      CapabilityIntegrationAspect::new) {}),
               entry(
                   Ord.ChangelogEntry.class,
                   () -> new EntityAutoGenerator<Ord.ChangelogEntry, ChangelogEntry>(
-                      ChangelogEntry::new)),
+                      ChangelogEntry::new) {}),
               entry(Ord.ConsumptionBundle.class, ConsumptionBundleGenerator::new),
               entry(
                   Ord.ConsumptionBundleReference.class,
                   () -> new EntityAutoGenerator<
                       Ord.ConsumptionBundleReference, ConsumptionBundleReference>(
-                      ConsumptionBundleReference::new)),
+                      ConsumptionBundleReference::new) {}),
               entry(
                   Ord.CredentialExchangeStrategy.class,
                   () -> new EntityAutoGenerator<
                       Ord.CredentialExchangeStrategy, CredentialExchangeStrategy>(
-                      CredentialExchangeStrategy::new)),
+                      CredentialExchangeStrategy::new) {}),
               entry(Ord.DataProduct.class, DataProductGenerator::new),
               entry(
                   Ord.DataProductInputPort.class,
                   () -> new EntityAutoGenerator<Ord.DataProductInputPort, DataProductInputPort>(
-                      DataProductInputPort::new)),
+                      DataProductInputPort::new) {}),
               entry(
                   Ord.DataProductLink.class,
                   () -> new EntityAutoGenerator<Ord.DataProductLink, DataProductLink>(
-                      DataProductLink::new)),
+                      DataProductLink::new) {}),
               entry(
                   Ord.DataProductOutputPort.class,
                   () -> new EntityAutoGenerator<Ord.DataProductOutputPort, DataProductOutputPort>(
-                      DataProductOutputPort::new)),
+                      DataProductOutputPort::new) {}),
               entry(Ord.DocumentationLabels.class, DocumentationLabelsGenerator::new),
               entry(
                   Ord.Document.class,
                   () -> new EntityAutoGenerator<Ord.Document, DocumentSchema>(
                       () -> new DocumentSchema()
                           .with$schema(DOCUMENT_SCHEMA_URL)
-                          .withOpenResourceDiscovery(_1_16))),
+                          .withOpenResourceDiscovery(_1_16)) {}),
               entry(Ord.EntityType.class, EntityTypeGenerator::new),
               entry(
                   Ord.EntityTypeDefinition.class,
                   () -> new EntityAutoGenerator<Ord.EntityTypeDefinition, EntityTypeDefinition>(
-                      EntityTypeDefinition::new)),
+                      EntityTypeDefinition::new) {}),
               entry(
                   Ord.EntityTypeMapping.class,
                   () -> new EntityAutoGenerator<Ord.EntityTypeMapping, EntityTypeMapping>(
-                      EntityTypeMapping::new)),
+                      EntityTypeMapping::new) {}),
               entry(Ord.EntityTypeOrdIdTarget.class, EntityTypeOrdIdTargetGenerator::new),
               entry(
                   Ord.EventCompatibility.class,
                   () -> new EntityAutoGenerator<Ord.EventCompatibility, EventCompatibility>(
-                      EventCompatibility::new)),
+                      EventCompatibility::new) {}),
               entry(
                   Ord.EventResourceDefinition.class,
                   () -> new EntityAutoGenerator<Ord.EventResourceDefinition, EventResourceDefinition>(
-                      EventResourceDefinition::new)),
+                      EventResourceDefinition::new) {}),
               entry(Ord.EventResource.class, EventResourceGenerator::new),
               entry(
                   Ord.EventResourceIntegrationAspect.class,
                   () -> new EntityAutoGenerator<
                       Ord.EventResourceIntegrationAspect, EventResourceIntegrationAspect>(
-                      EventResourceIntegrationAspect::new)),
+                      EventResourceIntegrationAspect::new) {}),
               entry(
                   Ord.EventResourceIntegrationAspectSubset.class,
                   () -> new EntityAutoGenerator<
                       Ord.EventResourceIntegrationAspectSubset,
                       EventResourceIntegrationAspectSubset>(
-                      EventResourceIntegrationAspectSubset::new)),
+                      EventResourceIntegrationAspectSubset::new) {}),
               entry(
                   Ord.ExposedApiResourcesTarget.class,
                   () -> new EntityAutoGenerator<
                       Ord.ExposedApiResourcesTarget, ExposedApiResourcesTarget>(
-                      ExposedApiResourcesTarget::new)),
+                      ExposedApiResourcesTarget::new) {}),
               entry(
                   Ord.ExposedEntityType.class,
                   () -> new EntityAutoGenerator<Ord.ExposedEntityType, ExposedEntityType>(
-                      ExposedEntityType::new)),
+                      ExposedEntityType::new) {}),
               entry(Ord.Extensible.class, ExtensibleGenerator::new),
-              entry(Ord.File.class, () -> new EntityAutoGenerator<Ord.File, File>(File::new)),
+              entry(Ord.File.class, () -> new EntityAutoGenerator<Ord.File, File>(File::new) {}),
               entry(Ord.Group.class, GroupGenerator::new),
               entry(Ord.GroupType.class, GroupTypeGenerator::new),
               entry(Ord.IntegrationAspect.class, IntegrationAspectGenerator::new),
               entry(Ord.IntegrationDependency.class, IntegrationDependencyGenerator::new),
               entry(Ord.Labels.class, LabelsGenerator::new),
-              entry(Ord.Link.class, () -> new EntityAutoGenerator<Ord.Link, Link>(Link::new)),
+              entry(Ord.Link.class, () -> new EntityAutoGenerator<Ord.Link, Link>(Link::new) {}),
               entry(Ord.Overlay.class, OverlayGenerator::new),
               entry(
                   Ord.OverlayDefinition.class,
                   () -> new EntityAutoGenerator<Ord.OverlayDefinition, OverlayDefinition>(
-                      OverlayDefinition::new)),
+                      OverlayDefinition::new) {}),
               entry(Ord.Package.class, PackageGenerator::new),
               entry(
                   Ord.PackageLink.class,
-                  () -> new EntityAutoGenerator<Ord.PackageLink, PackageLink>(PackageLink::new)),
+                  () -> new EntityAutoGenerator<Ord.PackageLink, PackageLink>(PackageLink::new) {}),
               entry(Ord.Product.class, ProductGenerator::new),
               entry(
                   Ord.RelatedApiResource.class,
                   () -> new EntityAutoGenerator<Ord.RelatedApiResource, RelatedApiResource>(
-                      RelatedApiResource::new)),
+                      RelatedApiResource::new) {}),
               entry(
                   Ord.RelatedCapability.class,
                   () -> new EntityAutoGenerator<Ord.RelatedCapability, RelatedCapability>(
-                      RelatedCapability::new)),
+                      RelatedCapability::new) {}),
               entry(
                   Ord.RelatedEntityType.class,
                   () -> new EntityAutoGenerator<Ord.RelatedEntityType, RelatedEntityType>(
-                      RelatedEntityType::new)),
+                      RelatedEntityType::new) {}),
               entry(
                   Ord.RelatedEventResource.class,
                   () -> new EntityAutoGenerator<Ord.RelatedEventResource, RelatedEventResource>(
-                      RelatedEventResource::new)),
+                      RelatedEventResource::new) {}),
               entry(Ord.SystemInstance.class, SystemInstanceGenerator::new),
               entry(Ord.SystemType.class, SystemTypeGenerator::new),
               entry(Ord.SystemVersion.class, SystemVersionGenerator::new),
               entry(
                   Ord.Tombstone.class,
-                  () -> new EntityAutoGenerator<Ord.Tombstone, Tombstone>(Tombstone::new)),
+                  () -> new EntityAutoGenerator<Ord.Tombstone, Tombstone>(Tombstone::new) {}),
               entry(Ord.Vendor.class, VendorGenerator::new));
 
   private final AutowireCapableBeanFactory autowireCapableBeanFactory;

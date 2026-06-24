@@ -27,6 +27,7 @@ import org.openresourcediscovery.model.EventResourceIntegrationAspect;
 import org.openresourcediscovery.model.EventResourceIntegrationAspectSubset;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class EventResourceIntegrationAspectGeneratorTest {
@@ -46,18 +47,18 @@ class EventResourceIntegrationAspectGeneratorTest {
 
   @BeforeEach
   void setUp() {
-    classUnderTest = new EntityAutoGenerator<>(EventResourceIntegrationAspect::new);
+    classUnderTest = new EntityAutoGenerator<>(EventResourceIntegrationAspect::new) {};
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
-    classUnderTest.setCustomizers(List.of(customizer));
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(
         Ord.EventResourceIntegrationAspectSubset.class,
-        new EntityAutoGenerator<>(EventResourceIntegrationAspectSubset::new));
+        new EntityAutoGenerator<>(EventResourceIntegrationAspectSubset::new) {});
   }
 
   @Test

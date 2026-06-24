@@ -25,7 +25,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.openresourcediscovery.utils.Commons;
 
 @RequiredArgsConstructor
-public class EntityAutoGenerator<A extends Annotation, E> extends EntityGenerator<A, E> {
+public abstract class EntityAutoGenerator<A extends Annotation, E> extends EntityGenerator<A, E> {
 
   private final Supplier<E> supplier;
 

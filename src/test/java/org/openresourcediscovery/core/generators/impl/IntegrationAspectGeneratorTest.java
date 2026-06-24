@@ -30,6 +30,7 @@ import org.openresourcediscovery.model.EventResourceIntegrationAspectSubset;
 import org.openresourcediscovery.model.IntegrationAspect;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class IntegrationAspectGeneratorTest {
@@ -49,26 +50,27 @@ class IntegrationAspectGeneratorTest {
   void setUp() {
     classUnderTest = new IntegrationAspectGenerator();
 
-    classUnderTest.setCustomizers(List.of(customizer));
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(
-        Ord.ApiResourceIntegrationAspect.class, new EntityAutoGenerator<>(ApiResourceIntegrationAspect::new));
+        Ord.ApiResourceIntegrationAspect.class,
+        new EntityAutoGenerator<>(ApiResourceIntegrationAspect::new) {});
     prepareEntityGeneratorFactoryMock(
         Ord.EventResourceIntegrationAspect.class,
-        new EntityAutoGenerator<>(EventResourceIntegrationAspect::new));
+        new EntityAutoGenerator<>(EventResourceIntegrationAspect::new) {});
     prepareEntityGeneratorFactoryMock(
         Ord.ApiResourceIntegrationAspectSubset.class,
-        new EntityAutoGenerator<>(ApiResourceIntegrationAspectSubset::new));
+        new EntityAutoGenerator<>(ApiResourceIntegrationAspectSubset::new) {});
     prepareEntityGeneratorFactoryMock(
         Ord.EventResourceIntegrationAspectSubset.class,
-        new EntityAutoGenerator<>(EventResourceIntegrationAspectSubset::new));
+        new EntityAutoGenerator<>(EventResourceIntegrationAspectSubset::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.CapabilityIntegrationAspect.class, new EntityAutoGenerator<>(CapabilityIntegrationAspect::new));
+        Ord.CapabilityIntegrationAspect.class, new EntityAutoGenerator<>(CapabilityIntegrationAspect::new) {});
   }
 
   @Test

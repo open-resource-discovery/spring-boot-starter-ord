@@ -22,6 +22,7 @@ import org.openresourcediscovery.core.generators.EntityGenerator.Context;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class LabelsGeneratorTest {
@@ -35,7 +36,7 @@ class LabelsGeneratorTest {
   void setUp() {
     classUnderTest = new LabelsGenerator();
 
-    classUnderTest.setCustomizers(List.of(customizer));
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
   }

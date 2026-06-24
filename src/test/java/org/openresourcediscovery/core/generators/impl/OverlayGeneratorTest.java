@@ -29,6 +29,7 @@ import org.openresourcediscovery.model.OverlayDefinition;
 import org.openresourcediscovery.model.RelatedApiResource;
 import org.openresourcediscovery.model.RelatedEventResource;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 import org.openresourcediscovery.utils.Commons;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,20 +54,20 @@ class OverlayGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
-    classUnderTest.setCustomizers(List.of(customizer));
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
     lenient().doReturn(NAMESPACE).when(ordProperties).getNamespace();
 
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new));
+    prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.OverlayDefinition.class, new EntityAutoGenerator<>(OverlayDefinition::new));
+        Ord.OverlayDefinition.class, new EntityAutoGenerator<>(OverlayDefinition::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.RelatedApiResource.class, new EntityAutoGenerator<>(RelatedApiResource::new));
+        Ord.RelatedApiResource.class, new EntityAutoGenerator<>(RelatedApiResource::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.RelatedEventResource.class, new EntityAutoGenerator<>(RelatedEventResource::new));
+        Ord.RelatedEventResource.class, new EntityAutoGenerator<>(RelatedEventResource::new) {});
   }
 
   @Test

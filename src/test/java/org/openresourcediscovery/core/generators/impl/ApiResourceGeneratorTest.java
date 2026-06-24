@@ -40,6 +40,7 @@ import org.openresourcediscovery.model.Package;
 import org.openresourcediscovery.model.RelatedApiResource;
 import org.openresourcediscovery.model.RelatedEventResource;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 import org.openresourcediscovery.utils.Commons;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,7 +65,7 @@ class ApiResourceGeneratorTest {
 
     classUnderTest.setOrdProperties(ordProperties);
     classUnderTest.setEntityGeneratorFactory(entityGeneratorFactory);
-    classUnderTest.setCustomizers(List.of(customizer));
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
 
@@ -72,27 +73,28 @@ class ApiResourceGeneratorTest {
 
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(Ord.Extensible.class, new ExtensibleGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new));
+    prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new) {});
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
     prepareEntityGeneratorFactoryMock(Ord.ApiModelSelectorOData.class, new ApiModelSelectorODataGenerator());
     prepareEntityGeneratorFactoryMock(Ord.EntityTypeOrdIdTarget.class, new EntityTypeOrdIdTargetGenerator());
-    prepareEntityGeneratorFactoryMock(Ord.ChangelogEntry.class, new EntityAutoGenerator<>(ChangelogEntry::new));
-    prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new));
-    prepareEntityGeneratorFactoryMock(Ord.ApiCompatibility.class, new EntityAutoGenerator<>(ApiCompatibility::new));
+    prepareEntityGeneratorFactoryMock(Ord.ChangelogEntry.class, new EntityAutoGenerator<>(ChangelogEntry::new) {});
+    prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.EntityTypeMapping.class, new EntityAutoGenerator<>(EntityTypeMapping::new));
+        Ord.ApiCompatibility.class, new EntityAutoGenerator<>(ApiCompatibility::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.ExposedEntityType.class, new EntityAutoGenerator<>(ExposedEntityType::new));
+        Ord.EntityTypeMapping.class, new EntityAutoGenerator<>(EntityTypeMapping::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.APIEventResourceLink.class, new EntityAutoGenerator<>(APIEventResourceLink::new));
+        Ord.ExposedEntityType.class, new EntityAutoGenerator<>(ExposedEntityType::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.ApiResourceDefinition.class, new EntityAutoGenerator<>(ApiResourceDefinition::new));
+        Ord.APIEventResourceLink.class, new EntityAutoGenerator<>(APIEventResourceLink::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.ConsumptionBundleReference.class, new EntityAutoGenerator<>(ConsumptionBundleReference::new));
+        Ord.ApiResourceDefinition.class, new EntityAutoGenerator<>(ApiResourceDefinition::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.RelatedApiResource.class, new EntityAutoGenerator<>(RelatedApiResource::new));
+        Ord.ConsumptionBundleReference.class, new EntityAutoGenerator<>(ConsumptionBundleReference::new) {});
     prepareEntityGeneratorFactoryMock(
-        Ord.RelatedEventResource.class, new EntityAutoGenerator<>(RelatedEventResource::new));
+        Ord.RelatedApiResource.class, new EntityAutoGenerator<>(RelatedApiResource::new) {});
+    prepareEntityGeneratorFactoryMock(
+        Ord.RelatedEventResource.class, new EntityAutoGenerator<>(RelatedEventResource::new) {});
   }
 
   @Test

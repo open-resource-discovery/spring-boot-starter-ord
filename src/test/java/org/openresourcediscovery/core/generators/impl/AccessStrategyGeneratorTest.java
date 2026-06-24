@@ -8,7 +8,6 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,25 +16,26 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.generators.EntityAutoGenerator;
-import org.openresourcediscovery.core.generators.EntityGenerator;
 import org.openresourcediscovery.core.generators.EntityGenerator.Context;
+import org.openresourcediscovery.core.generators.EntityGenerator.Customizer;
 import org.openresourcediscovery.model.AccessStrategy;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.testutils.Annotations;
+import org.openresourcediscovery.testutils.TestObjectProvider;
 
 @ExtendWith(MockitoExtension.class)
 class AccessStrategyGeneratorTest {
 
   @Mock
-  private EntityGenerator.Customizer<Ord.AccessStrategy, AccessStrategy> customizer;
+  private Customizer<Ord.AccessStrategy, AccessStrategy> customizer;
 
   private EntityAutoGenerator<Ord.AccessStrategy, AccessStrategy> classUnderTest;
 
   @BeforeEach
   void setUp() {
-    classUnderTest = new EntityAutoGenerator<>(AccessStrategy::new);
+    classUnderTest = new EntityAutoGenerator<>(AccessStrategy::new) {};
 
-    classUnderTest.setCustomizers(List.of(customizer));
+    classUnderTest.setCustomizers(new TestObjectProvider<>(customizer));
 
     lenient().when(customizer.customize(any(), any())).then(in -> in.getArguments()[1]);
   }
