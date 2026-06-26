@@ -74,7 +74,7 @@
         <dependency>
             <groupId>org.open-resource-discovery</groupId>
             <artifactId>ord-annotations</artifactId>
-            <version>0.12.1</version>
+            <version>0.12.2</version>
         </dependency>
 
         <!-- org.open-resource-discovery:ord-models -->
