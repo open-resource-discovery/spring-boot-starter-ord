@@ -81,7 +81,7 @@
         <dependency>
             <groupId>org.open-resource-discovery</groupId>
             <artifactId>ord-models</artifactId>
-            <version>0.12.1</version>
+            <version>0.12.2</version>
         </dependency>
 
         <!-- com.fasterxml.jackson.core:jackson-databind -->
