@@ -3,7 +3,8 @@ name: CI - Check
 on:
   pull_request:
     branches:
-      - main
+      - 'main'
+      - 'rel/**'
 
 jobs:
   ci-check:
