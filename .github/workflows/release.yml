@@ -154,7 +154,7 @@ jobs:
       - name: Update project SNAPSHOT version in repository
         uses: peter-evans/create-pull-request@v8
         with:
-          branch: auto/update-snapshot-version-${{ env.TARGET_SNAPSHOT_VERSION }}
+          branch: "auto/update-snapshot-version-${{ env.TARGET_SNAPSHOT_VERSION }}"
           body: "Update the project version to ${{ env.TARGET_SNAPSHOT_VERSION }}"
           title: "[AUTO] Updates project version to ${{ env.TARGET_SNAPSHOT_VERSION }}"
           commit-message: "[AUTO] Updates project version to ${{ env.TARGET_SNAPSHOT_VERSION }}"
