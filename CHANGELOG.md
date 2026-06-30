@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [unreleased]
 
+## [[1.0.0](https://github.com/open-resource-discovery/spring-boot-starter-ord/releases/tag/v1.0.0)] - 2026-06-30
+
 Upgrade to Spring Boot 4
 
 ## [[0.4.0](https://github.com/open-resource-discovery/spring-boot-starter-ord/releases/tag/v0.4.0)] - 2026-05-20
