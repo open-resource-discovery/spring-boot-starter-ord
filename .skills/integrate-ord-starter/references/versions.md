@@ -4,9 +4,9 @@ Every version-sensitive claim in this skill, in one place. When updating the ski
 
 | Claim                                                         | Where stated | Last verified |
 |---------------------------------------------------------------|---|---|
-| `spring-boot-starter-ord:0.1.0`                               | `SKILL.md` (dependency snippets) | 2026-03 |
-| ORD schema `"openResourceDiscovery": "1.14"`                  | `SKILL.md` (static JSON example, custom-detector.md) | 2026-03 |
-| ORD JSON Schema URL `spec-v1/interfaces/Document.schema.json` | `SKILL.md` (static JSON example) | 2026-03 |
+| `spring-boot-starter-ord:1.0.0`                               | `SKILL.md` (dependency snippets) | 2026-06 |
+| ORD schema `"openResourceDiscovery": "1.16"`                  | `SKILL.md` (static JSON example, custom-detector.md) | 2026-06 |
+| ORD JSON Schema URL `spec-v1/interfaces/Document.schema.json` | `SKILL.md` (static JSON example) | 2026-06 |
 
 ## How to verify
 

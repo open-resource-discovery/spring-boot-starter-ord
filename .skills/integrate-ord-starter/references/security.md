@@ -22,7 +22,7 @@ If Spring Security is absent from the classpath the endpoints are registered but
 
 `SecurityConfiguration` (imported by `OrdSecurityAutoConfiguration`) registers the following beans.
 
-### Two `SecurityFilterChain` beans
+### Three `SecurityFilterChain` beans
 
 Both chains are scoped to ORD paths only and are ordered before any application-defined chains so they do not interfere with the rest of the application.
 
@@ -30,7 +30,7 @@ Both chains are scoped to ORD paths only and are ordered before any application-
 |---|---|---|---|
 | `ordWellKnownSecurityFilterChain` | `HIGHEST_PRECEDENCE + 10` | `/.well-known/open-resource-discovery` | `GET` is always anonymous. All other methods are denied. |
 | `ordDocumentsSecurityFilterChain` | `HIGHEST_PRECEDENCE + 20` | `/ord/v1/documents/*` | `GET` is delegated to `OrdAuthorizationManager`. All other methods are denied. HTTP Basic is enabled for credential exchange. |
-| `ordResourcesSecurityFilterChain` | `HIGHEST_PRECEDENCE + 30` | `/ord/v1/resources/*` | `GET` is delegated to `OrdAuthorizationManager`. All other methods are denied. HTTP Basic is enabled for credential exchange. |
+| `ordResourceSecurityFilterChain` | `HIGHEST_PRECEDENCE + 30` | `/ord/v1/resources/*` | `GET` is delegated to `OrdAuthorizationManager`. All other methods are denied. HTTP Basic is enabled for credential exchange. |
 
 Both chains:
 - disable CSRF (these are read-only API endpoints consumed by automated tooling)
