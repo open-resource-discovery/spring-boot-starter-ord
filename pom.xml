@@ -4,7 +4,7 @@
 
     <groupId>org.open-resource-discovery</groupId>
     <artifactId>spring-boot-starter-ord</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
@@ -74,14 +74,14 @@
         <dependency>
             <groupId>org.open-resource-discovery</groupId>
             <artifactId>ord-annotations</artifactId>
-            <version>0.12.2</version>
+            <version>0.12.3</version>
         </dependency>
 
         <!-- org.open-resource-discovery:ord-models -->
         <dependency>
             <groupId>org.open-resource-discovery</groupId>
             <artifactId>ord-models</artifactId>
-            <version>0.12.2</version>
+            <version>0.12.3</version>
         </dependency>
 
         <!-- com.fasterxml.jackson.core:jackson-databind -->
