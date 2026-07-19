@@ -190,6 +190,20 @@ ord:
 
 Create a plain class — the class serves solely as a container for ORD annotation declarations; it is never instantiated by the application. Annotate it with `@Ord.Document` and add `@Ord.Package`, `@Ord.ApiResource`, etc. on methods within it:
 
+### Overriding access strategies from application.yml
+
+The access strategies declared on `@Ord.Document` can be overridden without changing source code by adding an `ord.documents` entry with the same `name` and **no `path`**:
+
+```yaml
+ord:
+  documents:
+    - name: my-service        # matches @Ord.Document(name = "my-service")
+      accessStrategies:
+        - sap:cmp-mtls:v1    # replaces whatever the annotation declares
+```
+
+When a matching entry is found (same `name`, empty `path`), its `accessStrategies` takes precedence. When no matching entry exists, the strategies from the annotation are used. This allows deployment-time configuration of access strategies without recompiling.
+
 ```java
 import org.openresourcediscovery.annotations.Ord;
 

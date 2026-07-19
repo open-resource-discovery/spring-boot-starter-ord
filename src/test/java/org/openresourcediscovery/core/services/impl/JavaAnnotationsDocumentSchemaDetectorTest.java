@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.configurations.properties.OrdProperties;
+import org.openresourcediscovery.core.configurations.properties.OrdProperties.Document;
 import org.openresourcediscovery.core.generators.EntityGenerator;
 import org.openresourcediscovery.core.processors.AnnotationProcessor;
 import org.openresourcediscovery.core.services.AnnotationProcessorFactory;
@@ -51,7 +52,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
   @BeforeEach
   void setUp() {
     classUnderTest = new JavaAnnotationsDocumentSchemaDetector(
-        ordAnnotationsScanner, entityGeneratorFactory, annotationProcessorFactory);
+        ordProperties, ordAnnotationsScanner, entityGeneratorFactory, annotationProcessorFactory);
 
     stubProcessorFor(Ord.Group.class);
     stubProcessorFor(Ord.Agent.class);
@@ -129,6 +130,33 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
         classUnderTest.detect(OrdProperties.builder().build());
 
     assertEquals(Set.of("open"), result.get("doc-with-strategies").strategies());
+  }
+
+  @Test
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  void
+      givenDocumentWithAccessStrategies_and_overrideViaApplicationProperties_whenDetectIsCalled_thenCorrectStrategiesAreResolved() {
+    Ord.Document docAnnotation = mock(Ord.Document.class);
+    EntityGenerator mockGenerator = mock(EntityGenerator.class);
+    Ord.AccessStrategy strategy = mock(Ord.AccessStrategy.class);
+
+    doReturn("open").when(strategy).type();
+    doReturn(new DocumentSchema()).when(mockGenerator).generate(any());
+    doReturn("doc-with-strategies").when(docAnnotation).name();
+    doReturn(mockGenerator).when(entityGeneratorFactory).create(Ord.Document.class);
+    doReturn(new Ord.AccessStrategy[] {strategy}).when(docAnnotation).accessStrategies();
+    doReturn(List.of(new ScanResult(String.class, docAnnotation)))
+        .when(ordAnnotationsScanner)
+        .scan(eq(Ord.Document.class));
+    doReturn(List.of(new Document("doc-with-strategies", "", Set.of("sap:cmp-mtls:v1"))))
+        .when(ordProperties)
+        .getDocuments();
+
+    Map<String, DetectionResult> result =
+        classUnderTest.detect(OrdProperties.builder().build());
+
+    assertEquals(
+        Set.of("sap:cmp-mtls:v1"), result.get("doc-with-strategies").strategies());
   }
 
   @Test

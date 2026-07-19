@@ -2,10 +2,13 @@ package org.openresourcediscovery.core.services.impl;
 
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.openresourcediscovery.annotations.Ord;
@@ -22,6 +25,7 @@ import org.openresourcediscovery.model.Package;
 @RequiredArgsConstructor
 public class JavaAnnotationsDocumentSchemaDetector implements DocumentSchemaDetector {
 
+  private final OrdProperties ordProperties;
   private final OrdAnnotationsScanner ordAnnotationsScanner;
   private final EntityGeneratorFactory entityGeneratorFactory;
   private final AnnotationProcessorFactory annotationProcessorFactory;
@@ -77,10 +81,20 @@ public class JavaAnnotationsDocumentSchemaDetector implements DocumentSchemaDete
             d.annotation().name(),
             new DetectionResult(
                 generator.generate(Context.of(d.annotation(), d.annotated(), null)),
-                Stream.of(d.annotation().accessStrategies())
-                    .map(Ord.AccessStrategy::type)
-                    .collect(toSet()))));
+                resolveAccessStrategies(d.annotation()))));
 
     return documents;
+  }
+
+  protected Set<String> resolveAccessStrategies(Ord.Document annotation) {
+    return ordProperties.getDocuments().stream()
+        .filter(document -> isEmpty(document.getPath()))
+        .filter(document -> Objects.equals(annotation.name(), document.getName()))
+        .findFirst()
+        .map(OrdProperties.Document::getAccessStrategies)
+        .orElse( //
+            Stream.of(annotation.accessStrategies())
+                .map(Ord.AccessStrategy::type)
+                .collect(toSet()));
   }
 }

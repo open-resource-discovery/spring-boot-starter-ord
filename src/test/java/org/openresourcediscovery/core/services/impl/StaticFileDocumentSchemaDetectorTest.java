@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.openresourcediscovery.core.configurations.properties.OrdProperties;
+import org.openresourcediscovery.core.configurations.properties.OrdProperties.Document;
 import org.openresourcediscovery.core.services.DocumentSchemaDetector.DetectionResult;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.springframework.core.io.Resource;
@@ -57,8 +58,20 @@ class StaticFileDocumentSchemaDetectorTest {
   }
 
   @Test
+  void givenDocumentWithNoPath_whenDetectIsCalled_thenEmptyMapIsReturned() {
+    OrdProperties properties = OrdProperties.builder()
+        .documents(List.of(new Document("should-be-ignored", "", Set.of())))
+        .build();
+
+    Map<String, DetectionResult> result = classUnderTest.detect(properties);
+
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
   void givenSingleDocument_whenDetectIsCalled_thenDocumentIsLoaded() throws IOException {
-    OrdProperties.Document document = OrdProperties.Document.builder()
+    Document document = Document.builder()
         .name(DOC_NAME)
         .path(DOC_PATH)
         .accessStrategies(Set.of(ACCESS_STRATEGY))
@@ -81,8 +94,7 @@ class StaticFileDocumentSchemaDetectorTest {
 
   @Test
   void givenDocumentWithNoAccessStrategies_whenDetectIsCalled_thenEmptySetIsReturned() throws IOException {
-    OrdProperties.Document document =
-        OrdProperties.Document.builder().name(DOC_NAME).path(DOC_PATH).build();
+    Document document = Document.builder().name(DOC_NAME).path(DOC_PATH).build();
     OrdProperties properties =
         OrdProperties.builder().documents(List.of(document)).build();
     DocumentSchema expectedSchema = new DocumentSchema();
@@ -97,14 +109,10 @@ class StaticFileDocumentSchemaDetectorTest {
 
   @Test
   void givenMultipleDocuments_whenDetectIsCalled_thenAllDocumentsAreLoaded() throws IOException {
-    OrdProperties.Document doc1 = OrdProperties.Document.builder()
-        .name("doc-1")
-        .path("classpath:doc1.json")
-        .build();
-    OrdProperties.Document doc2 = OrdProperties.Document.builder()
-        .name("doc-2")
-        .path("classpath:doc2.json")
-        .build();
+    Document doc1 =
+        Document.builder().name("doc-1").path("classpath:doc1.json").build();
+    Document doc2 =
+        Document.builder().name("doc-2").path("classpath:doc2.json").build();
     OrdProperties properties =
         OrdProperties.builder().documents(List.of(doc1, doc2)).build();
     Resource resource2 = org.mockito.Mockito.mock(Resource.class);
@@ -123,8 +131,7 @@ class StaticFileDocumentSchemaDetectorTest {
 
   @Test
   void givenResourceLoadFails_whenDetectIsCalled_thenExceptionIsPropagated() throws IOException {
-    OrdProperties.Document document =
-        OrdProperties.Document.builder().name(DOC_NAME).path(DOC_PATH).build();
+    Document document = Document.builder().name(DOC_NAME).path(DOC_PATH).build();
     OrdProperties properties =
         OrdProperties.builder().documents(List.of(document)).build();
     doReturn(resource).when(resourceLoader).getResource(DOC_PATH);

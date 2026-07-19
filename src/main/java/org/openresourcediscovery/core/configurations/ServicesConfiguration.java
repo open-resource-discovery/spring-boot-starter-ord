@@ -80,11 +80,12 @@ public class ServicesConfiguration {
   @Conditional(OnOrdPackagesProvided.class)
   @ConditionalOnMissingBean(name = "ordJavaAnnotationsDocumentSchemaDetector")
   public DocumentSchemaDetector ordJavaAnnotationsDocumentSchemaDetector(
+      OrdProperties ordProperties,
       OrdAnnotationsScanner ordAnnotationsScanner,
       EntityGeneratorFactory entityGeneratorFactory,
       AnnotationProcessorFactory annotationProcessorFactory) {
     return new JavaAnnotationsDocumentSchemaDetector(
-        ordAnnotationsScanner, entityGeneratorFactory, annotationProcessorFactory);
+        ordProperties, ordAnnotationsScanner, entityGeneratorFactory, annotationProcessorFactory);
   }
 
   @Bean
