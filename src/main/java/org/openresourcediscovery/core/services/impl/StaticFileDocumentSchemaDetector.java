@@ -2,6 +2,7 @@ package org.openresourcediscovery.core.services.impl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toMap;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
@@ -25,6 +26,7 @@ public class StaticFileDocumentSchemaDetector implements DocumentSchemaDetector 
   @Override
   public Map<String, DetectionResult> detect(OrdProperties properties) {
     return properties.getDocuments().stream()
+        .filter(document -> isNotEmpty(document.getPath()))
         .collect(toMap(
             OrdProperties.Document::getName,
             d -> new DetectionResult(

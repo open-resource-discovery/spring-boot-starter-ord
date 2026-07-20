@@ -37,15 +37,19 @@ ord:
 
   # Static ORD JSON documents to serve.
   # Each entry is exposed at /ord/v1/documents/{name}.
+  # Omit `path` to override the access strategies of an annotation-detected document.
   documents:
-    - name: my-service                       # URL path segment (required, must be unique)
-      path: classpath:ord/document.json     # Spring resource path (required)
+    - name: my-service                      # URL path segment (required, must be unique)
+      path: classpath:ord/document.json     # Spring resource path (optional — omit to override annotation access strategies)
       accessStrategies:                     # Who can fetch this document
         - open                              # "open" | "basic-auth" | "sap:cmp-mtls:v1"
                                             # Omit list to default to basic-auth only
     - name: my-service-internal
       path: classpath:ord/internal.json
       # No accessStrategies → defaults to basic-auth
+    - name: my-annotation-doc              # no path → overrides access strategies for @Ord.Document(name="my-annotation-doc")
+      accessStrategies:
+        - sap:cmp-mtls:v1
 
   # Static API resource files to serve.
   # Each entry is exposed at /ord/v1/resources/{name}.
@@ -107,9 +111,10 @@ ord:
 - Becomes the URL path segment: `/ord/v1/documents/{name}`. Must be unique across all declared documents.
 
 ### `ord.documents[].path`
-- **Type:** `String` (required)
+- **Type:** `String` (optional)
 - Any Spring `Resource` path: `classpath:ord/doc.json`, `file:/etc/ord/doc.json`, etc.
 - Loaded and deserialised to `DocumentSchema` at startup.
+- **Omit `path`** to use this entry solely as an access-strategy override for an annotation-detected document with the same `name`. Entries without a path are ignored by `StaticFileDocumentSchemaDetector` and only consulted by `JavaAnnotationsDocumentSchemaDetector` when resolving access strategies.
 
 ### `ord.documents[].accessStrategies`
 - **Type:** `Set<String>`
@@ -153,7 +158,7 @@ ord:
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class HashUtil {
-    public static void main(String[] args) {
+    static void main(String[] args) {
         System.out.println(new BCryptPasswordEncoder().encode("my-password"));
         // prints: $2a$10$...
         // Prepend {bcrypt} before storing in application.yml
