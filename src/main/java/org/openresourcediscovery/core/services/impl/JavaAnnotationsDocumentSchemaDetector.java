@@ -1,8 +1,6 @@
 package org.openresourcediscovery.core.services.impl;
 
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.collections4.CollectionUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +9,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.openresourcediscovery.annotations.Ord;
 import org.openresourcediscovery.core.configurations.properties.OrdProperties;
 import org.openresourcediscovery.core.generators.EntityGenerator;
@@ -25,13 +25,12 @@ import org.openresourcediscovery.model.Package;
 @RequiredArgsConstructor
 public class JavaAnnotationsDocumentSchemaDetector implements DocumentSchemaDetector {
 
-  private final OrdProperties ordProperties;
   private final OrdAnnotationsScanner ordAnnotationsScanner;
   private final EntityGeneratorFactory entityGeneratorFactory;
   private final AnnotationProcessorFactory annotationProcessorFactory;
 
   public Map<String, DetectionResult> detect(OrdProperties ordProperties) {
-    Map<String, DetectionResult> documents = lookupDocuments();
+    Map<String, DetectionResult> documents = lookupDocuments(ordProperties);
 
     // Order is important
     annotationProcessorFactory.create(Ord.Vendor.class).process(documents);
@@ -55,7 +54,7 @@ public class JavaAnnotationsDocumentSchemaDetector implements DocumentSchemaDete
 
     documents.values().stream()
         .map(DetectionResult::document)
-        .filter(document -> isEmpty(document.getPackages()))
+        .filter(document -> CollectionUtils.isEmpty(document.getPackages()))
         .forEach(document -> document.setPackages(List.of(createDefaultPackage(ordProperties))));
 
     return documents;
@@ -71,7 +70,7 @@ public class JavaAnnotationsDocumentSchemaDetector implements DocumentSchemaDete
         .withShortDescription("Auto-generated short description for Default Package");
   }
 
-  protected Map<String, DetectionResult> lookupDocuments() {
+  protected Map<String, DetectionResult> lookupDocuments(OrdProperties ordProperties) {
     Map<String, DetectionResult> documents = new HashMap<>();
     EntityGenerator<Ord.Document, DocumentSchema> generator = entityGeneratorFactory.create(Ord.Document.class);
 
@@ -81,14 +80,14 @@ public class JavaAnnotationsDocumentSchemaDetector implements DocumentSchemaDete
             d.annotation().name(),
             new DetectionResult(
                 generator.generate(Context.of(d.annotation(), d.annotated(), null)),
-                resolveAccessStrategies(d.annotation()))));
+                resolveAccessStrategies(ordProperties, d.annotation()))));
 
     return documents;
   }
 
-  protected Set<String> resolveAccessStrategies(Ord.Document annotation) {
+  protected Set<String> resolveAccessStrategies(OrdProperties ordProperties, Ord.Document annotation) {
     return ordProperties.getDocuments().stream()
-        .filter(document -> isEmpty(document.getPath()))
+        .filter(document -> StringUtils.isEmpty(document.getPath()))
         .filter(document -> Objects.equals(annotation.name(), document.getName()))
         .findFirst()
         .map(OrdProperties.Document::getAccessStrategies)

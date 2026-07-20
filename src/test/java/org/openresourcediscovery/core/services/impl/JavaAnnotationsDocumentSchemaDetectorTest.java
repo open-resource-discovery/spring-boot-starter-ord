@@ -52,7 +52,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
   @BeforeEach
   void setUp() {
     classUnderTest = new JavaAnnotationsDocumentSchemaDetector(
-        ordProperties, ordAnnotationsScanner, entityGeneratorFactory, annotationProcessorFactory);
+        ordAnnotationsScanner, entityGeneratorFactory, annotationProcessorFactory);
 
     stubProcessorFor(Ord.Group.class);
     stubProcessorFor(Ord.Agent.class);
@@ -79,8 +79,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
     doReturn(List.of()).when(ordAnnotationsScanner).scan(eq(Ord.Document.class));
     doReturn(mock(EntityGenerator.class)).when(entityGeneratorFactory).create(Ord.Document.class);
 
-    Map<String, DetectionResult> result =
-        classUnderTest.detect(OrdProperties.builder().build());
+    Map<String, DetectionResult> result = classUnderTest.detect(ordProperties);
 
     assertNotNull(result);
     assertTrue(result.isEmpty());
@@ -101,8 +100,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
         .when(ordAnnotationsScanner)
         .scan(eq(Ord.Document.class));
 
-    Map<String, DetectionResult> result = classUnderTest.detect(
-        OrdProperties.builder().packages(List.of("com.example")).build());
+    Map<String, DetectionResult> result = classUnderTest.detect(ordProperties);
 
     assertEquals(1, result.size());
     assertTrue(result.containsKey("my-doc-name"));
@@ -126,8 +124,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
         .when(ordAnnotationsScanner)
         .scan(eq(Ord.Document.class));
 
-    Map<String, DetectionResult> result =
-        classUnderTest.detect(OrdProperties.builder().build());
+    Map<String, DetectionResult> result = classUnderTest.detect(ordProperties);
 
     assertEquals(Set.of("open"), result.get("doc-with-strategies").strategies());
   }
@@ -152,8 +149,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
         .when(ordProperties)
         .getDocuments();
 
-    Map<String, DetectionResult> result =
-        classUnderTest.detect(OrdProperties.builder().build());
+    Map<String, DetectionResult> result = classUnderTest.detect(ordProperties);
 
     assertEquals(
         Set.of("sap:cmp-mtls:v1"), result.get("doc-with-strategies").strategies());
@@ -164,7 +160,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
     doReturn(List.of()).when(ordAnnotationsScanner).scan(eq(Ord.Document.class));
     doReturn(mock(EntityGenerator.class)).when(entityGeneratorFactory).create(Ord.Document.class);
 
-    classUnderTest.detect(OrdProperties.builder().build());
+    classUnderTest.detect(ordProperties);
 
     verify(annotationProcessorFactory.create(Ord.Vendor.class)).process(any());
     verify(annotationProcessorFactory.create(Ord.SystemType.class)).process(any());
@@ -204,7 +200,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
     doReturn(List.of()).when(ordAnnotationsScanner).scan(eq(Ord.Document.class));
     doReturn(mock(EntityGenerator.class)).when(entityGeneratorFactory).create(Ord.Document.class);
 
-    Map<String, DetectionResult> result = classUnderTest.lookupDocuments();
+    Map<String, DetectionResult> result = classUnderTest.lookupDocuments(ordProperties);
 
     assertTrue(result.isEmpty());
     verify(annotationProcessorFactory, never()).create(any());
@@ -254,8 +250,7 @@ class JavaAnnotationsDocumentSchemaDetectorTest {
         .when(ordAnnotationsScanner)
         .scan(eq(Ord.Document.class));
 
-    Map<String, DetectionResult> result =
-        classUnderTest.detect(OrdProperties.builder().build());
+    Map<String, DetectionResult> result = classUnderTest.detect(ordProperties);
 
     assertEquals(List.of(existingPackage), result.get("doc-name").document().getPackages());
   }
