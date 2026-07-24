@@ -218,7 +218,7 @@
             <!-- org.apache.maven.plugins:maven-jar-plugin -->
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.5.1</version>
                 <executions>
                     <execution>
                         <id>javadoc-jar</id>
