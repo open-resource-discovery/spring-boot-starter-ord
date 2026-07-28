@@ -87,12 +87,13 @@ public Map<String, DetectionResult> detect(OrdProperties properties) {
 To load a JSON file inside a custom detector (instead of using `ord.documents` config):
 
 ```java
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.databind.JsonMapper;
 import org.springframework.core.io.ResourceLoader;
+import tools.jackson.databind.json.JsonMapper;
 
 public class MyCustomDocumentSchemaDetector implements DocumentSchemaDetector {
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
     private final ResourceLoader resourceLoader;
 
     // constructor injection
@@ -104,7 +105,7 @@ public class MyCustomDocumentSchemaDetector implements DocumentSchemaDetector {
             .getResource("classpath:ord/my-document.json")
             .getContentAsString(StandardCharsets.UTF_8);
 
-        DocumentSchema schema = objectMapper.readValue(json, DocumentSchema.class);
+        DocumentSchema schema = jsonMapper.readValue(json, DocumentSchema.class);
         return Map.of("my-service", new DetectionResult(schema, Set.of("open")));
     }
 }

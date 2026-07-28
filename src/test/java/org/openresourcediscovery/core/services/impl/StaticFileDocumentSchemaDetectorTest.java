@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +22,7 @@ import org.openresourcediscovery.core.services.DocumentSchemaDetector.DetectionR
 import org.openresourcediscovery.model.DocumentSchema;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith(MockitoExtension.class)
 class StaticFileDocumentSchemaDetectorTest {
@@ -32,7 +32,7 @@ class StaticFileDocumentSchemaDetectorTest {
   private static final String ACCESS_STRATEGY = "open";
 
   @Mock
-  private ObjectMapper objectMapper;
+  private JsonMapper jsonMapper;
 
   @Mock
   private ResourceLoader resourceLoader;
@@ -44,7 +44,7 @@ class StaticFileDocumentSchemaDetectorTest {
 
   @BeforeEach
   void setUp() {
-    classUnderTest = new StaticFileDocumentSchemaDetector(objectMapper, resourceLoader);
+    classUnderTest = new StaticFileDocumentSchemaDetector(jsonMapper, resourceLoader);
   }
 
   @Test
@@ -81,7 +81,7 @@ class StaticFileDocumentSchemaDetectorTest {
     DocumentSchema expectedSchema = new DocumentSchema();
     doReturn(resource).when(resourceLoader).getResource(DOC_PATH);
     doReturn("{}").when(resource).getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
-    doReturn(expectedSchema).when(objectMapper).readValue("{}", DocumentSchema.class);
+    doReturn(expectedSchema).when(jsonMapper).readValue("{}", DocumentSchema.class);
 
     Map<String, DetectionResult> result = classUnderTest.detect(properties);
 
@@ -100,7 +100,7 @@ class StaticFileDocumentSchemaDetectorTest {
     DocumentSchema expectedSchema = new DocumentSchema();
     doReturn(resource).when(resourceLoader).getResource(DOC_PATH);
     doReturn("{}").when(resource).getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
-    doReturn(expectedSchema).when(objectMapper).readValue("{}", DocumentSchema.class);
+    doReturn(expectedSchema).when(jsonMapper).readValue("{}", DocumentSchema.class);
 
     Map<String, DetectionResult> result = classUnderTest.detect(properties);
 
@@ -120,7 +120,7 @@ class StaticFileDocumentSchemaDetectorTest {
     doReturn(resource2).when(resourceLoader).getResource("classpath:doc2.json");
     doReturn("{}").when(resource).getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
     doReturn("{}").when(resource2).getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
-    doReturn(new DocumentSchema()).when(objectMapper).readValue("{}", DocumentSchema.class);
+    doReturn(new DocumentSchema()).when(jsonMapper).readValue("{}", DocumentSchema.class);
 
     Map<String, DetectionResult> result = classUnderTest.detect(properties);
 

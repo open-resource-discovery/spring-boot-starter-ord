@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -26,6 +25,7 @@ import org.openresourcediscovery.model.EventResourceDefinition;
 import org.openresourcediscovery.model.IntegrationDependency;
 import org.openresourcediscovery.model.Overlay;
 import org.openresourcediscovery.model.Package;
+import tools.jackson.databind.json.JsonMapper;
 
 class DocumentSchemaRegistryImplTest {
 
@@ -38,7 +38,7 @@ class DocumentSchemaRegistryImplTest {
 
   @BeforeEach
   void setUp() {
-    classUnderTest = new DocumentSchemaRegistryImpl(new ObjectMapper());
+    classUnderTest = new DocumentSchemaRegistryImpl(new JsonMapper());
   }
 
   // ── register / getAllDocumentIds ────────────────────────────────────────────

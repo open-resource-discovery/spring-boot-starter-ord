@@ -9,8 +9,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +34,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 @EnableWebMvc
 @EnableWebSecurity
@@ -64,8 +64,10 @@ public class OpenOrdControllerSnapshotTest {
 
     @Bean
     @Primary
-    public ObjectMapper objectMapper() {
-      return new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    public JsonMapper jsonMapper() {
+      return JsonMapper.builder()
+          .enable(SerializationFeature.INDENT_OUTPUT)
+          .build();
     }
 
     @Bean
@@ -74,9 +76,8 @@ public class OpenOrdControllerSnapshotTest {
     public DocumentSchemaRegistry documentRegistry(OrdProperties properties) {
       return spy(properties.getDocuments().stream()
           .reduce(
-              new DocumentSchemaRegistryImpl(objectMapper()),
-              (r, d) ->
-                  r.register(d.getName(), d.getAccessStrategies(), load(d.getPath(), objectMapper())),
+              new DocumentSchemaRegistryImpl(jsonMapper()),
+              (r, d) -> r.register(d.getName(), d.getAccessStrategies(), load(d.getPath(), jsonMapper())),
               (r1, r2) -> r1));
     }
 
@@ -97,7 +98,7 @@ public class OpenOrdControllerSnapshotTest {
     }
 
     @SneakyThrows
-    private DocumentSchema load(String path, ObjectMapper mapper) {
+    private DocumentSchema load(String path, JsonMapper mapper) {
       return mapper.readValue(resourceLoader.getResource(path).getContentAsString(UTF_8), DocumentSchema.class);
     }
   }
@@ -106,7 +107,7 @@ public class OpenOrdControllerSnapshotTest {
   private MockMvc mvc;
 
   @Autowired
-  private ObjectMapper mapper;
+  private JsonMapper mapper;
 
   @Autowired
   private ResourceLoader resourceLoader;

@@ -2,7 +2,6 @@ package org.openresourcediscovery.core.configurations;
 
 import static org.springframework.http.MediaType.parseMediaType;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collection;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +32,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -72,8 +72,8 @@ public class ServicesConfiguration {
   @Conditional(OnOrdDocumentsProvided.class)
   @ConditionalOnMissingBean(name = "ordStaticFileDocumentSchemaDetector")
   public DocumentSchemaDetector ordStaticFileDocumentSchemaDetector(
-      ObjectMapper objectMapper, ResourceLoader resourceLoader) {
-    return new StaticFileDocumentSchemaDetector(objectMapper, resourceLoader);
+      JsonMapper jsonMapper, ResourceLoader resourceLoader) {
+    return new StaticFileDocumentSchemaDetector(jsonMapper, resourceLoader);
   }
 
   @Bean
@@ -105,13 +105,13 @@ public class ServicesConfiguration {
   @Bean
   @ConditionalOnMissingBean
   public DocumentSchemaRegistry documentSchemaRegistry(
-      ObjectMapper objectMapper,
+      JsonMapper jsonMapper,
       OrdProperties ordProperties,
       Collection<DocumentSchemaDetector> documentSchemaDetectors) {
     return documentSchemaDetectors.stream()
         .flatMap(detector -> detector.detect(ordProperties).entrySet().stream())
         .reduce(
-            new DocumentSchemaRegistryImpl(objectMapper),
+            new DocumentSchemaRegistryImpl(jsonMapper),
             (r, e) -> r.register(
                 e.getKey(),
                 e.getValue().strategies(),
