@@ -1,14 +1,13 @@
 package org.openresourcediscovery.api;
 
-import static com.fasterxml.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.Mockito.mock;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
+import static tools.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
 import java.util.Set;
 import lombok.SneakyThrows;
@@ -25,10 +24,11 @@ import org.openresourcediscovery.model.DocumentSchema;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
+import tools.jackson.databind.json.JsonMapper;
 
 class OrdRuntimeOpenSnapshotReceivedTest {
 
-  private ObjectMapper objectMapper;
+  private JsonMapper jsonMapper;
   private ResourceLoader resourceLoader;
   private DocumentSchemaRegistry documentSchemaRegistry;
   private StaticResourceRegistry staticResourceRegistry;
@@ -40,12 +40,12 @@ class OrdRuntimeOpenSnapshotReceivedTest {
     resourceLoader = new DefaultResourceLoader();
     staticResourceRegistry = new StaticResourceRegistryImpl();
     ordAuthenticationManager = mock(OrdAuthenticationManager.class);
-    objectMapper = new ObjectMapper().enable(ORDER_MAP_ENTRIES_BY_KEYS);
-    documentSchemaRegistry = new DocumentSchemaRegistryImpl(objectMapper)
+    jsonMapper = JsonMapper.builder().enable(ORDER_MAP_ENTRIES_BY_KEYS).build();
+    documentSchemaRegistry = new DocumentSchemaRegistryImpl(jsonMapper)
         .register(
             "ord-document",
             Set.of("open"),
-            objectMapper.readValue(load("classpath:__fixtures__/ord-doc-full.json"), DocumentSchema.class));
+            jsonMapper.readValue(load("classpath:__fixtures__/ord-doc-full.json"), DocumentSchema.class));
   }
 
   @Test

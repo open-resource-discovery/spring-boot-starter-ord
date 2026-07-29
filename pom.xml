@@ -41,10 +41,12 @@
     </distributionManagement>
 
     <properties>
+        <jackson.version>3.2.1</jackson.version>
         <lombok.version>1.18.46</lombok.version>
         <spring-boot.version>4.1.0</spring-boot.version>
         <maven.compiler.release>17</maven.compiler.release>
         <maven.compiler.parameters>true</maven.compiler.parameters>
+        <jackson-annotations.version>2.22</jackson-annotations.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -84,10 +86,18 @@
             <version>0.12.3</version>
         </dependency>
 
-        <!-- com.fasterxml.jackson.core:jackson-databind -->
+        <!-- tools.jackson.core:jackson-databind -->
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- com.fasterxml.jackson.core:jackson-annotations -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson-annotations.version}</version>
         </dependency>
 
         <!-- org.springframework:spring-web -->

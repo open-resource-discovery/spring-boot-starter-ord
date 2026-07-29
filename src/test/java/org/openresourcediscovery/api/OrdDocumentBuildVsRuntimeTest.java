@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.Set;
@@ -31,10 +30,11 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import tools.jackson.databind.json.JsonMapper;
 
 class OrdDocumentBuildVsRuntimeTest {
 
-  private ObjectMapper objectMapper;
+  private JsonMapper jsonMapper;
   private Authentication authentication;
   private ResourceLoader resourceLoader;
   private SecurityContext securityContext;
@@ -45,17 +45,17 @@ class OrdDocumentBuildVsRuntimeTest {
   @BeforeEach
   @SneakyThrows
   void setUp() {
-    objectMapper = new ObjectMapper();
+    jsonMapper = JsonMapper.builder().build();
     authentication = mock(Authentication.class);
     resourceLoader = new DefaultResourceLoader();
     securityContext = mock(SecurityContext.class);
     staticResourceRegistry = new StaticResourceRegistryImpl();
     ordAuthenticationManager = mock(OrdAuthenticationManager.class);
-    documentSchemaRegistry = new DocumentSchemaRegistryImpl(objectMapper)
+    documentSchemaRegistry = new DocumentSchemaRegistryImpl(jsonMapper)
         .register(
             "1",
             Set.of("open"),
-            objectMapper.readValue(load("classpath:__fixtures__/ord-doc-full.json"), DocumentSchema.class));
+            jsonMapper.readValue(load("classpath:__fixtures__/ord-doc-full.json"), DocumentSchema.class));
 
     SecurityContextHolder.setContext(securityContext);
   }
@@ -65,7 +65,7 @@ class OrdDocumentBuildVsRuntimeTest {
   void cli_full_snapshot() throws Exception {
     JSONAssert.assertEquals(
         load("classpath:__snapshots__/ord-document-cli.json"),
-        objectMapper.writeValueAsString(documentSchemaRegistry
+        jsonMapper.writeValueAsString(documentSchemaRegistry
             .lookupDocumentSchema("1", Set.of("public", "internal"))
             .orElseThrow()),
         false);

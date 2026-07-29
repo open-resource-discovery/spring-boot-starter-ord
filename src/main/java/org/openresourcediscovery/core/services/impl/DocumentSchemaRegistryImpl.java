@@ -6,7 +6,6 @@ import static java.util.Objects.isNull;
 import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
 import static org.apache.commons.lang3.StringUtils.firstNonEmpty;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -28,15 +27,16 @@ import org.openresourcediscovery.model.EventResourceDefinition;
 import org.openresourcediscovery.model.IntegrationDependency;
 import org.openresourcediscovery.model.Overlay;
 import org.openresourcediscovery.model.Package;
+import tools.jackson.databind.json.JsonMapper;
 
 public class DocumentSchemaRegistryImpl implements DocumentSchemaRegistry {
 
-  private final ObjectMapper objectMapper;
+  private final JsonMapper jsonMapper;
   private final Map<String, DocumentSchema> documents;
   private final Map<String, Set<String>> accessStrategies;
 
-  public DocumentSchemaRegistryImpl(ObjectMapper objectMapper) {
-    this.objectMapper = objectMapper;
+  public DocumentSchemaRegistryImpl(JsonMapper jsonMapper) {
+    this.jsonMapper = jsonMapper;
     this.documents = new ConcurrentHashMap<>();
     this.accessStrategies = new ConcurrentHashMap<>();
   }
@@ -62,7 +62,7 @@ public class DocumentSchemaRegistryImpl implements DocumentSchemaRegistry {
   public Optional<DocumentSchema> lookupDocumentSchema(String name, Set<String> visibilities) {
     return Optional.ofNullable(documents.get(name))
         // Clone the document to avoid mutating the original when applying visibility filters
-        .map(d -> objectMapper.convertValue(d, DocumentSchema.class))
+        .map(d -> jsonMapper.convertValue(d, DocumentSchema.class))
         // Apply visibility filters to all components of the document
         .map(d -> d.withAgents(filterAgents(d, visibilities)))
         .map(d -> d.withPackages(filterPackages(d, visibilities)))
