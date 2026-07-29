@@ -87,7 +87,6 @@ public Map<String, DetectionResult> detect(OrdProperties properties) {
 To load a JSON file inside a custom detector (instead of using `ord.documents` config):
 
 ```java
-import tools.jackson.core.databind.JsonMapper;
 import org.springframework.core.io.ResourceLoader;
 import tools.jackson.databind.json.JsonMapper;
 
