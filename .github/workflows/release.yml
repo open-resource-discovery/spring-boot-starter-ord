@@ -37,7 +37,7 @@ jobs:
           ref: ${{ github.ref_name }}
 
       - name: Setup Maven Action
-        uses: s4u/setup-maven-action@v1.20.0
+        uses: s4u/setup-maven-action@v1.21.0
         with:
           java-version: 17
           maven-version: 3.9.14
@@ -63,7 +63,7 @@ jobs:
           ref: ${{ github.ref_name }}
 
       - name: Setup Maven Action
-        uses: s4u/setup-maven-action@v1.20.0
+        uses: s4u/setup-maven-action@v1.21.0
         with:
           java-version: 17
           maven-version: 3.9.14
@@ -110,7 +110,7 @@ jobs:
           ref: ${{ github.ref_name }}
 
       - name: Setup Maven Action
-        uses: s4u/setup-maven-action@v1.20.0
+        uses: s4u/setup-maven-action@v1.21.0
         with:
           java-version: 17
           maven-version: 3.9.14
@@ -148,7 +148,7 @@ jobs:
           ref: ${{ github.ref_name }}
 
       - name: Setup Maven Action
-        uses: s4u/setup-maven-action@v1.20.0
+        uses: s4u/setup-maven-action@v1.21.0
         with:
           java-version: 17
           maven-version: 3.9.14
