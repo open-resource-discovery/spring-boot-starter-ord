@@ -21,9 +21,10 @@ public class Annotations {
     T result = Mockito.mock(annotation);
 
     lenient().doReturn(annotation).when(result).annotationType();
-    Stream.of(annotation.getDeclaredMethods()).forEach(method -> lenient()
-        .when(invoke(result, method))
-        .thenReturn(fields.getOrDefault(method.getName(), method.getDefaultValue())));
+    Stream.of(annotation.getDeclaredMethods())
+        .forEach(method -> lenient()
+            .when(invoke(result, method))
+            .thenReturn(fields.getOrDefault(method.getName(), method.getDefaultValue())));
 
     return result;
   }
