@@ -41,7 +41,7 @@
     </distributionManagement>
 
     <properties>
-        <jackson.version>3.2.2</jackson.version>
+        <jackson.version>3.2.3</jackson.version>
         <lombok.version>1.18.48</lombok.version>
         <spring-boot.version>4.1.1</spring-boot.version>
         <maven.compiler.release>17</maven.compiler.release>
