@@ -107,8 +107,8 @@ public class CachingOrdAnnotationsScannerImpl implements OrdAnnotationsScanner {
       Set<Class<? extends Annotation>> annotations,
       Map<Class<? extends Annotation>, Class<? extends Annotation>> repeatable) {
     findCandidateClasses(pkg, annotations)
-        .forEach(
-            candidate -> annotations.forEach(annotation -> ofNullable(findAnnotation(candidate, annotation))
+        .forEach(candidate ->
+            annotations.forEach(annotation -> ofNullable(findAnnotation(candidate, annotation))
                 .ifPresent(instance -> cache(
                     repeatable.getOrDefault(annotation, annotation),
                     candidate,
