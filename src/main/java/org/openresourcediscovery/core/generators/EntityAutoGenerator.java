@@ -132,11 +132,13 @@ public abstract class EntityAutoGenerator<A extends Annotation, E> extends Entit
             Annotation[] values = (Annotation[]) invoke(getter, context.annotation());
             EntityGenerator<Annotation, ?> generator =
                 lookupEntityGenerator(getter.getReturnType().getComponentType());
-            Object extracted = Commons.asList((Stream.of(ArrayUtils.nullTo(values, new Annotation[0]))
-                .filter(Predicate.not(Commons::isEmpty))
-                .map(a -> generator.generate(
-                    Context.of(a, context.annotated(), context.documentSchema())))
-                .toArray()));
+            Object extracted = Commons.asCollection(
+                setter.getParameters()[0].getType(),
+                ((Stream.of(ArrayUtils.nullTo(values, new Annotation[0]))
+                    .filter(Predicate.not(Commons::isEmpty))
+                    .map(a -> generator.generate(
+                        Context.of(a, context.annotated(), context.documentSchema())))
+                    .toArray())));
             Object target = !ObjectUtils.isEmpty(extracted)
                 ? extracted
                 : tryGenerateDefault(context, getter.getName());

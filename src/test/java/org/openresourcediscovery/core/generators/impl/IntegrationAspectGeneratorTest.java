@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +30,7 @@ import org.openresourcediscovery.model.EventResourceIntegrationAspect;
 import org.openresourcediscovery.model.EventResourceIntegrationAspectSubset;
 import org.openresourcediscovery.model.IntegrationAspect;
 import org.openresourcediscovery.model.Labels;
+import org.openresourcediscovery.model.SystemTypeIntegrationAspect;
 import org.openresourcediscovery.testutils.Annotations;
 import org.openresourcediscovery.testutils.TestObjectProvider;
 
@@ -58,6 +60,10 @@ class IntegrationAspectGeneratorTest {
 
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(
+        Ord.CapabilityIntegrationAspect.class, new EntityAutoGenerator<>(CapabilityIntegrationAspect::new) {});
+    prepareEntityGeneratorFactoryMock(
+        Ord.SystemTypeIntegrationAspect.class, new EntityAutoGenerator<>(SystemTypeIntegrationAspect::new) {});
+    prepareEntityGeneratorFactoryMock(
         Ord.ApiResourceIntegrationAspect.class,
         new EntityAutoGenerator<>(ApiResourceIntegrationAspect::new) {});
     prepareEntityGeneratorFactoryMock(
@@ -69,13 +75,11 @@ class IntegrationAspectGeneratorTest {
     prepareEntityGeneratorFactoryMock(
         Ord.EventResourceIntegrationAspectSubset.class,
         new EntityAutoGenerator<>(EventResourceIntegrationAspectSubset::new) {});
-    prepareEntityGeneratorFactoryMock(
-        Ord.CapabilityIntegrationAspect.class, new EntityAutoGenerator<>(CapabilityIntegrationAspect::new) {});
   }
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(9, Ord.IntegrationAspect.class.getDeclaredMethods().length);
+    assertEquals(10, Ord.IntegrationAspect.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -104,14 +108,17 @@ class IntegrationAspectGeneratorTest {
             Map.entry("supportMultipleProviders", true),
             Map.entry("labels", createLabelsAnnotationMock()),
             Map.entry("description", "test-aspect-description"),
+            Map.entry("systemTypes", new Ord.SystemTypeIntegrationAspect[] {
+              createSystemTypeIntegrationAspectAnnotationMock()
+            }),
+            Map.entry("capabilities", new Ord.CapabilityIntegrationAspect[] {
+              createCapabilityIntegrationAspectAnnotationMock()
+            }),
             Map.entry("apiResources", new Ord.ApiResourceIntegrationAspect[] {
               createApiResourceIntegrationAspectAnnotationMock()
             }),
             Map.entry("eventResources", new Ord.EventResourceIntegrationAspect[] {
               createEventResourceIntegrationAspectAnnotationMock()
-            }),
-            Map.entry("capabilities", new Ord.CapabilityIntegrationAspect[] {
-              createCapabilityIntegrationAspectAnnotationMock()
             })));
     Context<Ord.IntegrationAspect> context = Context.of(annotation, getClass(), new DocumentSchema());
 
@@ -121,6 +128,9 @@ class IntegrationAspectGeneratorTest {
             .withTitle("test-aspect-title")
             .withSupportMultipleProviders(true)
             .withDescription("test-aspect-description")
+            .withSystemTypes(Set.of(new SystemTypeIntegrationAspect()
+                .withMinSystemVersion("1.0.0")
+                .withSystemNamespace("test.system.namespace")))
             .withApiResources(List.of(new ApiResourceIntegrationAspect()
                 .withMinVersion("1.0.0")
                 .withOrdId("test-api-resource-ord-id")
@@ -163,6 +173,19 @@ class IntegrationAspectGeneratorTest {
     }));
   }
 
+  private static Ord.CapabilityIntegrationAspect createCapabilityIntegrationAspectAnnotationMock() {
+    return Annotations.mock(
+        Ord.CapabilityIntegrationAspect.class,
+        Map.ofEntries(Map.entry("ordId", "test-capability-ord-id"), Map.entry("minVersion", "1.0.0")));
+  }
+
+  private static Ord.SystemTypeIntegrationAspect createSystemTypeIntegrationAspectAnnotationMock() {
+    return Annotations.mock(
+        Ord.SystemTypeIntegrationAspect.class,
+        Map.ofEntries(
+            Map.entry("minSystemVersion", "1.0.0"), Map.entry("systemNamespace", "test.system.namespace")));
+  }
+
   private static Ord.ApiResourceIntegrationAspect createApiResourceIntegrationAspectAnnotationMock() {
     return Annotations.mock(
         Ord.ApiResourceIntegrationAspect.class,
@@ -190,11 +213,5 @@ class IntegrationAspectGeneratorTest {
                   Ord.EventResourceIntegrationAspectSubset.class,
                   Map.ofEntries(Map.entry("eventType", "test-event-type")))
             })));
-  }
-
-  private static Ord.CapabilityIntegrationAspect createCapabilityIntegrationAspectAnnotationMock() {
-    return Annotations.mock(
-        Ord.CapabilityIntegrationAspect.class,
-        Map.ofEntries(Map.entry("ordId", "test-capability-ord-id"), Map.entry("minVersion", "1.0.0")));
   }
 }

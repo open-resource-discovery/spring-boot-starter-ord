@@ -195,6 +195,11 @@ class EntityGeneratorFactoryImplTest {
   }
 
   @Test
+  void givenRelatedDataProductAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.RelatedDataProduct.class));
+  }
+
+  @Test
   void givenRelatedEntityTypeAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
     assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.RelatedEntityType.class));
   }
@@ -307,6 +312,11 @@ class EntityGeneratorFactoryImplTest {
   @Test
   void givenSystemInstanceAnnotation_whenCreateIsCalled_thenSystemInstanceGeneratorIsReturned() {
     assertInstanceOf(SystemInstanceGenerator.class, classUnderTest.create(Ord.SystemInstance.class));
+  }
+
+  @Test
+  void givenSystemTypeIntegrationAspectAnnotation_whenCreateIsCalled_thenEntityAutoGeneratorIsReturned() {
+    assertInstanceOf(EntityAutoGenerator.class, classUnderTest.create(Ord.SystemTypeIntegrationAspect.class));
   }
 
   @Test

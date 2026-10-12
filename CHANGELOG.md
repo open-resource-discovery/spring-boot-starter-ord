@@ -9,6 +9,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [unreleased]
 
+- Update ORD annotations and models to ord-maven 0.13.0 / ORD 1.17.0.
+
 ## [[1.2.0](https://github.com/open-resource-discovery/spring-boot-starter-ord/releases/tag/v1.2.0)] - 2026-07-29
 Update to Jackson 3
 
