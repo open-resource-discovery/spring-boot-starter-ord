@@ -32,6 +32,7 @@ import org.openresourcediscovery.model.DocumentationLabels;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.model.Link;
 import org.openresourcediscovery.model.Package;
+import org.openresourcediscovery.model.RelatedDataProduct;
 import org.openresourcediscovery.testutils.Annotations;
 import org.openresourcediscovery.testutils.TestObjectProvider;
 import org.openresourcediscovery.utils.Commons;
@@ -74,6 +75,8 @@ class DataProductGeneratorTest {
     prepareEntityGeneratorFactoryMock(
         Ord.DataProductLink.class, new EntityAutoGenerator<>(DataProductLink::new) {});
     prepareEntityGeneratorFactoryMock(
+        Ord.RelatedDataProduct.class, new EntityAutoGenerator<>(RelatedDataProduct::new) {});
+    prepareEntityGeneratorFactoryMock(
         Ord.DataProductInputPort.class, new EntityAutoGenerator<>(DataProductInputPort::new) {});
     prepareEntityGeneratorFactoryMock(
         Ord.DataProductOutputPort.class, new EntityAutoGenerator<>(DataProductOutputPort::new) {});
@@ -81,7 +84,7 @@ class DataProductGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(42, Ord.DataProduct.class.getDeclaredMethods().length);
+    assertEquals(43, Ord.DataProduct.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -206,7 +209,10 @@ class DataProductGeneratorTest {
                 new Ord.DataProductInputPort[] {createDataProductInputPortAnnotationMock()}),
             Map.entry(
                 "outputPorts",
-                new Ord.DataProductOutputPort[] {createDataProductOutputPortAnnotationMock()})));
+                new Ord.DataProductOutputPort[] {createDataProductOutputPortAnnotationMock()}),
+            Map.entry(
+                "relatedDataProducts",
+                new Ord.RelatedDataProduct[] {createRelatedDataProductAnnotationMock()})));
 
     Context<Ord.DataProduct> context = Context.of(annotation, getClass(), new DocumentSchema());
 
@@ -252,6 +258,9 @@ class DataProductGeneratorTest {
             .withLabels(new Labels()
                 .withAdditionalProperty(
                     "test-label-key", List.of("test-label-value-1", "test-label-value-2")))
+            .withRelatedDataProducts(List.of(new RelatedDataProduct()
+                .withRelationType("parent")
+                .withOrdId(NAMESPACE + ":dataProduct:Related:v1")))
             .withLinks(List.of(new Link()
                 .withTitle("test-link-title")
                 .withDescription("test-link-description")
@@ -321,6 +330,14 @@ class DataProductGeneratorTest {
             Map.entry("type", "custom"),
             Map.entry("customType", "test-custom-type"),
             Map.entry("url", "https://test-data-product-link.dummy.nowhere.org")));
+  }
+
+  private static Ord.RelatedDataProduct createRelatedDataProductAnnotationMock() {
+    return Annotations.mock(
+        Ord.RelatedDataProduct.class,
+        Map.ofEntries(
+            Map.entry("relationType", "parent"),
+            Map.entry("ordId", NAMESPACE + ":dataProduct:Related:v1")));
   }
 
   private static Ord.DocumentationLabels createDocumentationLabelsAnnotationMock() {

@@ -25,8 +25,10 @@ import org.openresourcediscovery.core.services.EntityGeneratorFactory;
 import org.openresourcediscovery.model.AccessStrategy;
 import org.openresourcediscovery.model.Capability;
 import org.openresourcediscovery.model.CapabilityDefinition;
+import org.openresourcediscovery.model.ChangelogEntry;
 import org.openresourcediscovery.model.DocumentSchema;
 import org.openresourcediscovery.model.DocumentationLabels;
+import org.openresourcediscovery.model.Extensible;
 import org.openresourcediscovery.model.Labels;
 import org.openresourcediscovery.model.Link;
 import org.openresourcediscovery.model.Package;
@@ -68,7 +70,9 @@ class CapabilityGeneratorTest {
     prepareEntityGeneratorFactoryMock(Ord.Labels.class, new LabelsGenerator());
     prepareEntityGeneratorFactoryMock(Ord.Link.class, new EntityAutoGenerator<>(Link::new) {});
     prepareEntityGeneratorFactoryMock(Ord.DocumentationLabels.class, new DocumentationLabelsGenerator());
+    prepareEntityGeneratorFactoryMock(Ord.Extensible.class, new EntityAutoGenerator<>(Extensible::new) {});
     prepareEntityGeneratorFactoryMock(Ord.AccessStrategy.class, new EntityAutoGenerator<>(AccessStrategy::new) {});
+    prepareEntityGeneratorFactoryMock(Ord.ChangelogEntry.class, new EntityAutoGenerator<>(ChangelogEntry::new) {});
     prepareEntityGeneratorFactoryMock(
         Ord.CapabilityDefinition.class, new EntityAutoGenerator<>(CapabilityDefinition::new) {});
     prepareEntityGeneratorFactoryMock(
@@ -81,7 +85,7 @@ class CapabilityGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(29, Ord.Capability.class.getDeclaredMethods().length);
+    assertEquals(41, Ord.Capability.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -142,19 +146,33 @@ class CapabilityGeneratorTest {
             Map.entry("systemInstanceAware", true),
             Map.entry("localId", "custom-local-id"),
             Map.entry("releaseStatus", "deprecated"),
+            Map.entry("responsible", "responsible-id"),
             Map.entry("customType", "test-custom-type"),
             Map.entry("description", "Custom description"),
             Map.entry("labels", createLabelsAnnotationMock()),
             Map.entry("tags", new String[] {"tag-1", "tag-2"}),
             Map.entry("lastUpdate", "2025-03-25T14:30:00Z"),
+            Map.entry("sunsetDate", "2025-04-25T14:30:00Z"),
             Map.entry("ordId", NAMESPACE + ":capability:My:v1"),
+            Map.entry("deprecationDate", "2025-03-25T14:30:00Z"),
+            Map.entry("extensible", createExtensibleAnnotationMock()),
             Map.entry("shortDescription", "Custom short description"),
             Map.entry("links", new Ord.Link[] {createLinkAnnotationMock()}),
             Map.entry("partOfPackage", NAMESPACE + ":package:custom:v1"),
             Map.entry("partOfGroups", new String[] {"group-id-1", "group-id-2"}),
+            Map.entry("successors", new String[] {"successor-1", "successor-2"}),
+            Map.entry("countries", new String[] {"country-id-1", "country-id-2"}),
+            Map.entry("industry", new String[] {"industry-id-1", "industry-id-2"}),
+            Map.entry("partOfProducts", new String[] {"product-id-1", "product-id-2"}),
             Map.entry("documentationLabels", createDocumentationLabelsAnnotationMock()),
+            Map.entry("policyLevels", new String[] {"policy-level-1", "policy-level-2"}),
             Map.entry("relatedEntityTypes", new String[] {"entity-type-1", "entity-type-2"}),
             Map.entry("correlationIds", new String[] {"correlation-id-1", "correlation-id-2"}),
+            Map.entry("lineOfBusiness", new String[] {"line-of-business-id-1", "line-of-business-id-2"}),
+            Map.entry("changelogEntries", new Ord.ChangelogEntry[] {createChangelogEntryAnnotationMock()}),
+            Map.entry(
+                "integrationDependencies",
+                new String[] {"integration-dependency-1", "integration-dependency-2"}),
             Map.entry(
                 "definitions",
                 new Ord.CapabilityDefinition[] {createCapabilityDefinitionAnnotationMock()}),
@@ -170,6 +188,8 @@ class CapabilityGeneratorTest {
 
     Context<Ord.Capability> context = Context.of(annotation, getClass(), new DocumentSchema());
 
+    // ""
+
     assertEquals(
         new Capability()
             .withDisabled(true)
@@ -182,6 +202,7 @@ class CapabilityGeneratorTest {
             .withSystemInstanceAware(true)
             .withLocalId("custom-local-id")
             .withReleaseStatus("deprecated")
+            .withResponsible("responsible-id")
             .withCustomType("test-custom-type")
             .withTags(List.of("tag-1", "tag-2"))
             .withDescription("Custom description")
@@ -189,9 +210,19 @@ class CapabilityGeneratorTest {
             .withShortDescription("Custom short description")
             .withPartOfPackage(NAMESPACE + ":package:custom:v1")
             .withPartOfGroups(List.of("group-id-1", "group-id-2"))
+            .withSuccessors(List.of("successor-1", "successor-2"))
+            .withCountries(List.of("country-id-1", "country-id-2"))
+            .withIndustry(List.of("industry-id-1", "industry-id-2"))
+            .withPartOfProducts(List.of("product-id-1", "product-id-2"))
+            .withPolicyLevels(List.of("policy-level-1", "policy-level-2"))
             .withLastUpdate(Commons.asDate("2025-03-25T14:30:00Z"))
+            .withSunsetDate(Commons.asDate("2025-04-25T14:30:00Z"))
             .withRelatedEntityTypes(List.of("entity-type-1", "entity-type-2"))
             .withCorrelationIds(List.of("correlation-id-1", "correlation-id-2"))
+            .withDeprecationDate(Commons.asDate("2025-03-25T14:30:00Z"))
+            .withLineOfBusiness(List.of("line-of-business-id-1", "line-of-business-id-2"))
+            .withExtensible(new Extensible().withSupported("manual").withDescription("test-description"))
+            .withIntegrationDependencies(List.of("integration-dependency-1", "integration-dependency-2"))
             .withLabels(new Labels()
                 .withAdditionalProperty(
                     "test-label-key", List.of("test-label-value-1", "test-label-value-2")))
@@ -203,6 +234,12 @@ class CapabilityGeneratorTest {
                 .withAdditionalProperty(
                     "test-doc-label-key",
                     List.of("test-doc-label-value-1", "test-doc-label-value-2")))
+            .withChangelogEntries(List.of(new ChangelogEntry()
+                .withVersion("1.0.0")
+                .withDate("2025-01-01")
+                .withReleaseStatus("active")
+                .withDescription("test-changelog-description")
+                .withUrl(URI.create("https://test-changelog.dummy.nowhere.org"))))
             .withDefinitions(List.of(new CapabilityDefinition()
                 .withType("custom")
                 .withVisibility("public")
@@ -255,6 +292,23 @@ class CapabilityGeneratorTest {
     }));
   }
 
+  private static Ord.Extensible createExtensibleAnnotationMock() {
+    return Annotations.mock(
+        Ord.Extensible.class,
+        Map.ofEntries(Map.entry("supported", "manual"), Map.entry("description", "test-description")));
+  }
+
+  private static Ord.ChangelogEntry createChangelogEntryAnnotationMock() {
+    return Annotations.mock(
+        Ord.ChangelogEntry.class,
+        Map.ofEntries(
+            Map.entry("version", "1.0.0"),
+            Map.entry("date", "2025-01-01"),
+            Map.entry("releaseStatus", "active"),
+            Map.entry("description", "test-changelog-description"),
+            Map.entry("url", "https://test-changelog.dummy.nowhere.org")));
+  }
+
   private static Ord.AccessStrategy createAccessStrategyAnnotationMock() {
     return Annotations.mock(
         Ord.AccessStrategy.class,
@@ -262,6 +316,22 @@ class CapabilityGeneratorTest {
             Map.entry("type", "open"),
             Map.entry("customType", "test-access-strategy-custom-type"),
             Map.entry("customDescription", "test-access-strategy-custom-description")));
+  }
+
+  private static Ord.RelatedCapability createRelatedCapabilityAnnotationMock() {
+    return Annotations.mock(
+        Ord.RelatedCapability.class,
+        Map.ofEntries(
+            Map.entry("ordId", "test-related-capability-ord-id"),
+            Map.entry("relationType", "test-relation-type")));
+  }
+
+  private static Ord.RelatedApiResource createRelatedApiResourceAnnotationMock() {
+    return Annotations.mock(
+        Ord.RelatedApiResource.class,
+        Map.ofEntries(
+            Map.entry("ordId", "test-related-api-resource-ord-id"),
+            Map.entry("relationType", "test-relation-type")));
   }
 
   private static Ord.DocumentationLabels createDocumentationLabelsAnnotationMock() {
@@ -287,27 +357,11 @@ class CapabilityGeneratorTest {
                 "accessStrategies", new Ord.AccessStrategy[] {createAccessStrategyAnnotationMock()})));
   }
 
-  private static Ord.RelatedApiResource createRelatedApiResourceAnnotationMock() {
-    return Annotations.mock(
-        Ord.RelatedApiResource.class,
-        Map.ofEntries(
-            Map.entry("ordId", "test-related-api-resource-ord-id"),
-            Map.entry("relationType", "test-relation-type")));
-  }
-
   private static Ord.RelatedEventResource createRelatedEventResourceAnnotationMock() {
     return Annotations.mock(
         Ord.RelatedEventResource.class,
         Map.ofEntries(
             Map.entry("ordId", "test-related-event-resource-ord-id"),
-            Map.entry("relationType", "test-relation-type")));
-  }
-
-  private static Ord.RelatedCapability createRelatedCapabilityAnnotationMock() {
-    return Annotations.mock(
-        Ord.RelatedCapability.class,
-        Map.ofEntries(
-            Map.entry("ordId", "test-related-capability-ord-id"),
             Map.entry("relationType", "test-relation-type")));
   }
 }

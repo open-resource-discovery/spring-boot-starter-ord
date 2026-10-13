@@ -58,7 +58,7 @@ class SystemInstanceGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(8, Ord.SystemInstance.class.getDeclaredMethods().length);
+    assertEquals(9, Ord.SystemInstance.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -76,6 +76,7 @@ class SystemInstanceGeneratorTest {
         Map.ofEntries(
             Map.entry("localId", "test-local-id"),
             Map.entry("baseUrl", "test-base-url"),
+            Map.entry("globalId", "test-global-id"),
             Map.entry("labels", createLabelsAnnotationMock()),
             Map.entry("tags", new String[] {"test-tag-1", "test-tag-2"}),
             Map.entry("documentationLabels", createDocumentationLabelsAnnotationMock()),
@@ -86,6 +87,7 @@ class SystemInstanceGeneratorTest {
         new SystemInstance()
             .withBaseUrl("test-base-url")
             .withLocalId("test-local-id")
+            .withGlobalId("test-global-id")
             .withTags(List.of("test-tag-1", "test-tag-2"))
             .withCorrelationIds(List.of("test-correlation-id-1", "test-correlation-id-2"))
             .withLabels(new Labels()

@@ -65,8 +65,10 @@ import org.openresourcediscovery.model.OverlayDefinition;
 import org.openresourcediscovery.model.PackageLink;
 import org.openresourcediscovery.model.RelatedApiResource;
 import org.openresourcediscovery.model.RelatedCapability;
+import org.openresourcediscovery.model.RelatedDataProduct;
 import org.openresourcediscovery.model.RelatedEntityType;
 import org.openresourcediscovery.model.RelatedEventResource;
+import org.openresourcediscovery.model.SystemTypeIntegrationAspect;
 import org.openresourcediscovery.model.Tombstone;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
@@ -254,6 +256,10 @@ public class EntityGeneratorFactoryImpl implements EntityGeneratorFactory {
                   () -> new EntityAutoGenerator<Ord.RelatedCapability, RelatedCapability>(
                       RelatedCapability::new) {}),
               entry(
+                  Ord.RelatedDataProduct.class,
+                  () -> new EntityAutoGenerator<Ord.RelatedDataProduct, RelatedDataProduct>(
+                      RelatedDataProduct::new) {}),
+              entry(
                   Ord.RelatedEntityType.class,
                   () -> new EntityAutoGenerator<Ord.RelatedEntityType, RelatedEntityType>(
                       RelatedEntityType::new) {}),
@@ -262,6 +268,11 @@ public class EntityGeneratorFactoryImpl implements EntityGeneratorFactory {
                   () -> new EntityAutoGenerator<Ord.RelatedEventResource, RelatedEventResource>(
                       RelatedEventResource::new) {}),
               entry(Ord.SystemInstance.class, SystemInstanceGenerator::new),
+              entry(
+                  Ord.SystemTypeIntegrationAspect.class,
+                  () -> new EntityAutoGenerator<
+                      Ord.SystemTypeIntegrationAspect, SystemTypeIntegrationAspect>(
+                      SystemTypeIntegrationAspect::new) {}),
               entry(Ord.SystemType.class, SystemTypeGenerator::new),
               entry(Ord.SystemVersion.class, SystemVersionGenerator::new),
               entry(

@@ -6,6 +6,7 @@ import static java.util.Objects.isNull;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -95,6 +96,24 @@ public class Commons {
   @SafeVarargs
   public static <T> List<T> asList(T... elements) {
     return ObjectUtils.isEmpty(elements) ? null : List.of(elements);
+  }
+
+  @SafeVarargs
+  public static <T> Set<T> asSet(T... elements) {
+    return ObjectUtils.isEmpty(elements) ? null : Set.of(elements);
+  }
+
+  @SafeVarargs
+  public static <T> Collection<T> asCollection(Class<?> target, T... elements) {
+    if (target.isAssignableFrom(Set.class)) {
+      return asSet(elements);
+    }
+
+    if (target.isAssignableFrom(List.class)) {
+      return asList(elements);
+    }
+
+    throw new IllegalArgumentException("Unsupported collection type: " + target.getName());
   }
 
   @SneakyThrows
