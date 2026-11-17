@@ -43,7 +43,7 @@
     <properties>
         <jackson.version>3.3.0</jackson.version>
         <lombok.version>1.18.48</lombok.version>
-        <ord-maven.version>0.13.0</ord-maven.version>
+        <ord-maven.version>0.13.1</ord-maven.version>
         <spring-boot.version>4.1.2</spring-boot.version>
         <maven.compiler.release>17</maven.compiler.release>
         <maven.compiler.parameters>true</maven.compiler.parameters>

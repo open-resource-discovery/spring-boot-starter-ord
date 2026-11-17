@@ -59,7 +59,7 @@ class VendorGeneratorTest {
 
   @Test
   public void verifyAnnotationPropertiesCount() {
-    assertEquals(8, Ord.Vendor.class.getDeclaredMethods().length);
+    assertEquals(9, Ord.Vendor.class.getDeclaredMethods().length);
   }
 
   @Test
@@ -85,12 +85,14 @@ class VendorGeneratorTest {
             Map.entry("ordId", "acme:vendor:ACME:v1"),
             Map.entry("labels", createLabelsAnnotationMock()),
             Map.entry("tags", new String[] {"test-label-1", "test-label-2"}),
+            Map.entry("correlationIds", new String[] {"acme:vendor:ACME:v1"}),
             Map.entry("partners", new String[] {"Road Runner", "Willie E. Coyote"}),
             Map.entry("documentationLabels", createDocumentationLabelsAnnotationMock())));
     Context<Ord.Vendor> context = Context.of(annotation, getClass(), new DocumentSchema());
 
     assertEquals(
         new Vendor()
+            .withCorrelationIds(List.of("acme:vendor:ACME:v1"))
             .withTitle("ACME Inc.")
             .withOrdId("acme:vendor:ACME:v1")
             .withTags(List.of("test-label-1", "test-label-2"))
