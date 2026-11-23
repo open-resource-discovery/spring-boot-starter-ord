@@ -28,5 +28,3 @@ jobs:
           checkout-enabled: false
       - name: Build project
         run: mvn clean install -B -Dgpg.skip=true
-    permissions:
-      contents: read
