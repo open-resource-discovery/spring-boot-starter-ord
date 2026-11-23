@@ -32,7 +32,6 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.ref_name }}
-
           persist-credentials: false
       - name: Setup Maven Action
         uses: s4u/setup-maven-action@5d4481650d2563723ad6c5e8f009ac8fd746e3e8 # v1.22.0
@@ -61,7 +60,6 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.ref_name }}
-
           persist-credentials: false
       - name: Setup Maven Action
         uses: s4u/setup-maven-action@5d4481650d2563723ad6c5e8f009ac8fd746e3e8 # v1.22.0
@@ -95,7 +93,6 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.ref_name }}
-
           persist-credentials: true # Needed by the release/push step
       - name: Create GitHub Release
         uses: open-resource-discovery/github-release@2d8817b7382966b490d5c78125d97da14ee918bc # main @ 2026-11-14
@@ -118,7 +115,6 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.ref_name }}
-
           persist-credentials: false
       - name: Setup Maven Action
         uses: s4u/setup-maven-action@5d4481650d2563723ad6c5e8f009ac8fd746e3e8 # v1.22.0
@@ -169,7 +165,6 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.ref_name }}
-
           persist-credentials: false
       - name: Setup Maven Action
         uses: s4u/setup-maven-action@5d4481650d2563723ad6c5e8f009ac8fd746e3e8 # v1.22.0
