@@ -2,63 +2,43 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended",
-    ":pinVersions"
+    ":pinVersions",
+    "helpers:pinGitHubActionDigests"
   ],
   "semanticCommits": "enabled",
   "branchPrefix": "deps/",
   "timezone": "Europe/Berlin",
-  "schedule": [
-    "every weekend"
-  ],
+  "schedule": ["every weekend"],
   "updateNotScheduled": false,
   "prConcurrentLimit": 0,
   "prHourlyLimit": 0,
   "useBaseBranchConfig": "merge",
-  "enabledManagers": [
-    "maven",
-    "github-actions"
-  ],
+  "enabledManagers": ["maven", "github-actions"],
   "packageRules": [
     {
       "groupName": "Maven build plugins",
-      "matchManagers": [
-        "maven"
-      ],
+      "matchManagers": ["maven"],
       "matchPackageNames": [
         "/^org\\.apache\\.maven\\.plugins:/",
         "org.codehaus.mojo:build-helper-maven-plugin"
       ],
       "semanticCommitType": "build",
       "automerge": true,
-      "matchUpdateTypes": [
-        "minor",
-        "patch",
-        "pin",
-        "digest"
-      ]
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"]
     },
     {
       "groupName": "Java library dependencies",
-      "matchManagers": [
-        "maven"
-      ],
+      "matchManagers": ["maven"],
       "matchPackageNames": [
         "com.fasterxml.jackson.core:jackson-annotations",
         "javax.annotation:javax.annotation-api"
       ],
       "semanticCommitType": "chore",
-      "matchUpdateTypes": [
-        "minor",
-        "patch",
-        "pin",
-        "digest"
-      ]
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"]
     },
     {
       "groupName": "GitHub Actions",
-      "matchManagers": [
-        "github-actions"
-      ],
+      "matchManagers": ["github-actions"],
       "matchPackageNames": [
         "actions/checkout",
         "s4u/setup-maven-action",
@@ -70,12 +50,7 @@
       ],
       "semanticCommitType": "ci",
       "automerge": true,
-      "matchUpdateTypes": [
-        "minor",
-        "patch",
-        "pin",
-        "digest"
-      ]
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"]
     }
   ]
 }

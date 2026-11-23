@@ -18,7 +18,8 @@ on:
         required: false
         type: string
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   determine-target-release-version:
@@ -34,18 +35,22 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.ref_name }}
 
+          persist-credentials: false
       - name: Setup Maven Action
         uses: s4u/setup-maven-action@5d4481650d2563723ad6c5e8f009ac8fd746e3e8 # v1.22.0
         with:
           java-version: 17
           maven-version: 3.9.14
 
+          checkout-enabled: false
+          cache-enabled: false
       - name: Extract SNAPSHOT version from pom.xml
         run: echo "PROJECT_SNAPSHOT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout 2> /dev/null)" >> $GITHUB_ENV
 
       - name: Determine release version
         run: echo "TARGET_RELEASE_VERSION=$(sed 's/-SNAPSHOT$//' <<<"${PROJECT_SNAPSHOT_VERSION}")" >> $GITHUB_ENV
 
+    if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/rel/'))
   determine-target-snapshot-version:
     permissions:
       contents: read
@@ -61,18 +66,22 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.ref_name }}
 
+          persist-credentials: false
       - name: Setup Maven Action
         uses: s4u/setup-maven-action@5d4481650d2563723ad6c5e8f009ac8fd746e3e8 # v1.22.0
         with:
           java-version: 17
           maven-version: 3.9.14
 
+          checkout-enabled: false
+          cache-enabled: false
       - name: Extract SNAPSHOT version from pom.xml
         run: echo "PROJECT_SNAPSHOT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout 2> /dev/null)" >> $GITHUB_ENV
 
       - name: Determine new SNAPSHOT release version
         run: echo "TARGET_SNAPSHOT_VERSION=${NEXT_VERSION:-$(cut -d. -f1 <<<"${PROJECT_SNAPSHOT_VERSION}").$(( $(cut -d. -f2 <<<"${PROJECT_SNAPSHOT_VERSION}") + 1 )).0}-SNAPSHOT" >> $GITHUB_ENV
 
+    if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/rel/'))
   create-github-release:
     permissions:
       contents: write
@@ -92,6 +101,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.ref_name }}
 
+          persist-credentials: true # Needed by the release/push step
       - name: Create GitHub Release
         uses: open-resource-discovery/github-release@2d8817b7382966b490d5c78125d97da14ee918bc # main @ 2026-11-14
         if: inputs.githubRelease
@@ -99,6 +109,7 @@ jobs:
           tag-template: "v<version>"
           version: ${{ env.TARGET_RELEASE_VERSION }}
 
+    if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/rel/'))
   release-spring-boot-starter-ord:
     permissions:
       contents: read
@@ -114,6 +125,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.ref_name }}
 
+          persist-credentials: false
       - name: Setup Maven Action
         uses: s4u/setup-maven-action@5d4481650d2563723ad6c5e8f009ac8fd746e3e8 # v1.22.0
         with:
@@ -121,6 +133,8 @@ jobs:
           maven-version: 3.9.14
           settings-servers: '[{"id": "central", "username": "${{ secrets.MAVEN_CENTRAL_USER }}", "password": "${{ secrets.MAVEN_CENTRAL_PASSWORD }}"}]'
 
+          checkout-enabled: false
+          cache-enabled: false
       - name: Configure GPG key
         uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
         with:
@@ -138,6 +152,7 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
         run: mvn --batch-mode deploy -f "${POM_PATH}" -Dgpg.keyname="${MAVEN_GPG_KEY}"
 
+    if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/rel/'))
   update-project-version:
     permissions:
       contents: write
@@ -159,12 +174,15 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.ref_name }}
 
+          persist-credentials: false
       - name: Setup Maven Action
         uses: s4u/setup-maven-action@5d4481650d2563723ad6c5e8f009ac8fd746e3e8 # v1.22.0
         with:
           java-version: 17
           maven-version: 3.9.14
 
+          checkout-enabled: false
+          cache-enabled: false
       - name: Update project version for next development iteration
         run: mvn versions:set -DgenerateBackupPoms=false -DnewVersion="${TARGET_SNAPSHOT_VERSION}"
 
@@ -176,3 +194,4 @@ jobs:
           body: "Update the project version to ${{ env.TARGET_SNAPSHOT_VERSION }}"
           title: "[AUTO] Updates project version to ${{ env.TARGET_SNAPSHOT_VERSION }}"
           commit-message: "[AUTO] Updates project version to ${{ env.TARGET_SNAPSHOT_VERSION }}"
+    if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/rel/'))
