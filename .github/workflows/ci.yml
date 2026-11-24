@@ -3,25 +3,27 @@ name: CI – Build Spring Boot Starter ORD
 on:
   push:
     branches:
-      - 'main'
-      - 'rel/**'
+      - "main"
+      - "rel/**"
 
+permissions:
+  contents: read
 jobs:
   build:
     name: Build Spring Boot Starter ORD
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout spring-boot-starter-ord repo
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-
+          persist-credentials: false
       - name: Setup Maven Action
-        uses: s4u/setup-maven-action@v1.22.0
+        uses: s4u/setup-maven-action@5d4481650d2563723ad6c5e8f009ac8fd746e3e8 # v1.22.0
         with:
           java-version: 17
           maven-version: 3.9.14
 
+          checkout-enabled: false
       - name: Build project
         run: mvn clean install -B -Dgpg.skip=true

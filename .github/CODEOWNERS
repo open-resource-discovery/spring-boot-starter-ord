@@ -1,0 +1,4 @@
+# Review owners for CI and build configuration.
+/.github/ @open-resource-discovery/spring-boot-starter-ord-admin @mlakov
+/renovate.json @open-resource-discovery/spring-boot-starter-ord-admin @mlakov
+/pom.xml @open-resource-discovery/spring-boot-starter-ord-admin @mlakov
